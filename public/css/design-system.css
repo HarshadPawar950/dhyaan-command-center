@@ -1,0 +1,572 @@
+/* ============================================================================
+   Dhyaan Command Center — DESIGN SYSTEM (shared primitives)
+   ----------------------------------------------------------------------------
+   Batch 1. Values DERIVED from the two already-approved pages (login.ejs +
+   admin/dashboard.ejs) — not improvised. docs/DESIGN_SYSTEM.md was absent from
+   the repo; CAPTAIN ruled: derive from the approved pages.
+
+   SAFETY CONTRACT (why this file cannot alter login / admin dashboard):
+   - Loads FIRST on employee/HR pages (via @import in style.css) → style.css +
+     page inline styles win. Loads LAST on admin pages (via <link> in the
+     sidebar/topbar partials) → so every rule below is written to be either
+     (a) identical to values already in effect, or (b) under the `ds-` class
+     namespace, which NO existing page uses.
+   - `body { line-height }` is intentionally NOT set here: it is the one global
+     that differs between ecosystems (style.css=1.6 vs admin=browser default),
+     so we leave it exactly as each page already has it.
+   ============================================================================ */
+
+/* ============================================================================
+   01 · TOKENS
+   ============================================================================ */
+:root {
+  /* Brand */
+  --ds-navy:        #0A1628;
+  --ds-navy-2:      #142238;
+  --ds-gold:        #D4AF37;
+  --ds-gold-soft:   #E8C766;
+  --ds-gold-dark:   #B8941F;
+  --ds-cream:       #F4EFE6;
+  --ds-offwhite:    #FAFAF7;
+
+  /* Ink */
+  --ds-text:        #1A1A1A;
+  --ds-muted:       #6b6b6b;
+  --ds-faint:       #9CA3AF;
+  --ds-on-navy:     #FAFAF7;
+  --ds-on-navy-dim: rgba(250,250,247,0.70);
+
+  /* Semantic */
+  --ds-success:     #16a34a;
+  --ds-danger:      #dc2626;
+  --ds-warn:        #B8941F;
+  --ds-info:        #2563EB;
+
+  /* Lines & elevation */
+  --ds-border:        rgba(10,22,40,0.08);
+  --ds-border-strong: rgba(10,22,40,0.12);
+  --ds-shadow:        0 4px 24px rgba(10,22,40,0.06);
+  --ds-shadow-hover:  0 8px 32px rgba(10,22,40,0.12);
+  --ds-shadow-gold:   0 6px 16px rgba(212,175,55,0.32);
+  --ds-focus-ring:    0 0 0 3px rgba(212,175,55,0.18);
+
+  /* Gradients */
+  --ds-grad-navy:  linear-gradient(135deg, var(--ds-navy) 0%, var(--ds-navy-2) 100%);
+  --ds-grad-gold:  linear-gradient(135deg, var(--ds-gold) 0%, var(--ds-gold-dark) 100%);
+  --ds-grad-gold-soft: linear-gradient(135deg, var(--ds-gold) 0%, var(--ds-gold-soft) 100%);
+
+  /* Radii */
+  --ds-radius:      16px;
+  --ds-radius-lg:   18px;
+  --ds-radius-md:   10px;
+  --ds-radius-sm:   8px;
+  --ds-radius-pill: 999px;
+
+  /* Type */
+  --ds-font-head: 'Playfair Display', Georgia, serif;
+  --ds-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Spacing scale */
+  --ds-sp-1: 4px;
+  --ds-sp-2: 8px;
+  --ds-sp-3: 12px;
+  --ds-sp-4: 16px;
+  --ds-sp-5: 20px;
+  --ds-sp-6: 24px;
+  --ds-sp-8: 32px;
+  --ds-sp-10: 40px;
+}
+
+/* ============================================================================
+   02 · RESET  (identical to the reset already active on every page — no-op)
+   ============================================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+/* Responsive guard only — deliberately does NOT touch `svg` or `display`, so
+   inline icons on login/admin render exactly as before. */
+img, video { max-width: 100%; }
+
+/* ============================================================================
+   03 · LAYOUT  (opt-in shell helpers; ds- namespaced)
+   ============================================================================ */
+.ds-page      { padding: 34px 44px; }
+.ds-page-body { padding: 34px 44px; flex: 1; }
+.ds-container { max-width: 1500px; margin: 0 auto; }
+.ds-stack > * + * { margin-top: var(--ds-sp-6); }
+
+/* ============================================================================
+   04 · TYPOGRAPHY
+   Base body/heading values below MATCH what login + admin dashboard already
+   compute, so this file overriding nothing visible when it loads last.
+   ============================================================================ */
+body {
+  font-family: var(--ds-font-body);
+  color: var(--ds-text);
+  background: var(--ds-offwhite);
+  /* line-height intentionally unset — it is the one base value that differs
+     between ecosystems (style.css=1.6 vs admin default); leaving it alone means
+     zero shift when this file loads last on admin pages. */
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--ds-font-head);
+  font-weight: 600;
+  color: var(--ds-navy);
+}
+
+/* opt-in text helpers */
+.ds-display   { font-family: var(--ds-font-head); font-weight: 700; color: var(--ds-navy); }
+.ds-eyebrow   { font-size: 11.5px; font-weight: 600; color: var(--ds-muted);
+                text-transform: uppercase; letter-spacing: 1.2px; }
+.ds-lead      { font-size: 15px; color: var(--ds-muted); line-height: 1.7; }
+.ds-gold-rule { display: inline-block; width: 48px; height: 3px; border-radius: 2px;
+                background: var(--ds-gold); margin-top: 14px; }
+
+/* ============================================================================
+   05 · BUTTONS
+   ============================================================================ */
+.ds-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 22px;
+  font-family: var(--ds-font-body); font-size: 14px; font-weight: 600;
+  line-height: 1; letter-spacing: .2px;
+  border: 1px solid transparent; border-radius: var(--ds-radius-md);
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: filter .15s ease, transform .05s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+}
+.ds-btn:active { transform: translateY(1px); }
+.ds-btn svg { width: 16px; height: 16px; }
+
+.ds-btn-gold {
+  background: var(--ds-grad-gold-soft); color: var(--ds-navy); font-weight: 700;
+  box-shadow: 0 4px 14px rgba(212,175,55,0.35);
+}
+.ds-btn-gold:hover { transform: translateY(-2px); filter: brightness(1.03); color: var(--ds-navy); }
+
+.ds-btn-navy {
+  background: var(--ds-navy); color: var(--ds-on-navy); border-color: var(--ds-navy);
+}
+.ds-btn-navy:hover { box-shadow: 0 6px 18px rgba(10,22,40,0.22); color: var(--ds-on-navy); }
+
+.ds-btn-ghost {
+  background: transparent; color: var(--ds-navy); border-color: var(--ds-border-strong);
+}
+.ds-btn-ghost:hover { background: var(--ds-navy); color: var(--ds-on-navy); border-color: var(--ds-navy); }
+
+.ds-btn-danger {
+  background: var(--ds-danger); color: #fff; border-color: var(--ds-danger);
+}
+.ds-btn-danger:hover { filter: brightness(1.05); color: #fff; }
+
+.ds-btn-sm { padding: 8px 14px; font-size: 13px; }
+.ds-btn-block { display: flex; width: 100%; }
+
+/* ============================================================================
+   06 · FORMS  (focus ring & input frame lifted from login.ejs)
+   ============================================================================ */
+.ds-field { margin-bottom: 20px; }
+.ds-label {
+  display: block; font-size: 13px; font-weight: 600; color: #3a4557;
+  margin-bottom: 7px;
+}
+.ds-input, .ds-select, .ds-textarea {
+  width: 100%; padding: 12px 14px;
+  font-family: inherit; font-size: 14px; color: var(--ds-navy);
+  background: #fdfdfc; border: 1px solid #e2e5ea; border-radius: var(--ds-radius-md);
+  transition: border-color .15s, box-shadow .15s;
+}
+.ds-textarea { resize: vertical; min-height: 84px; }
+.ds-input:focus, .ds-select:focus, .ds-textarea:focus {
+  outline: none; border-color: var(--ds-gold); box-shadow: var(--ds-focus-ring);
+}
+.ds-input-wrap { position: relative; }
+.ds-input-wrap .ds-input-icon {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  color: var(--ds-muted); pointer-events: none; display: flex;
+}
+.ds-input-wrap .ds-input { padding-left: 42px; }
+.ds-hint { font-size: 12px; color: var(--ds-faint); margin-top: 6px; }
+
+/* ============================================================================
+   07 · CARDS
+   ============================================================================ */
+.ds-card {
+  background: #fff; border-radius: var(--ds-radius);
+  border: 1px solid var(--ds-border); box-shadow: var(--ds-shadow);
+  padding: 22px;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.ds-card-hover:hover { transform: translateY(-2px); box-shadow: var(--ds-shadow-hover); }
+.ds-card-accent { position: relative; overflow: hidden; }
+.ds-card-accent::before {
+  content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+  background: var(--ds-grad-gold-soft);
+}
+.ds-card-title { font-size: 12px; font-weight: 600; color: var(--ds-muted);
+                 text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.ds-card-value { font-family: var(--ds-font-head); font-size: 38px; font-weight: 700;
+                 color: var(--ds-navy); line-height: 1.05; }
+
+/* ============================================================================
+   08 · TABLES
+   ============================================================================ */
+.ds-table-wrap {
+  background: #fff; border-radius: var(--ds-radius); border: 1px solid var(--ds-border);
+  box-shadow: var(--ds-shadow); padding: 1.5rem; overflow-x: auto;
+}
+.ds-table { width: 100%; border-collapse: collapse; }
+.ds-table th, .ds-table td {
+  padding: .9rem 1rem; text-align: left; border-bottom: 1px solid var(--ds-border);
+  font-size: 14px;
+}
+.ds-table th {
+  font-family: var(--ds-font-body); color: var(--ds-muted); font-weight: 600;
+  font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+}
+.ds-table tbody tr:hover { background: rgba(212,175,55,0.05); }
+.ds-table tbody tr:last-child td { border-bottom: none; }
+
+/* ============================================================================
+   09 · BADGES
+   ============================================================================ */
+.ds-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: .3rem .75rem; border-radius: var(--ds-radius-pill);
+  font-size: .72rem; font-weight: 600; text-transform: capitalize; letter-spacing: .2px;
+}
+.ds-badge-hot     { background: rgba(220,38,38,0.10);  color: var(--ds-danger); }
+.ds-badge-warm    { background: rgba(212,175,55,0.14); color: var(--ds-gold-dark); }
+.ds-badge-cold    { background: rgba(10,22,40,0.08);   color: var(--ds-navy); }
+.ds-badge-success { background: rgba(22,163,74,0.10);  color: var(--ds-success); }
+.ds-badge-info    { background: rgba(37,99,235,0.10);  color: var(--ds-info); }
+.ds-badge-gold    { background: var(--ds-grad-gold-soft); color: var(--ds-navy); }
+
+/* ============================================================================
+   10 · TABS
+   ============================================================================ */
+.ds-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--ds-border); }
+.ds-tab {
+  padding: 12px 18px; font-size: 14px; font-weight: 600; color: var(--ds-muted);
+  background: none; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; text-decoration: none; transition: color .15s, border-color .15s;
+}
+.ds-tab:hover { color: var(--ds-navy); }
+.ds-tab.is-active { color: var(--ds-navy); border-bottom-color: var(--ds-gold); }
+
+/* ============================================================================
+   11 · MODALS
+   ============================================================================ */
+.ds-modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,22,40,0.55);
+  display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1000;
+}
+.ds-modal {
+  background: #fff; border-radius: var(--ds-radius-lg); width: 100%; max-width: 520px;
+  box-shadow: 0 18px 50px rgba(10,22,40,0.30); overflow: hidden;
+}
+.ds-modal-head {
+  padding: 20px 26px; border-bottom: 1px solid var(--ds-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ds-modal-head h3 { font-size: 20px; }
+.ds-modal-body { padding: 24px 26px; }
+.ds-modal-foot {
+  padding: 16px 26px; border-top: 1px solid var(--ds-border);
+  display: flex; justify-content: flex-end; gap: 10px;
+}
+.ds-modal-close {
+  background: none; border: none; cursor: pointer; color: var(--ds-muted);
+  padding: 4px; display: flex; border-radius: 6px;
+}
+.ds-modal-close:hover { background: var(--ds-border); }
+
+/* ============================================================================
+   12 · FLASH / ALERTS
+   ============================================================================ */
+.ds-flash {
+  padding: 1rem 1.1rem; margin-bottom: 1.25rem; border-radius: var(--ds-radius-sm);
+  border-left: 4px solid; font-size: 14px;
+}
+.ds-flash-success { background: rgba(22,163,74,0.10);  border-color: var(--ds-success); color: var(--ds-success); }
+.ds-flash-danger  { background: rgba(220,38,38,0.10);  border-color: var(--ds-danger);  color: var(--ds-danger); }
+.ds-flash-warn    { background: rgba(184,148,31,0.12); border-color: var(--ds-warn);    color: var(--ds-warn); }
+.ds-flash-info    { background: rgba(37,99,235,0.10);  border-color: var(--ds-info);    color: var(--ds-info); }
+
+/* ============================================================================
+   13 · DETAIL VIEWS
+   ============================================================================ */
+.ds-section-title {
+  font-family: var(--ds-font-head); font-size: 18px; color: var(--ds-navy);
+  padding-bottom: 10px; margin-bottom: 16px; border-bottom: 1.5px solid var(--ds-gold);
+}
+.ds-detail-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px 28px;
+}
+.ds-detail-item { display: flex; flex-direction: column; gap: 4px; }
+.ds-detail-label { font-size: 11.5px; font-weight: 600; color: var(--ds-muted);
+                   text-transform: uppercase; letter-spacing: .8px; }
+.ds-detail-value { font-size: 15px; color: var(--ds-text); }
+
+/* ============================================================================
+   14 · TIMELINE
+   ============================================================================ */
+.ds-timeline { position: relative; padding-left: 26px; }
+.ds-timeline::before {
+  content: ""; position: absolute; left: 7px; top: 4px; bottom: 4px;
+  width: 2px; background: var(--ds-border-strong);
+}
+.ds-timeline-item { position: relative; padding-bottom: 20px; }
+.ds-timeline-item::before {
+  content: ""; position: absolute; left: -26px; top: 3px; width: 14px; height: 14px;
+  border-radius: 50%; background: var(--ds-gold); border: 3px solid #fff;
+  box-shadow: 0 0 0 1px var(--ds-border-strong);
+}
+.ds-timeline-time { font-size: 12px; color: var(--ds-faint); }
+.ds-timeline-body { font-size: 14px; color: var(--ds-text); margin-top: 2px; }
+
+/* ============================================================================
+   15 · FILES
+   ============================================================================ */
+.ds-file {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md);
+  background: #fff; text-decoration: none; color: var(--ds-text);
+  transition: border-color .15s, box-shadow .15s;
+}
+.ds-file:hover { border-color: var(--ds-gold); box-shadow: var(--ds-shadow); }
+.ds-file-icon {
+  width: 38px; height: 38px; border-radius: var(--ds-radius-sm); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ds-cream); color: var(--ds-gold-dark);
+}
+.ds-file-name { font-size: 14px; font-weight: 600; color: var(--ds-navy); }
+.ds-file-meta { font-size: 12px; color: var(--ds-faint); margin-top: 2px; }
+
+/* ============================================================================
+   16 · DASHBOARD  (KPI grid, hero, panels, stat strip)
+   ============================================================================ */
+.ds-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.ds-kpi-card {
+  position: relative; overflow: hidden;
+  background: #fff; border-radius: var(--ds-radius); border: 1px solid var(--ds-border);
+  box-shadow: var(--ds-shadow); padding: 22px 22px 18px;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.ds-kpi-card:hover { transform: translateY(-2px); box-shadow: var(--ds-shadow-hover); }
+.ds-kpi-card::before {
+  content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+  background: var(--ds-grad-gold-soft);
+}
+.ds-kpi-icon {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--ds-grad-gold-soft);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px; box-shadow: 0 4px 12px rgba(212,175,55,0.28);
+}
+.ds-kpi-icon svg { width: 21px; height: 21px; color: var(--ds-navy); }
+.ds-kpi-label { font-size: 11.5px; font-weight: 600; color: var(--ds-muted);
+                text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+.ds-kpi-value { font-family: var(--ds-font-head); font-size: 38px; font-weight: 700;
+                color: var(--ds-navy); line-height: 1.05; }
+.ds-kpi-foot { font-size: 12.5px; color: var(--ds-muted); margin-top: 6px; }
+.ds-kpi-spark { margin-top: 14px; height: 22px; }
+.ds-kpi-spark svg { width: 100%; height: 22px; display: block; }
+
+.ds-hero {
+  position: relative; overflow: hidden;
+  background: var(--ds-grad-navy); color: var(--ds-on-navy);
+  padding: 38px 40px; border-radius: var(--ds-radius-lg); box-shadow: var(--ds-shadow);
+}
+.ds-hero::before {
+  content: ""; position: absolute; top: -50%; right: 30%; width: 360px; height: 360px;
+  background: radial-gradient(circle, rgba(212,175,55,0.16) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ds-hero > * { position: relative; z-index: 1; }
+.ds-hero h1 { color: var(--ds-on-navy); font-size: 32px; margin-bottom: 8px; letter-spacing: -.5px; }
+.ds-hero-sub { color: var(--ds-on-navy-dim); font-size: 15px; }
+
+.ds-panel {
+  background: #fff; border-radius: var(--ds-radius); border: 1px solid var(--ds-border);
+  box-shadow: var(--ds-shadow); overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.ds-panel-head {
+  padding: 20px 24px; border-bottom: 1px solid var(--ds-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ds-panel-title { font-family: var(--ds-font-head); font-size: 18px; color: var(--ds-navy); }
+.ds-panel-tag { font-size: 11px; font-weight: 600; color: var(--ds-gold-dark);
+                text-transform: uppercase; letter-spacing: 1px; }
+.ds-panel-body { padding: 8px 0; }
+.ds-panel-link { font-size: 13px; font-weight: 600; color: var(--ds-gold-dark);
+                 text-decoration: none; }
+.ds-panel-link:hover { text-decoration: underline; color: var(--ds-gold-dark); }
+.ds-panel-foot { padding: 14px 24px; border-top: 1px solid var(--ds-border); margin-top: auto; }
+
+.ds-stat-strip {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  padding: 18px 20px; border-radius: var(--ds-radius); color: var(--ds-on-navy);
+  background: var(--ds-grad-navy);
+}
+.ds-stat { text-align: center; }
+.ds-stat-num { font-family: var(--ds-font-head); font-size: 1.6rem; font-weight: 700; color: var(--ds-gold); }
+.ds-stat-lbl { font-size: .65rem; text-transform: uppercase; letter-spacing: .05em; opacity: .7; margin-top: 2px; }
+
+/* generic list row (leads / props / feedback) */
+.ds-list-row {
+  display: block; text-decoration: none; color: inherit;
+  padding: 14px 24px; border-bottom: 1px solid var(--ds-border);
+  transition: background .15s ease;
+}
+.ds-list-row:last-child { border-bottom: none; }
+.ds-list-row:hover { background: rgba(212,175,55,0.05); }
+.ds-list-primary { font-weight: 600; color: var(--ds-navy); font-size: 14px; }
+.ds-list-meta { font-size: 12.5px; color: var(--ds-muted); margin-top: 3px;
+                display: flex; gap: 14px; flex-wrap: wrap; }
+.ds-accent-hot  { border-left: 3px solid var(--ds-danger); }
+.ds-accent-warm { border-left: 3px solid var(--ds-gold); }
+
+/* ============================================================================
+   17 · UTILITIES
+   ============================================================================ */
+.ds-flex     { display: flex; }
+.ds-between  { display: flex; align-items: center; justify-content: space-between; }
+.ds-center   { display: flex; align-items: center; }
+.ds-wrap     { flex-wrap: wrap; }
+.ds-grow     { flex: 1; }
+.ds-gap-2 { gap: var(--ds-sp-2); } .ds-gap-3 { gap: var(--ds-sp-3); }
+.ds-gap-4 { gap: var(--ds-sp-4); } .ds-gap-6 { gap: var(--ds-sp-6); }
+.ds-mt-2 { margin-top: var(--ds-sp-2); } .ds-mt-4 { margin-top: var(--ds-sp-4); }
+.ds-mt-6 { margin-top: var(--ds-sp-6); } .ds-mt-8 { margin-top: var(--ds-sp-8); }
+.ds-mb-2 { margin-bottom: var(--ds-sp-2); } .ds-mb-4 { margin-bottom: var(--ds-sp-4); }
+.ds-mb-6 { margin-bottom: var(--ds-sp-6); } .ds-mb-8 { margin-bottom: var(--ds-sp-8); }
+.ds-text-center { text-align: center; }
+.ds-text-right  { text-align: right; }
+.ds-muted { color: var(--ds-muted); }
+.ds-faint { color: var(--ds-faint); }
+.ds-gold  { color: var(--ds-gold-dark); }
+.ds-empty { text-align: center; padding: 1.5rem; color: var(--ds-faint);
+            font-style: italic; font-size: .9rem; }
+
+/* ============================================================================
+   18 · RESPONSIVE
+   ============================================================================ */
+@media (max-width: 1240px) { .ds-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 1100px) { .ds-two-col  { grid-template-columns: 1fr; } }
+@media (max-width: 900px)  {
+  .ds-kpi-grid   { grid-template-columns: repeat(2, 1fr); }
+  .ds-stat-strip { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .ds-page, .ds-page-body { padding: 20px 16px; }
+  .ds-kpi-grid { grid-template-columns: 1fr; }
+  .ds-hero { padding: 26px 22px; }
+  .ds-hero h1 { font-size: 26px; }
+}
+
+/* ==================================================================
+   MOBILE SHELL (Phase 1) — bottom tab bar, mobile top bar, sticky
+   action bar, bottom sheets. All display:none by default; they are
+   only revealed on employee pages (body.mshell) at <=768px, flipped
+   on in responsive.css. Desktop is never touched.
+   ================================================================== */
+.ds-tabbar, .ds-mtop, .ds-action-bar,
+.ds-sheet, .ds-sheet-backdrop { display: none; }
+
+/* ---- bottom tab bar ---- */
+.ds-tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 850;
+  height: 62px; padding-bottom: env(safe-area-inset-bottom);
+  background: #fff; border-top: 1px solid var(--ds-border);
+  box-shadow: 0 -4px 24px rgba(10,22,40,0.08);
+  align-items: stretch; justify-content: space-around;
+}
+.ds-tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  min-height: 44px; background: none; border: none; cursor: pointer;
+  text-decoration: none; color: var(--ds-muted);
+  font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: .2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.ds-tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+.ds-tab.active { color: var(--ds-gold-dark); }
+
+/* center capture FAB — raised out of the middle slot */
+.ds-fab {
+  flex: 0 0 auto; align-self: center;
+  width: 56px; height: 56px; margin-top: -18px;
+  border-radius: 50%; border: none; cursor: pointer;
+  background: var(--ds-grad-gold-soft); box-shadow: var(--ds-shadow-gold);
+  display: flex; align-items: center; justify-content: center;
+}
+.ds-fab svg { width: 26px; height: 26px; stroke: var(--ds-navy); stroke-width: 2.4; fill: none; }
+
+/* ---- mobile top bar ---- */
+.ds-mtop {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 840;
+  height: 52px; padding: env(safe-area-inset-top) 8px 0;
+  background: var(--ds-grad-navy); color: var(--ds-on-navy);
+  align-items: center; gap: 4px;
+  box-shadow: 0 2px 16px rgba(10,22,40,0.18);
+}
+.ds-mtop-back, .ds-mtop-more {
+  width: 44px; height: 44px; flex: 0 0 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer; color: var(--ds-on-navy);
+  text-decoration: none;
+}
+.ds-mtop-back svg, .ds-mtop-more svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+.ds-mtop-title {
+  flex: 1; min-width: 0; text-align: center;
+  font-family: var(--ds-font-head); font-size: 17px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* ADMIN mobile top bar = TWO ROWS: a centred brand row over a control row
+   (back · title · more). The EMPLOYEE shell shares .ds-mtop as a single 52px
+   row, so EVERY rule below is scoped to body.mshell-admin — the sales team's
+   bar stays byte-identical. The bar grows 52 -> 84px; the matching content
+   clearance (body.mshell-admin .main-content padding-top:84px) is in
+   responsive.css. Base .ds-mtop above is deliberately left alone. */
+body.mshell-admin .ds-mtop {
+  height: 84px; padding: env(safe-area-inset-top) 0 0;
+  flex-direction: column; align-items: stretch; gap: 0;
+}
+body.mshell-admin .ds-mtop-brand {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 38px; flex: 0 0 38px; border-bottom: 1px solid rgba(212,175,55,0.22);
+}
+body.mshell-admin .ds-mtop-logo { height: 22px; width: auto; color: var(--ds-gold); display: block; flex: 0 0 auto; }
+body.mshell-admin .ds-mtop-wordmark { font-family: var(--ds-font-head); font-size: 12px; font-weight: 700; color: var(--ds-gold); letter-spacing: 2.4px; }
+body.mshell-admin .ds-mtop-row { display: flex; align-items: center; gap: 4px; padding: 0 8px; flex: 1; min-width: 0; }
+/* title now owns a full-width row, so it re-centres (was left-aligned when it shared the row with the logo). */
+body.mshell-admin .ds-mtop-title { text-align: center; font-size: 18px; }
+.ds-mtop.is-top .ds-mtop-back { visibility: hidden; } /* keep layout centred */
+
+/* ---- sticky action bar (per-page opt-in; first consumer = Walk-in) ---- */
+.ds-action-bar {
+  position: fixed; left: 0; right: 0; bottom: 62px; z-index: 845;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,0.96); border-top: 1px solid var(--ds-border);
+}
+
+/* ---- bottom sheets (FAB capture + More) ---- */
+.ds-sheet-backdrop { position: fixed; inset: 0; z-index: 950; background: rgba(10,22,40,0.45); }
+.ds-sheet-backdrop.open { display: block; }
+.ds-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 960;
+  background: #fff; border-radius: 18px 18px 0 0;
+  padding: 10px 14px calc(16px + env(safe-area-inset-bottom));
+  box-shadow: 0 -12px 40px rgba(10,22,40,0.28);
+}
+.ds-sheet.open { display: block; }
+.ds-sheet-grip { width: 40px; height: 4px; border-radius: 999px; background: var(--ds-border-strong); margin: 6px auto 12px; }
+.ds-sheet-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 10px; min-height: 52px; border-radius: 12px;
+  text-decoration: none; color: var(--ds-text); font-size: 15px; font-weight: 600;
+}
+.ds-sheet-item:active { background: var(--ds-cream); }
+.ds-sheet-item svg { width: 22px; height: 22px; stroke: var(--ds-gold-dark); fill: none; stroke-width: 2; flex: 0 0 22px; }
+.ds-sheet-item.danger { color: var(--ds-danger); }
+.ds-sheet-item.danger svg { stroke: var(--ds-danger); }

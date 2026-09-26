@@ -1,0 +1,244 @@
+/* ==================================================================
+   responsive.css — Dhyaan Command Center
+   Presentation-layer ONLY. No functional changes.
+   Loaded via the 3 sidebar partials (admin / employee / hr) AFTER
+   each view's own inline <style>, so equal-specificity overrides win.
+   Critical layout overrides use !important to beat the partials'
+   `.main-content{margin-left:260px !important}`.
+
+   Breakpoints:  <=768 phone  ·  769-1439 laptop  ·  >=1440 wide desktop
+   Wide desktop (>=1440) caps + centres the content so it doesn't sprawl
+   edge-to-edge on 1920/2560 monitors (see WIDE DESKTOP below). The fixed
+   left sidebar and the flex layout are untouched — only content wrappers
+   get a max-width.
+   ================================================================== */
+
+/* Hamburger + overlay are injected on every sidebar page but hidden
+   until phone width. */
+.nav-toggle { display: none; }
+.nav-overlay { display: none; }
+
+/* Mobile-shell elements are hidden by default at EVERY width. This baseline
+   lives here (not only design-system.css) because two employee pages
+   (property-detail, properties) don't load design-system.css — responsive.css
+   is loaded on every sidebar page, so it's the only guaranteed hide. The phone
+   media query below reveals them under body.mshell. */
+.ds-tabbar, .ds-mtop, .ds-action-bar, .ds-sheet, .ds-sheet-backdrop { display: none; }
+
+/* ============================ LAPTOP ============================ */
+/* 1366-class office laptops. Tighten breathing room, cap KPI tiles to
+   ~3-across, let wide tables scroll inside their card instead of
+   pushing the whole page sideways. */
+@media (min-width: 769px) and (max-width: 1439px) {
+  .page-body { padding: 22px 28px; }
+  .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .table-container, .table-wrap { overflow-x: auto; }
+}
+
+/* ========================= WIDE DESKTOP ======================== */
+/* The content area is fluid (.main-content{flex:1}) with NO cap, so wide list &
+   dashboard pages sprawl edge-to-edge on 1920/2560 monitors while the many
+   forms/docs that DO self-cap (max-width 820-1180px inline) sit pinned hard-left
+   after the sidebar, looking sparse. Cap + centre the content wrappers in the
+   space after the fixed 260px sidebar. Sidebar / .main-content / flex layout are
+   untouched — only the per-page wrappers.
+
+   KEY: we use `width: min(100%, CAP)`, NOT max-width. responsive.css loads AFTER
+   each view's inline <style>, so a raw `max-width` here would OVERRIDE and wrongly
+   WIDEN the ~20 forms/docs that intentionally self-cap smaller. `width:min()`
+   instead lets each view's own inline `max-width` still clamp it tighter, while
+   the uncapped wide pages get the ceiling. One rule, every intentional cap
+   preserved, all content centred.
+
+   The codebase has no single wrapper, so families are enumerated: .page-body
+   (admin), .hr-wrap + .pw (HR + payroll), and the employee-page wraps. Topbars &
+   full-bleed heroes stay full width by design. Caps only shrink width, so this
+   can NEVER cause page horizontal scroll; it only bites past ~1820px viewport —
+   1366/1440 laptops are unaffected. */
+@media (min-width: 1440px) {
+  .page-body, .hr-wrap, .pw,
+  .super-dashboard, .lead-detail-page, .role-wrap,
+  .inc-wrap, .leave-wrap {
+    width: min(100%, 1560px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (min-width: 1920px) {
+  /* ultra-wide: let dense dashboards/tables use a little more room, still centred */
+  .page-body, .hr-wrap, .pw,
+  .super-dashboard, .lead-detail-page, .role-wrap,
+  .inc-wrap, .leave-wrap {
+    width: min(100%, 1680px);
+  }
+}
+
+/* ============================ PHONE ============================= */
+@media (max-width: 768px) {
+
+  /* ---- Off-canvas sidebar (admin + employee share .admin-sidebar;
+     HR uses .hr-sidebar) ---- */
+  .admin-sidebar, .hr-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    width: 82vw; max-width: 300px;
+    box-shadow: 2px 0 40px rgba(0, 0, 0, 0.35);
+  }
+  body.nav-open .admin-sidebar,
+  body.nav-open .hr-sidebar { transform: translateX(0); }
+
+  /* Content reclaims the full width (beats the 260px !important).
+     min-width:0 lets these flex items shrink below their content so the
+     table scroll-wrapper below can actually contain the overflow
+     (defeats the flexbox min-width:auto whole-page-scroll bug). */
+  .main-content { margin-left: 0 !important; padding-top: 54px; min-width: 0; }
+  .main-content > * { min-width: 0; }
+  .page-body { min-width: 0; }
+
+  /* ---- Hamburger toggle (44px tap target) ---- */
+  .nav-toggle {
+    display: flex; align-items: center; justify-content: center;
+    position: fixed; top: 11px; left: 11px; z-index: 200;
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, #0A1628 0%, #142238 100%);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    box-shadow: 0 4px 14px rgba(10, 22, 40, 0.25);
+    cursor: pointer; padding: 0;
+  }
+  .nav-toggle .bars,
+  .nav-toggle .bars::before,
+  .nav-toggle .bars::after {
+    display: block; width: 20px; height: 2px;
+    background: #D4AF37; border-radius: 2px;
+  }
+  .nav-toggle .bars { position: relative; }
+  .nav-toggle .bars::before { content: ''; position: absolute; top: -6px; left: 0; }
+  .nav-toggle .bars::after  { content: ''; position: absolute; top: 6px;  left: 0; }
+
+  /* ---- Dismiss overlay ---- */
+  .nav-overlay {
+    display: block; position: fixed; inset: 0; z-index: 150;
+    background: rgba(10, 22, 40, 0.45);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  }
+  body.nav-open .nav-overlay { opacity: 1; pointer-events: auto; }
+
+  /* ---- Content trims ---- */
+  .page-body { padding: 16px; }
+  .page-hero { padding: 20px 18px; }
+  .page-hero h1 { font-size: 22px; }
+  .topbar { padding: 14px 16px 14px 64px; }
+
+  /* ---- Tables: horizontal scroll wrapper (approved).
+     Cells stop wrapping so the table sizes to its content — wide
+     tables scroll sideways inside their card; narrow ones still fit.
+     No data hidden, no truncation.
+     `.panel` is the list/dashboard table card (owner/commissions/bookings/
+     receipts); its own `overflow:hidden` would CLIP a wide table, so we flip
+     just overflow-x to auto (overflow-y stays hidden). ---- */
+  .table-container, .table-wrap, .panel {
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .table-container table th, .table-container table td,
+  .table-wrap table th, .table-wrap table td,
+  .panel table th, .panel table td { white-space: nowrap; }
+
+  /* ---- Custom-class data tables that are NOT inside a .panel/.table-container
+     scroll card. The display:block technique turns the table itself into a
+     scroll box (columns stay aligned via the anonymous table box) so it scrolls
+     sideways instead of squeezing — no wrapper div needed. Covers assign /
+     employees-list / employees-detail / sales / hr-attendance / hr-employees /
+     properties-detail / cost-sheet breakdown. ---- */
+  .lead-table, .emp-table, .leads-table, .sales-table, .att, .breakdown,
+  .units-table, #tbl {
+    display: block; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  /* ---- KPI tiles: single column on phone ---- */
+  .kpi-grid { grid-template-columns: 1fr; }
+
+  /* ---- Two-column layouts stack (forms + split panels). Forms must
+     stack vertical on phone (mission requirement). Names seen across the
+     money/work pages: .form-grid .split-grid .row2 .grid2 .v2-grid, plus the
+     Cost Sheet 3-col picker cascade .picker-grid ---- */
+  .form-grid, .split-grid, .row2, .grid2, .v2-grid, .picker-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ---- Site-visit month calendar: keep a usable min width and scroll
+     sideways on phone rather than crushing 7 columns into ~50px each.
+     Honest — every visit stays visible; no server-side week-list rewrite,
+     no functional change. (Wrapper .cal-scroll added around the table.) ---- */
+  .cal-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cal-scroll .cal { min-width: 680px; }
+
+  /* ---- Tap targets ---- */
+  .btn { min-height: 44px; }
+}
+
+/* ================= MOBILE SHELL (employee pages: body.mshell) =================
+   Phase 1: retire the hamburger drawer on EMPLOYEE pages and show the bottom
+   tab bar + mobile top bar. Scoped to body.mshell (emitted only by the
+   employee layout/sidebar.ejs) so ADMIN/HR pages — which share the
+   .admin-sidebar class — keep their existing off-canvas drawer untouched.
+   Nothing here applies above 768px, so desktop is unaffected. */
+@media (max-width: 768px) {
+  body.mshell .admin-sidebar { display: none; }
+  body.mshell .nav-toggle,
+  body.mshell .nav-overlay { display: none !important; }
+  body.mshell .topbar { display: none !important; }
+
+  /* ---- Phase 2: ADMIN / SUPER-ADMIN shell (body.mshell.mshell-admin) ----
+     The admin nav is ~27 permission-gated items across 7 groups. Duplicating it
+     into a bottom sheet would mean every future nav change has to land twice —
+     the same duplication cost that got Option A rejected in
+     docs/mobile-first-proposal.md. So on ADMIN pages the off-canvas DRAWER stays
+     as the long tail (reopened from the More sheet's "All Sections" row) and only
+     the topbar + its hamburger retire. Re-showing .admin-sidebar is safe: the
+     phone rule above already parks it off-screen at translateX(-100%), and
+     body.nav-open still slides it in.
+
+     ORDER MATTERS: these have the SAME specificity as the body.mshell rules
+     above, so they must stay AFTER them to win. Do not hoist. */
+  body.mshell-admin .admin-sidebar { display: flex; }
+  body.mshell-admin .nav-overlay   { display: block !important; }
+  /* admin pages render .admin-topbar (the employee rule above only covers .topbar) */
+  body.mshell .admin-topbar { display: none !important; }
+
+  body.mshell .ds-tabbar { display: flex; }
+  body.mshell .ds-mtop   { display: flex; }
+
+  /* content clears the fixed top bar (52) + bottom tab bar (62 + safe area) */
+  body.mshell .main-content {
+    margin-left: 0 !important;
+    padding-top: 52px;
+    padding-bottom: calc(74px + env(safe-area-inset-bottom));
+    min-width: 0;
+  }
+  /* the ADMIN bar is two rows (84px) vs the employee single row (52px); clear
+     the extra 32px on admin only. Same specificity as the rule above, so this
+     MUST stay AFTER it to win. Employee content clearance is untouched. */
+  body.mshell-admin .main-content { padding-top: 84px; }
+  /* the mobile top bar already supplies page context — kill the per-page
+     hamburger gutter the generic phone rule adds to inline topbars/heroes */
+  body.mshell .page-body { padding-top: 16px; }
+
+  /* ---- Brand hero on the phone (admin). Same navy component, rendered
+     full-bleed: negative margins cancel the .page-body 16px gutter so the
+     gradient + gold radial run to the screen edges (the brand signature),
+     no border-radius. Out-specifies the generic .page-hero shrink above
+     (0,2,x vs 0,1,x). Desktop (>768) never sees this. ---- */
+  body.mshell-admin .page-hero {
+    margin: -16px -16px 16px; border-radius: 0;
+    padding: 20px 18px 22px;
+  }
+  body.mshell-admin .page-hero h1 { font-size: 24px; }
+  body.mshell-admin .page-hero p  { font-size: 12.5px; }
+  body.mshell-admin .page-hero .gold-line { width: 34px; height: 3px; margin-top: 10px; }
+
+  /* lift the floating assistant above the tab bar. Its position is set by a
+     JS-injected <style> at #dh-asst-btn; body.mshell out-specifies it. */
+  body.mshell #dh-asst-btn   { bottom: 84px; }
+  body.mshell #dh-asst-panel { bottom: 150px; }
+}
