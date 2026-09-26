@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan HR</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .pw{padding:24px 32px;} .hd{font-family:'Playfair Display',serif;color:#0A1628;font-size:24px;margin-bottom:4px;}
+    .flash{background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);color:#16a34a;padding:11px 16px;border-radius:10px;margin:12px 0;font-size:13px;}
+    .err{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);color:#dc2626;padding:11px 16px;border-radius:10px;margin:12px 0;font-size:13px;}
+    .card{background:#fff;border:1px solid rgba(10,22,40,.08);border-radius:14px;box-shadow:0 4px 24px rgba(10,22,40,.06);overflow:hidden;}
+    table{width:100%;border-collapse:collapse;font-size:13px;} th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;padding:10px 12px;border-bottom:2px solid rgba(10,22,40,.1);background:#F4EFE6;} th.r,td.r{text-align:right;}
+    td{padding:10px 12px;border-bottom:1px solid rgba(10,22,40,.06);vertical-align:top;} .mono{font-variant-numeric:tabular-nums;}
+    details summary{cursor:pointer;font-size:12px;color:#2563eb;font-weight:600;}
+    .frm{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;} .fg{display:flex;flex-direction:column;gap:3px;} label{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:#6b6b6b;font-weight:700;}
+    .fg input{font-size:12px;padding:6px 8px;border:1px solid rgba(10,22,40,.12);border-radius:6px;background:#FAFAF7;width:120px;}
+    .btn{font-size:12px;font-weight:600;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;background:#D4AF37;color:#0A1628;}
+    a.back{font-size:13px;color:#2563eb;text-decoration:none;}
+    .none{color:#dc2626;font-size:11px;font-weight:600;}
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="pw">
+      <a class="back" href="/hr/payroll">← Payroll</a>
+      <div class="hd" style="margin-top:6px;">Salary Structures</div>
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <% if (err) { %><div class="err"><%= err %></div><% } %>
+      <div class="card">
+        <table>
+          <thead><tr><th>Employee</th><th class="r">Basic</th><th class="r">HRA</th><th class="r">Allow</th><th class="r">CTC</th><th class="r">TDS/mo</th><th>Edit</th></tr></thead>
+          <tbody>
+            <% rows.forEach(function(r){ %>
+              <tr>
+                <td><strong><%= r.name %></strong> <span style="font-size:11px;color:#6b6b6b;"><%= r.external_id %></span><% if (!r.structure_id) { %><div class="none">no structure yet</div><% } %></td>
+                <td class="r mono"><%= r.basic!=null?Number(r.basic).toLocaleString('en-IN'):'—' %></td>
+                <td class="r mono"><%= r.hra!=null?Number(r.hra).toLocaleString('en-IN'):'—' %></td>
+                <td class="r mono"><%= r.allowances!=null?Number(r.allowances).toLocaleString('en-IN'):'—' %></td>
+                <td class="r mono"><%= r.ctc!=null?Number(r.ctc).toLocaleString('en-IN'):'—' %></td>
+                <td class="r mono"><%= r.monthly_tds_default!=null?Number(r.monthly_tds_default).toLocaleString('en-IN'):'—' %></td>
+                <td>
+                  <details>
+                    <summary><%= r.structure_id?'Edit':'Set up' %></summary>
+                    <form class="frm" action="/hr/payroll/structures/<%= r.employee_id %>" method="POST">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <div class="fg"><label>Basic</label><input type="number" name="basic" min="0" step="0.01" value="<%= r.basic!=null?r.basic:'' %>" /></div>
+                      <div class="fg"><label>HRA</label><input type="number" name="hra" min="0" step="0.01" value="<%= r.hra!=null?r.hra:'' %>" /></div>
+                      <div class="fg"><label>Allowances</label><input type="number" name="allowances" min="0" step="0.01" value="<%= r.allowances!=null?r.allowances:'' %>" /></div>
+                      <div class="fg"><label>CTC</label><input type="number" name="ctc" min="0" step="0.01" value="<%= r.ctc!=null?r.ctc:'' %>" /></div>
+                      <div class="fg"><label>TDS / month</label><input type="number" name="monthly_tds_default" min="0" step="0.01" value="<%= r.monthly_tds_default!=null?r.monthly_tds_default:'' %>" /></div>
+                      <div class="fg"><label>PAN</label><input type="text" name="pan" value="<%= r.pan||'' %>" /></div>
+                      <div class="fg"><label>PF UAN</label><input type="text" name="pf_uan" value="<%= r.pf_uan||'' %>" /></div>
+                      <div class="fg"><label>ESI No.</label><input type="text" name="esi_number" value="<%= r.esi_number||'' %>" /></div>
+                      <div class="fg"><label>Bank A/C</label><input type="text" name="bank_account" value="<%= r.bank_account||'' %>" /></div>
+                      <div class="fg"><label>IFSC</label><input type="text" name="bank_ifsc" value="<%= r.bank_ifsc||'' %>" /></div>
+                      <div class="fg" style="justify-content:flex-end;"><label>&nbsp;</label><button class="btn">Save</button></div>
+                    </form>
+                  </details>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan HR</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .pw{padding:24px 32px;max-width:1000px;} .hd{font-family:'Playfair Display',serif;color:#0A1628;font-size:24px;margin-bottom:4px;}
+    .flash{background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);color:#16a34a;padding:11px 16px;border-radius:10px;margin:12px 0;font-size:13px;}
+    .err{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);color:#dc2626;padding:11px 16px;border-radius:10px;margin:12px 0;font-size:13px;}
+    .card{background:#fff;border:1px solid rgba(10,22,40,.08);border-radius:14px;box-shadow:0 4px 24px rgba(10,22,40,.06);overflow:hidden;margin-bottom:18px;}
+    .card h3{font-size:14px;padding:14px 18px 0;} .cbody{padding:14px 18px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;} th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;padding:9px 12px;border-bottom:2px solid rgba(10,22,40,.1);background:#F4EFE6;} th.r,td.r{text-align:right;}
+    td{padding:9px 12px;border-bottom:1px solid rgba(10,22,40,.06);} .mono{font-variant-numeric:tabular-nums;}
+    .note{font-size:12px;color:#6b6b6b;margin:6px 0 12px;} a.back{font-size:13px;color:#2563eb;text-decoration:none;}
+    .frm{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;} .fg{display:flex;flex-direction:column;gap:3px;} label{font-size:10px;text-transform:uppercase;color:#6b6b6b;font-weight:700;}
+    .fg input,.fg select{font-size:12px;padding:6px 8px;border:1px solid rgba(10,22,40,.12);border-radius:6px;background:#FAFAF7;}
+    .btn{font-size:12px;font-weight:600;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;background:#D4AF37;color:#0A1628;}
+    .cur{font-size:10px;font-weight:700;color:#16a34a;}
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="pw">
+      <a class="back" href="/hr/payroll">← Payroll</a>
+      <div class="hd" style="margin-top:6px;">Statutory Rates</div>
+      <div class="note">Rates are effective-dated and never edited in place — a change adds a NEW effective row; historical payslips keep reconciling. A run reads the row effective for its month.</div>
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <% if (err) { %><div class="err"><%= err %></div><% } %>
+
+      <div class="card">
+        <h3>PF / ESI Rates</h3>
+        <div class="cbody" style="padding-top:8px;">
+          <table>
+            <thead><tr><th>Key</th><th>Type</th><th class="r">Value</th><th>Effective From</th><th>Active</th></tr></thead>
+            <tbody>
+              <% var seen={}; rates.forEach(function(r){ var cur = !seen[r.rate_key]; seen[r.rate_key]=true; %>
+                <tr>
+                  <td class="mono"><%= r.rate_key %></td><td><%= r.rate_type %></td>
+                  <td class="r mono"><%= Number(r.value) %></td>
+                  <td class="mono"><%= new Date(r.effective_from).toLocaleDateString('en-IN') %> <% if (cur) { %><span class="cur">CURRENT</span><% } %></td>
+                  <td><%= r.active?'yes':'no' %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Maharashtra Professional Tax Slabs</h3>
+        <div class="cbody" style="padding-top:8px;">
+          <table>
+            <thead><tr><th class="r">Gross &gt;</th><th class="r">Up to</th><th class="r">Monthly PT</th><th class="r">Feb PT</th><th>Effective</th></tr></thead>
+            <tbody>
+              <% slabs.forEach(function(s){ %>
+                <tr>
+                  <td class="r mono">₹<%= Number(s.lower_gross).toLocaleString('en-IN') %></td>
+                  <td class="r mono"><%= s.upper_gross!=null?'₹'+Number(s.upper_gross).toLocaleString('en-IN'):'—' %></td>
+                  <td class="r mono">₹<%= Number(s.monthly_amount) %></td>
+                  <td class="r mono"><%= s.feb_amount!=null?'₹'+Number(s.feb_amount):'—' %></td>
+                  <td class="mono"><%= new Date(s.effective_from).toLocaleDateString('en-IN') %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <% if (canEdit) { %>
+      <div class="card">
+        <h3>Add a New Effective-Dated Rate <span style="font-size:11px;color:#6b6b6b;">(super-admin)</span></h3>
+        <div class="cbody">
+          <form class="frm" action="/hr/payroll/rates" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <div class="fg"><label>Rate Key</label><input type="text" name="rate_key" placeholder="e.g. pf_employee_pct" required /></div>
+            <div class="fg"><label>Type</label><select name="rate_type"><option value="percent">percent</option><option value="amount">amount</option><option value="threshold">threshold</option></select></div>
+            <div class="fg"><label>Value</label><input type="number" name="value" step="0.0001" required /></div>
+            <div class="fg"><label>Effective From</label><input type="date" name="effective_from" required /></div>
+            <button class="btn">Add Rate Row</button>
+          </form>
+          <div class="note" style="margin-top:8px;">This inserts a new row; the old row is preserved for historical accuracy.</div>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

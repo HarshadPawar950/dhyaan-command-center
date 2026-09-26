@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan HR</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .pw{padding:24px 32px;max-width:1100px;} .hd{font-family:'Playfair Display',serif;color:#0A1628;font-size:26px;margin-bottom:4px;}
+    .flash{background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);color:#16a34a;padding:11px 16px;border-radius:10px;margin:12px 0;font-size:13px;font-weight:500;}
+    .err{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);color:#dc2626;padding:11px 16px;border-radius:10px;margin:12px 0;font-size:13px;font-weight:500;}
+    .card{background:#fff;border:1px solid rgba(10,22,40,.08);border-radius:14px;box-shadow:0 4px 24px rgba(10,22,40,.06);padding:20px 24px;margin-bottom:18px;}
+    .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;}
+    .fg{display:flex;flex-direction:column;gap:4px;} label{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;}
+    input,select{font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;background:#FAFAF7;}
+    .btn{font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;text-decoration:none;display:inline-flex;gap:6px;background:#D4AF37;color:#0A1628;}
+    .btn.ghost{background:rgba(10,22,40,.06);color:#6b6b6b;}
+    table{width:100%;border-collapse:collapse;font-size:13px;} th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;padding:10px 12px;border-bottom:2px solid rgba(10,22,40,.1);background:#F4EFE6;}
+    td{padding:11px 12px;border-bottom:1px solid rgba(10,22,40,.08);} th.r,td.r{text-align:right;}
+    .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;}
+    .badge.draft{background:rgba(10,22,40,.08);color:#6b6b6b;} .badge.approved{background:rgba(37,99,235,.12);color:#2563eb;}
+    .badge.paid{background:rgba(22,163,74,.12);color:#16a34a;} .badge.cancelled{background:rgba(220,38,38,.12);color:#dc2626;}
+    .links{display:flex;gap:14px;margin-bottom:14px;} .links a{font-size:13px;color:#2563eb;text-decoration:none;font-weight:600;}
+    .mono{font-variant-numeric:tabular-nums;}
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="pw">
+      <div class="hd">Payroll</div>
+      <div class="links"><a href="/hr/payroll/structures">Salary Structures →</a><a href="/hr/payroll/rates">Statutory Rates →</a></div>
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <% if (err) { %><div class="err"><%= err %></div><% } %>
+
+      <div class="card">
+        <h3 style="font-size:15px;margin-bottom:12px;">New Payroll Run</h3>
+        <form class="row" action="/hr/payroll/runs" method="POST">
+          <input type="hidden" name="_csrf" value="<%= (typeof csrfToken!=='undefined')?csrfToken:'' %>" />
+          <div class="fg"><label>Month</label><input type="month" name="period_month" required /></div>
+          <button type="submit" class="btn">Create Draft &amp; Compute</button>
+        </form>
+        <div style="font-size:12px;color:#6b6b6b;margin-top:8px;">Computes a draft payslip for every active employee with a salary structure, including this month's payable incentives. Nothing is paid until super-admin approves &amp; marks paid.</div>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table>
+          <thead><tr><th>Month</th><th>Status</th><th class="r">Payslips</th><th class="r">Net Total</th><th>Approved</th><th>Paid</th><th></th></tr></thead>
+          <tbody>
+            <% if (runs && runs.length) { %>
+              <% runs.forEach(function(r){ var m=new Date(r.period_month).toLocaleDateString('en-IN',{month:'long',year:'numeric'}); %>
+                <tr>
+                  <td class="mono"><%= m %></td>
+                  <td><span class="badge <%= r.status %>"><%= r.status %></span></td>
+                  <td class="r mono"><%= r.slips %></td>
+                  <td class="r mono">₹<%= Number(r.net_total).toLocaleString('en-IN') %></td>
+                  <td class="mono" style="font-size:12px;color:#6b6b6b;"><%= r.approved_at?new Date(r.approved_at).toLocaleDateString('en-IN'):'—' %></td>
+                  <td class="mono" style="font-size:12px;color:#6b6b6b;"><%= r.paid_at?new Date(r.paid_at).toLocaleDateString('en-IN'):'—' %></td>
+                  <td><a class="btn ghost" href="/hr/payroll/runs/<%= r.run_id %>">Open</a></td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="7" style="text-align:center;color:#6b6b6b;padding:30px;">No payroll runs yet.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

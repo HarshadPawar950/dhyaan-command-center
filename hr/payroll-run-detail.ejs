@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan HR</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .pw{padding:24px 32px;} .hd{font-family:'Playfair Display',serif;color:#0A1628;font-size:24px;}
+    .flash{background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);color:#16a34a;padding:11px 16px;border-radius:10px;margin:12px 0;font-size:13px;}
+    .err{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);color:#dc2626;padding:11px 16px;border-radius:10px;margin:12px 0;font-size:13px;}
+    .card{background:#fff;border:1px solid rgba(10,22,40,.08);border-radius:14px;box-shadow:0 4px 24px rgba(10,22,40,.06);margin-bottom:18px;}
+    .card.pad{padding:18px 22px;}
+    .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+    .badge.draft{background:rgba(10,22,40,.08);color:#6b6b6b;} .badge.approved{background:rgba(37,99,235,.12);color:#2563eb;}
+    .badge.paid{background:rgba(22,163,74,.12);color:#16a34a;} .badge.cancelled{background:rgba(220,38,38,.12);color:#dc2626;}
+    table{width:100%;border-collapse:collapse;font-size:12.5px;} th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:#6b6b6b;padding:9px 10px;border-bottom:2px solid rgba(10,22,40,.1);background:#F4EFE6;white-space:nowrap;}
+    td{padding:9px 10px;border-bottom:1px solid rgba(10,22,40,.06);} th.r,td.r{text-align:right;} .mono{font-variant-numeric:tabular-nums;}
+    tfoot td{font-weight:700;background:#F4EFE6;}
+    .btn{font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;text-decoration:none;display:inline-flex;gap:6px;background:#D4AF37;color:#0A1628;}
+    .btn.blue{background:#2563eb;color:#fff;} .btn.ghost{background:rgba(10,22,40,.06);color:#6b6b6b;} .btn.red{background:rgba(220,38,38,.1);color:#dc2626;}
+    .btn.sm{padding:5px 10px;font-size:12px;}
+    .tdsform{display:inline-flex;gap:4px;align-items:center;} .tdsform input{width:80px;font-size:12px;padding:5px 7px;border:1px solid rgba(10,22,40,.12);border-radius:6px;}
+    .actions{display:flex;gap:10px;align-items:center;margin:14px 0;flex-wrap:wrap;}
+    .note{font-size:12px;color:#6b6b6b;}
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="pw">
+      <% var m=new Date(run.period_month).toLocaleDateString('en-IN',{month:'long',year:'numeric'}); %>
+      <% function inr(n){ return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2}); } %>
+      <a href="/hr/payroll" style="font-size:13px;color:#2563eb;text-decoration:none;">← All runs</a>
+      <div class="hd" style="margin:6px 0;">Payroll — <%= m %> <span class="badge <%= run.status %>"><%= run.status %></span></div>
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <% if (err) { %><div class="err"><%= err %></div><% } %>
+
+      <div class="actions">
+        <% if (run.status==='draft' && canApprove) { %>
+          <form action="/hr/payroll/runs/<%= run.run_id %>/approve" method="POST" onsubmit="return confirm('Approve this run? (super-admin sign-off)');"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><button class="btn blue">Approve Run</button></form>
+        <% } %>
+        <% if (run.status==='draft' && !canApprove) { %><span class="note">Awaiting super-admin approval (you can edit TDS below).</span><% } %>
+        <% if (run.status==='approved' && canApprove) { %>
+          <form action="/hr/payroll/runs/<%= run.run_id %>/pay" method="POST" onsubmit="return confirm('Mark PAID? This finalizes payslips and settles incentives — irreversible.');"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><button class="btn">Mark Paid</button></form>
+        <% } %>
+        <% if (run.status==='approved' && !canApprove) { %><span class="note">Approved — awaiting super-admin to mark paid.</span><% } %>
+        <% if (run.status==='draft') { %>
+          <form action="/hr/payroll/runs/<%= run.run_id %>/cancel" method="POST" onsubmit="return confirm('Cancel this draft run?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><button class="btn red">Cancel Draft</button></form>
+        <% } %>
+      </div>
+
+      <div class="card" style="overflow:hidden;">
+        <table>
+          <thead><tr>
+            <th>Employee</th><th class="r">Basic</th><th class="r">HRA</th><th class="r">Allow</th><th class="r">Gross</th>
+            <th class="r">Incentive</th><th class="r">PF</th><th class="r">ESI</th><th class="r">PT</th><th class="r">TDS</th>
+            <th class="r">Deductions</th><th class="r">Net Pay</th><th></th>
+          </tr></thead>
+          <tbody>
+            <% slips.forEach(function(s){ %>
+              <tr>
+                <td><strong><%= s.employee_name %></strong> <span class="note"><%= s.external_id %></span></td>
+                <td class="r mono"><%= inr(s.basic) %></td>
+                <td class="r mono"><%= inr(s.hra) %></td>
+                <td class="r mono"><%= inr(s.allowances) %></td>
+                <td class="r mono"><%= inr(s.gross) %></td>
+                <td class="r mono"><%= inr(s.incentive_amount) %></td>
+                <td class="r mono"><%= inr(s.pf_employee) %></td>
+                <td class="r mono"><%= inr(s.esi_employee) %></td>
+                <td class="r mono"><%= inr(s.professional_tax) %></td>
+                <td class="r mono">
+                  <% if (run.status==='draft') { %>
+                    <form class="tdsform" action="/hr/payroll/runs/<%= run.run_id %>/payslips/<%= s.payslip_id %>/tds" method="POST">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <input type="number" name="tds" min="0" step="0.01" value="<%= s.tds %>" />
+                      <button class="btn sm ghost">set</button>
+                    </form>
+                  <% } else { %><%= inr(s.tds) %><% } %>
+                </td>
+                <td class="r mono"><%= inr(s.total_deductions) %></td>
+                <td class="r mono"><strong><%= inr(s.net_pay) %></strong></td>
+                <td><a class="btn sm ghost" href="/hr/payroll/payslips/<%= s.payslip_id %>/pdf" target="_blank">PDF</a></td>
+              </tr>
+            <% }); %>
+          </tbody>
+          <tfoot><tr>
+            <td>Totals (<%= slips.length %>)</td><td colspan="3"></td>
+            <td class="r mono"><%= inr(totals.gross) %></td>
+            <td class="r mono"><%= inr(totals.inc) %></td>
+            <td colspan="3"></td><td></td>
+            <td class="r mono"><%= inr(totals.ded) %></td>
+            <td class="r mono"><%= inr(totals.net) %></td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <div class="note">Statutory rates used are those effective for <%= m %>. Incentives shown were payable this month and are settled only when the run is marked paid.</div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Dashboard | Dhyaan</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .hr-wrap{padding:1.5rem 2rem;max-width:1400px;margin:0 auto;}
+    .hr-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #D4AF37;padding-bottom:1rem;margin-bottom:1.5rem;}
+    .hr-head h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:#0A1628;font-weight:600;}
+    .hr-head .sub{color:#6B7280;font-size:0.85rem;margin-top:0.25rem;}
+    .hr-head .date{font-size:0.85rem;color:#0A1628;font-family:'Playfair Display',serif;font-weight:600;}
+
+    .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:1.8rem;}
+    .kpi{background:#fff;border-radius:10px;padding:1.15rem;border-top:3px solid #D4AF37;box-shadow:0 2px 8px rgba(10,22,40,0.05);}
+    .kpi .lbl{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;color:#6B7280;font-weight:600;}
+    .kpi .val{font-family:'Playfair Display',serif;font-size:2.1rem;color:#0A1628;font-weight:600;line-height:1;margin-top:0.45rem;}
+    .kpi.amber{border-top-color:#F59E0B;} .kpi.red{border-top-color:#DC2626;} .kpi.green{border-top-color:#16A34A;}
+
+    .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+    .panel{background:#fff;border-radius:10px;padding:1.25rem;box-shadow:0 2px 8px rgba(10,22,40,0.05);}
+    .panel h2{font-family:'Playfair Display',serif;font-size:1.15rem;color:#0A1628;font-weight:600;border-bottom:1.5px solid #D4AF37;padding-bottom:0.6rem;margin-bottom:0.9rem;}
+    table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+    th{text-align:left;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;padding:0.5rem 0.6rem;border-bottom:1px solid #E5E7EB;}
+    td{padding:0.55rem 0.6rem;border-bottom:1px solid #F3F4F6;color:#1F2937;}
+    .pill{font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;}
+    .pill.active{background:#DCFCE7;color:#166534;} .pill.inactive{background:#FEE2E2;color:#991B1B;} .pill.on_leave{background:#FEF3C7;color:#92400E;}
+    .rolebar{display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;font-size:0.85rem;}
+    .rolebar .cnt{font-weight:700;color:#0A1628;}
+    .qlinks{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+    .qlink{display:block;text-decoration:none;background:#fff;border-radius:10px;padding:1.05rem;border-left:3px solid #B8961F;box-shadow:0 2px 8px rgba(10,22,40,0.05);transition:all .15s;}
+    .qlink:hover{background:#FFFBEB;transform:translateY(-2px);}
+    .qlink .t{font-weight:600;color:#0A1628;font-size:0.95rem;}
+    .qlink .d{font-size:0.78rem;color:#6B7280;margin-top:0.25rem;}
+    .empty{color:#9CA3AF;font-style:italic;font-size:0.85rem;padding:0.6rem;}
+    @media(max-width:1100px){.kpi-row{grid-template-columns:repeat(2,1fr);}.grid2{grid-template-columns:1fr;}.qlinks{grid-template-columns:1fr 1fr;}}
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="hr-wrap">
+      <div class="hr-head">
+        <div>
+          <h1>HR Console</h1>
+          <div class="sub">Welcome, <%= user.name %> — your people at a glance</div>
+        </div>
+        <div class="date"><%= new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) %></div>
+      </div>
+
+      <!-- REAL headcount KPIs from private.employees -->
+      <div class="kpi-row">
+        <div class="kpi"><div class="lbl">Total Staff</div><div class="val"><%= k.total %></div></div>
+        <div class="kpi green"><div class="lbl">Active</div><div class="val"><%= k.active %></div></div>
+        <div class="kpi amber"><div class="lbl">On Leave</div><div class="val"><%= k.on_leave %></div></div>
+        <div class="kpi red"><div class="lbl">Inactive</div><div class="val"><%= k.inactive %></div></div>
+        <div class="kpi"><div class="lbl">New This Month</div><div class="val"><%= k.new_this_month %></div></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>Recent Joiners</h2>
+          <% if (recentHires.length === 0) { %>
+            <div class="empty">No joiners on record.</div>
+          <% } else { %>
+            <table>
+              <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+              <tbody>
+                <% recentHires.forEach(function(e){ %>
+                  <tr>
+                    <td><strong><%= e.name %></strong></td>
+                    <td><%= e.role || '—' %></td>
+                    <td><span class="pill <%= e.status %>"><%= e.status %></span></td>
+                    <td><%= e.hired_at ? new Date(e.hired_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—' %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } %>
+        </div>
+
+        <div class="panel">
+          <h2>Headcount by Role</h2>
+          <% if (byRole.length === 0) { %>
+            <div class="empty">No roles on record.</div>
+          <% } else { byRole.forEach(function(r){ %>
+            <div class="rolebar"><span><%= r.role || 'Unassigned' %></span><span class="cnt"><%= r.cnt %></span></div>
+          <% }); } %>
+        </div>
+      </div>
+
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.15rem;color:#0A1628;font-weight:600;margin:0 0 0.9rem;">HR Workflows</h2>
+      <div class="qlinks">
+        <a class="qlink" href="/hr/employees"><div class="t">Employee Directory</div><div class="d">Full access to staff records.</div></a>
+        <a class="qlink" href="/hr/recruitment"><div class="t">Recruitment</div><div class="d">JD, pipeline, interviews, offers.</div></a>
+        <a class="qlink" href="/hr/onboarding"><div class="t">Onboarding</div><div class="d">Joining checklist & documents.</div></a>
+        <a class="qlink" href="/hr/grievances"><div class="t">Grievances</div><div class="d">Case intake & resolution.</div></a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

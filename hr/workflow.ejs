@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= wf.title %> | Dhyaan HR</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .hr-wrap{padding:1.5rem 2rem;max-width:1200px;margin:0 auto;}
+    .hr-head{border-bottom:2px solid #D4AF37;padding-bottom:1rem;margin-bottom:1.4rem;}
+    .hr-head h1{font-family:'Playfair Display',serif;font-size:1.7rem;color:#0A1628;font-weight:600;}
+    .hr-head .sub{color:#6B7280;font-size:0.88rem;margin-top:0.3rem;max-width:760px;line-height:1.5;}
+    .stage-row{display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+    .stage{flex:1;min-width:150px;background:#fff;border-radius:10px;padding:1rem;box-shadow:0 2px 8px rgba(10,22,40,0.05);border-top:3px solid #D4AF37;}
+    .stage .s-name{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;font-weight:600;}
+    .stage .s-cnt{font-family:'Playfair Display',serif;font-size:1.9rem;color:#0A1628;font-weight:600;margin-top:0.35rem;}
+    .panel{background:#fff;border-radius:10px;padding:1.4rem;box-shadow:0 2px 8px rgba(10,22,40,0.05);}
+    .panel h2{font-family:'Playfair Display',serif;font-size:1.1rem;color:#0A1628;font-weight:600;margin-bottom:0.5rem;}
+    .scope{margin:0.6rem 0 0;padding-left:1.1rem;}
+    .scope li{color:#374151;font-size:0.9rem;margin-bottom:0.4rem;line-height:1.45;}
+    .empty{display:flex;align-items:center;gap:0.8rem;background:#FFFBEB;border:1px solid #F3E3B3;border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.4rem;}
+    .empty .dot{width:10px;height:10px;border-radius:999px;background:#D4AF37;flex-shrink:0;}
+    .empty .txt{font-size:0.88rem;color:#92400E;}
+    .ref{font-size:0.75rem;color:#9CA3AF;margin-top:1rem;}
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="hr-wrap">
+      <div class="hr-head">
+        <h1><%= wf.title %></h1>
+        <div class="sub"><%= wf.tagline %></div>
+      </div>
+
+      <!-- pipeline stages (counts wire up when the data table is added) -->
+      <div class="stage-row">
+        <% wf.stages.forEach(function(s){ %>
+          <div class="stage"><div class="s-name"><%= s %></div><div class="s-cnt">0</div></div>
+        <% }); %>
+      </div>
+
+      <div class="empty">
+        <span class="dot"></span>
+        <span class="txt">No records yet — this workflow is ready to go live the moment its data table is wired. Counts above will populate automatically.</span>
+      </div>
+
+      <div class="panel">
+        <h2>What this workspace manages</h2>
+        <ul class="scope">
+          <% wf.scope.forEach(function(item){ %><li><%= item %></li><% }); %>
+        </ul>
+        <div class="ref">Source: Dhyaan Tech Document <%= wf.ref %></div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

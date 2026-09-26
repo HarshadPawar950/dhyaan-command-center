@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance | Dhyaan</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .hr-wrap { padding: 1.5rem 2rem; max-width: 1500px; margin: 0 auto; }
+    .hr-head { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #D4AF37; padding-bottom:1rem; margin-bottom:1.2rem; flex-wrap:wrap; gap:1rem; }
+    .hr-head h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:#0A1628; font-weight:600; }
+    .hr-head .sub { color:#6B7280; font-size:.85rem; margin-top:.25rem; }
+    .month-form { display:flex; align-items:center; gap:.5rem; }
+    .month-form input { padding:.45rem .6rem; border:1px solid #e5e7eb; border-radius:7px; font-size:.9rem; }
+    .month-form button { padding:.5rem .9rem; border:none; border-radius:7px; background:#D4AF37; color:#0A1628; font-weight:700; cursor:pointer; }
+    .flash { padding:.7rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:.9rem; }
+    .flash.ok { background:#DCFCE7; color:#166534; } .flash.err { background:#FEE2E2; color:#991B1B; }
+    .legend { display:flex; gap:1rem; font-size:.75rem; color:#6B7280; margin-bottom:.8rem; }
+    .legend span { display:inline-flex; align-items:center; gap:.3rem; }
+    .sw { width:12px; height:12px; border-radius:3px; display:inline-block; }
+    .sw.p { background:#16A34A; } .sw.a { background:#DC2626; } .sw.l { background:#F59E0B; } .sw.u { background:#E5E7EB; }
+    .grid-scroll { overflow-x:auto; background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(10,22,40,.05); padding:.5rem; }
+    table.att { border-collapse:collapse; font-size:.72rem; }
+    table.att th, table.att td { border:1px solid #F3F4F6; text-align:center; }
+    table.att th.name, table.att td.name { text-align:left; white-space:nowrap; padding:.3rem .6rem; position:sticky; left:0; background:#fff; z-index:1; font-size:.8rem; }
+    table.att th { padding:.25rem; color:#9CA3AF; font-weight:600; }
+    table.att td.cell { width:20px; height:22px; }
+    td.cell.p { background:#16A34A; } td.cell.a { background:#DC2626; } td.cell.l { background:#F59E0B; }
+    td.sum { font-weight:700; padding:.3rem .5rem; }
+    .mark { background:#fff; border-radius:10px; padding:1rem 1.25rem; box-shadow:0 2px 8px rgba(10,22,40,.05); margin-top:1.2rem; display:flex; gap:.7rem; align-items:flex-end; flex-wrap:wrap; }
+    .mark .f label { display:block; font-size:.7rem; text-transform:uppercase; color:#6B7280; font-weight:600; margin-bottom:.2rem; }
+    .mark .f select, .mark .f input { padding:.45rem .6rem; border:1px solid #e5e7eb; border-radius:7px; font-size:.85rem; }
+    .mark button { border:none; border-radius:7px; padding:.55rem .9rem; font-weight:700; font-size:.8rem; cursor:pointer; }
+    .mark button.p { background:#16A34A; color:#fff; } .mark button.a { background:#DC2626; color:#fff; }
+    .empty { color:#9CA3AF; font-style:italic; padding:1rem; text-align:center; }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="hr-wrap">
+      <div class="hr-head">
+        <div><h1>Attendance</h1><div class="sub">Month grid — present / absent / approved-leave, merged.</div></div>
+        <form class="month-form" method="get" action="/hr/attendance">
+          <input type="month" name="month" value="<%= month %>" max="2100-12">
+          <button type="submit">View</button>
+        </form>
+      </div>
+
+      <% if (messages && messages.success && messages.success.length) { %><div class="flash ok"><%= messages.success.join(' ') %></div><% } %>
+      <% if (messages && messages.error && messages.error.length) { %><div class="flash err"><%= messages.error.join(' ') %></div><% } %>
+
+      <div class="legend">
+        <span><span class="sw p"></span> Present</span>
+        <span><span class="sw a"></span> Absent</span>
+        <span><span class="sw l"></span> Leave (approved)</span>
+        <span><span class="sw u"></span> Unmarked</span>
+      </div>
+
+      <div class="grid-scroll">
+        <table class="att">
+          <thead>
+            <tr>
+              <th class="name">Employee</th>
+              <% days.forEach(function(d) { %><th><%= d %></th><% }); %>
+              <th style="padding:0 .4rem;">P</th><th style="padding:0 .4rem;">A</th><th style="padding:0 .4rem;">L</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (rows.length) { %>
+              <% rows.forEach(function(r) { %>
+                <tr>
+                  <td class="name"><%= r.name %> <span style="color:#9ca3af;">(<%= r.external_id %>)</span></td>
+                  <% r.cells.forEach(function(c) {
+                       const cls = c.status === 'present' ? 'p' : c.status === 'absent' ? 'a' : c.status === 'leave' ? 'l' : '';
+                       const title = c.ds + (c.status ? ' — ' + c.status : ' — unmarked');
+                  %><td class="cell <%= cls %>" title="<%= title %>"></td><% }); %>
+                  <td class="sum" style="color:#16A34A;"><%= r.summary.present %></td>
+                  <td class="sum" style="color:#DC2626;"><%= r.summary.absent %></td>
+                  <td class="sum" style="color:#B45309;"><%= r.summary.leave %></td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td class="empty" colspan="<%= days.length + 4 %>">No staff found.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <form class="mark" method="POST" action="/hr/attendance/mark">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="f"><label>Employee</label>
+          <select name="employee_id" required>
+            <option value="">— Select —</option>
+            <% employees.forEach(function(e) { %><option value="<%= e.employee_id %>"><%= e.name %> (<%= e.external_id %>)</option><% }); %>
+          </select>
+        </div>
+        <div class="f"><label>Date</label><input type="date" name="date" required></div>
+        <button class="p" name="status" value="present">Mark Present</button>
+        <button class="a" name="status" value="absent">Mark Absent</button>
+        <button class="clr" formaction="/hr/attendance/clear" onclick="return confirm('Clear (remove) the attendance entry for the selected employee &amp; date?');">Clear Day</button>
+      </form>
+      <style>.mark button.clr{background:#6B7280;color:#fff;}</style>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Directory | Dhyaan HR</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .hr-wrap{padding:1.5rem 2rem;max-width:1400px;margin:0 auto;}
+    .hr-head{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #D4AF37;padding-bottom:1rem;margin-bottom:1.3rem;}
+    .hr-head h1{font-family:'Playfair Display',serif;font-size:1.7rem;color:#0A1628;font-weight:600;}
+    .hr-head .sub{color:#6B7280;font-size:0.85rem;margin-top:0.2rem;}
+    .search{padding:0.55rem 0.9rem;border:1px solid #E5E7EB;border-radius:8px;font-size:0.9rem;width:260px;font-family:'Inter',sans-serif;}
+    .panel{background:#fff;border-radius:10px;padding:0.4rem 1rem 1rem;box-shadow:0 2px 8px rgba(10,22,40,0.05);}
+    table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+    th{text-align:left;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;padding:0.7rem 0.6rem;border-bottom:2px solid #E5E7EB;position:sticky;top:0;background:#fff;}
+    td{padding:0.6rem;border-bottom:1px solid #F3F4F6;color:#1F2937;}
+    tr:hover td{background:#FFFBEB;}
+    .pill{font-size:0.7rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;}
+    .pill.active{background:#DCFCE7;color:#166534;} .pill.inactive{background:#FEE2E2;color:#991B1B;} .pill.on_leave{background:#FEF3C7;color:#92400E;}
+    .muted{color:#9CA3AF;}
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="hr-wrap">
+      <div class="hr-head">
+        <div>
+          <h1>Employee Directory</h1>
+          <div class="sub"><%= employees.length %> staff on record · read-only HR view</div>
+        </div>
+        <input id="q" class="search" type="text" placeholder="Search name, role, email…" onkeyup="filt()">
+      </div>
+
+      <div class="panel">
+        <table id="tbl">
+          <thead><tr><th>Name</th><th>Role / Title</th><th>Status</th><th>Email</th><th>Phone</th><th>Joined</th></tr></thead>
+          <tbody>
+            <% employees.forEach(function(e){ %>
+              <tr>
+                <td><strong><%= e.name %></strong></td>
+                <td><%= e.role || '<span class="muted">—</span>' %></td>
+                <td><span class="pill <%= e.status %>"><%= e.status %></span></td>
+                <td><%= e.email || '—' %></td>
+                <td><%= e.phone || '—' %></td>
+                <td><%= e.hired_at ? new Date(e.hired_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—' %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script>
+      function filt(){
+        var q=document.getElementById('q').value.toLowerCase();
+        document.querySelectorAll('#tbl tbody tr').forEach(function(r){
+          r.style.display = r.innerText.toLowerCase().indexOf(q)>-1 ? '' : 'none';
+        });
+      }
+    </script>
+  </main>
+</body>
+</html>

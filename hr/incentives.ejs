@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Incentive Dashboard | Dhyaan</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .hr-wrap { padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+    .hr-head { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #D4AF37; padding-bottom:1rem; margin-bottom:1.5rem; }
+    .hr-head h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:#0A1628; font-weight:600; }
+    .hr-head .sub { color:#6B7280; font-size:.85rem; margin-top:.25rem; }
+    .flash { padding:.7rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:.9rem; }
+    .flash.ok { background:#DCFCE7; color:#166534; } .flash.err { background:#FEE2E2; color:#991B1B; }
+    .tot-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
+    .tot { background:#fff; border-radius:10px; padding:1.1rem; border-top:3px solid #9ca3af; box-shadow:0 2px 8px rgba(10,22,40,.05); }
+    .tot.a { border-top-color:#D97706; } .tot.p { border-top-color:#2563EB; } .tot.d { border-top-color:#16A34A; }
+    .tot .l { font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:#6B7280; font-weight:600; }
+    .tot .v { font-family:'Playfair Display',serif; font-size:1.9rem; color:#0A1628; font-weight:600; margin-top:.4rem; }
+    .grid2 { display:grid; grid-template-columns:1fr 1.3fr; gap:1.5rem; }
+    .panel { background:#fff; border-radius:10px; padding:1.25rem; box-shadow:0 2px 8px rgba(10,22,40,.05); }
+    .panel h2 { font-family:'Playfair Display',serif; font-size:1.1rem; color:#0A1628; border-bottom:1.5px solid #D4AF37; padding-bottom:.5rem; margin-bottom:.8rem; }
+    table { width:100%; border-collapse:collapse; font-size:.85rem; }
+    th { text-align:left; font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:#6B7280; padding:.45rem .5rem; border-bottom:1px solid #E5E7EB; }
+    th.num, td.num { text-align:right; }
+    td { padding:.5rem .5rem; border-bottom:1px solid #F3F4F6; color:#1F2937; }
+    .st { font-size:.68rem; font-weight:700; padding:.12rem .45rem; border-radius:999px; }
+    .st.accrued { background:#FEF3C7; color:#92400E; } .st.payable { background:#DBEAFE; color:#1E40AF; } .st.paid { background:#DCFCE7; color:#166534; }
+    .gate { font-size:.68rem; color:#6B7280; }
+    .gate.full { color:#166534; font-weight:600; }
+    .btn-pay { border:none; background:#16A34A; color:#fff; border-radius:6px; padding:.35rem .7rem; font-size:.75rem; font-weight:700; cursor:pointer; }
+    .empty { color:#9CA3AF; font-style:italic; padding:1rem; text-align:center; }
+    @media(max-width:1000px){ .grid2{grid-template-columns:1fr;} .tot-row{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="hr-wrap">
+      <div class="hr-head">
+        <div><h1>Incentive Dashboard</h1><div class="sub">Per-exec accrued vs payable vs paid — payouts gated on builder commission received (§18.2).</div></div>
+        <% if (isAdmin) { %><div><a href="/hr/incentive-slabs" style="font-size:.85rem;color:#0A1628;font-weight:600;">Edit slabs →</a></div><% } %>
+      </div>
+
+      <% if (messages && messages.success && messages.success.length) { %><div class="flash ok"><%= messages.success.join(' ') %></div><% } %>
+      <% if (messages && messages.error && messages.error.length) { %><div class="flash err"><%= messages.error.join(' ') %></div><% } %>
+
+      <div class="tot-row">
+        <div class="tot a"><div class="l">Accrued (gated)</div><div class="v">&#8377;<%= Number(totals.accrued).toLocaleString('en-IN',{maximumFractionDigits:0}) %></div></div>
+        <div class="tot p"><div class="l">Payable now</div><div class="v">&#8377;<%= Number(totals.payable).toLocaleString('en-IN',{maximumFractionDigits:0}) %></div></div>
+        <div class="tot d"><div class="l">Paid</div><div class="v">&#8377;<%= Number(totals.paid).toLocaleString('en-IN',{maximumFractionDigits:0}) %></div></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>By Executive</h2>
+          <table>
+            <thead><tr><th>Executive</th><th class="num">Accrued</th><th class="num">Payable</th><th class="num">Paid</th></tr></thead>
+            <tbody>
+              <% if (perExec.length) { %>
+                <% perExec.forEach(function(x) { %>
+                  <tr>
+                    <td><%= x.name %> <span style="color:#9ca3af;">(<%= x.external_id %>)</span></td>
+                    <td class="num">&#8377;<%= Number(x.accrued).toLocaleString('en-IN',{maximumFractionDigits:0}) %></td>
+                    <td class="num">&#8377;<%= Number(x.payable).toLocaleString('en-IN',{maximumFractionDigits:0}) %></td>
+                    <td class="num">&#8377;<%= Number(x.paid).toLocaleString('en-IN',{maximumFractionDigits:0}) %></td>
+                  </tr>
+                <% }); %>
+              <% } else { %><tr><td colspan="4" class="empty">No executives.</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h2>Entries &amp; Gating</h2>
+          <table>
+            <thead><tr><th>Exec</th><th>Commission</th><th class="num">Incentive</th><th>Status</th><th>Gating (receivable)</th><th></th></tr></thead>
+            <tbody>
+              <% if (entries.length) { %>
+                <% entries.forEach(function(e) { %>
+                  <tr>
+                    <td><%= e.emp_name %></td>
+                    <td><%= e.commission_ref || '—' %></td>
+                    <td class="num">&#8377;<%= Number(e.incentive_amount).toLocaleString('en-IN',{maximumFractionDigits:0}) %></td>
+                    <td><span class="st <%= e.status %>"><%= e.status %></span></td>
+                    <td><span class="gate <%= e.receivable_status === 'fully_received' ? 'full' : '' %>"><%= e.receivable_status ? e.receivable_status.replace(/_/g,' ') : '—' %></span></td>
+                    <td>
+                      <% if (e.status === 'payable') { %>
+                        <form method="POST" action="/hr/incentives/<%= e.entry_id %>/pay" style="margin:0;">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button class="btn-pay" type="submit">Mark paid</button>
+                        </form>
+                      <% } else { %>—<% } %>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %><tr><td colspan="6" class="empty">No incentive entries yet.</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

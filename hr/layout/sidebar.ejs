@@ -1,0 +1,73 @@
+<%
+// views/hr/layout/sidebar.ejs — HR Manager console nav
+// Expects: pageTitle (string), user (session user)
+const _pt = (pageTitle || '').toLowerCase();
+function on(label){ return _pt.includes(label.toLowerCase()) ? 'active' : ''; }
+%>
+<style>
+.hr-sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:linear-gradient(180deg,#0A1628 0%,#142238 100%);color:#FAFAF7;display:flex;flex-direction:column;z-index:100;box-shadow:2px 0 24px rgba(0,0,0,0.08);}
+.hr-sidebar .brand{padding:26px 24px 20px;border-bottom:1px solid rgba(212,175,55,0.18);}
+.hr-sidebar .brand-mark{display:flex;align-items:center;gap:12px;}
+.hr-sidebar .brand-mono{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#D4AF37 0%,#E8C766 100%);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:22px;color:#0A1628;flex-shrink:0;}
+.hr-sidebar .brand-name{font-family:'Playfair Display',serif;font-size:19px;color:#FAFAF7;font-weight:600;line-height:1.1;}
+.hr-sidebar .brand-sub{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#D4AF37;margin-top:3px;}
+.hr-sidebar .nav-group-label{font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:rgba(250,250,247,0.4);padding:18px 24px 8px;font-weight:600;}
+.hr-sidebar .nav-list{list-style:none;padding:0;margin:0;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:rgba(212,175,55,0.45) transparent;}
+.hr-sidebar .nav-list::-webkit-scrollbar{width:6px;}
+.hr-sidebar .nav-list::-webkit-scrollbar-thumb{background:rgba(212,175,55,0.45);border-radius:999px;}
+.hr-sidebar .nav-item a{display:flex;align-items:center;gap:12px;padding:11px 24px;color:rgba(250,250,247,0.78);text-decoration:none;font-size:14px;font-weight:500;border-left:3px solid transparent;transition:all 0.15s ease;}
+.hr-sidebar .nav-item a:hover{background:rgba(212,175,55,0.08);color:#FAFAF7;border-left-color:rgba(212,175,55,0.4);}
+.hr-sidebar .nav-item.active a{background:rgba(212,175,55,0.14);color:#FAFAF7;border-left-color:#D4AF37;}
+.hr-sidebar .nav-item .icon{width:18px;height:18px;opacity:0.85;flex-shrink:0;}
+.hr-sidebar .nav-footer{padding:14px 24px;border-top:1px solid rgba(212,175,55,0.18);font-size:11px;color:rgba(250,250,247,0.4);letter-spacing:0.5px;}
+.hr-sidebar .nav-footer a{color:rgba(212,175,55,0.8);text-decoration:none;}
+.main-content{margin-left:260px !important;}
+</style>
+<!-- Responsive layer: loaded after per-view styles so mobile/laptop overrides win. -->
+<link rel="stylesheet" href="/css/responsive.css" />
+<button class="nav-toggle" type="button" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')"><span class="bars"></span></button>
+<div class="nav-overlay" onclick="document.body.classList.remove('nav-open')"></div>
+<!-- AI Day F2: floating help assistant -->
+<script src="/js/assistant.js"></script>
+<aside class="hr-sidebar">
+  <div class="brand"><div class="brand-mark"><div class="brand-mono">D</div><div><div class="brand-name">Dhyaan</div><div class="brand-sub">HR Console</div></div></div></div>
+
+  <div class="nav-group-label">Overview</div>
+  <ul class="nav-list">
+    <li class="nav-item"><a href="/hr/dashboard"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</a></li>
+    <li class="nav-item <%= on('hr dashboard') %>"><a href="/hr/dashboard"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> Dashboard</a></li>
+    <li class="nav-item <%= on('employee directory') %>"><a href="/hr/employees"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg> Employee Directory</a></li>
+
+    <div class="nav-group-label">HR Operations</div>
+    <li class="nav-item <%= on('leave approvals') %>"><a href="/hr/leave"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><path d="M9 15l2 2 4-4"/></svg> Leave Approvals</a></li>
+    <li class="nav-item <%= on('attendance') %>"><a href="/hr/attendance"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Attendance</a></li>
+    <li class="nav-item <%= on('incentive dashboard') %>"><a href="/hr/incentives"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Incentives</a></li>
+    <% if (user && (user.access_role === 'admin' || user.access_role === 'super_admin')) { %>
+    <li class="nav-item <%= on('incentive slabs') %>"><a href="/hr/incentive-slabs"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-3-3-4 4"/></svg> Incentive Slabs</a></li>
+    <% } %>
+    <% if (typeof navPerms !== 'undefined' && navPerms && (navPerms.indexOf('*') !== -1 || navPerms.indexOf('payroll.run') !== -1)) { %>
+    <li class="nav-item <%= on('payroll') %>"><a href="/hr/payroll"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="7" cy="15" r="1.5"/></svg> Payroll</a></li>
+    <% } %>
+
+    <div class="nav-group-label">HR Workflows</div>
+    <li class="nav-item <%= on('recruitment') %>"><a href="/hr/recruitment"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> Recruitment</a></li>
+    <li class="nav-item <%= on('onboarding') %>"><a href="/hr/onboarding"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Onboarding</a></li>
+    <li class="nav-item <%= on('exits') %>"><a href="/hr/exits"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Exits</a></li>
+    <li class="nav-item <%= on('grievance') %>"><a href="/hr/grievances"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Grievances</a></li>
+
+    <%
+      // Property Segment — shown ONLY to holders of the properties.manage grant
+      // (hr_manager fine-role + admin/super_admin). Links to the ADMIN property
+      // surface where add/edit/properties/media/delete-via-ticket all live. Gated by
+      // the same live grant every property route enforces; no other segment here.
+      const _canProps = (typeof navPerms !== 'undefined' && navPerms &&
+        (navPerms.indexOf('*') !== -1 || navPerms.indexOf('properties.manage') !== -1));
+    %>
+    <% if (_canProps) { %>
+    <div class="nav-group-label">Property Segment</div>
+    <li class="nav-item <%= on('properties') %>"><a href="/admin/projects"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h.01M9 12h.01M9 15h.01"/></svg> Properties</a></li>
+    <% } %>
+  </ul>
+
+  <div class="nav-footer">HR Manager · <a href="/role/hr_manager">Role overview</a> · <a href="/logout">Logout</a></div>
+</aside>
