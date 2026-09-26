@@ -1,0 +1,12 @@
+<div class="topbar">
+  <div>
+    <h3 style="font-family: 'Inter', sans-serif; color: #666; font-weight: 500;"><%= pageTitle %></h3>
+  </div>
+  <div class="user-info">
+    <div class="user-details" style="text-align: right;">
+      <h4><%= user.name %></h4>
+      <span class="user-role"><%= (typeof roleLabel !== 'undefined' && roleLabel) ? roleLabel : user.role %></span>
+    </div>
+    <a href="/logout" class="btn" style="padding: 6px 12px; font-size: 0.9rem;">Logout</a>
+  </div>
+</div>

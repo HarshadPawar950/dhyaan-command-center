@@ -1,0 +1,135 @@
+﻿<%
+const _pt = (pageTitle || '').toLowerCase();
+function isActive(label) { return _pt.includes(label.toLowerCase()); }
+// Properties link is grant-aware: a holder of properties.manage (e.g. the
+// hr_manager fine-role) goes to the ADMIN management surface; everyone else to
+// the read-only employee browse. navPerms comes from the session user the
+// global middleware annotates (tier + fine-role grants); routes still enforce.
+const _np = (typeof navPerms !== 'undefined' && navPerms) ? navPerms
+          : ((user && user.navPerms) ? user.navPerms : null);
+const _canProps = !!(_np && (_np.indexOf('*') !== -1 || _np.indexOf('properties.manage') !== -1));
+const _propsHref = _canProps ? '/admin/projects' : '/projects';
+%>
+<style>
+.admin-sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:linear-gradient(180deg,#0A1628 0%,#142238 100%);color:#FAFAF7;display:flex;flex-direction:column;z-index:100;box-shadow:2px 0 24px rgba(0,0,0,0.08);}
+.admin-sidebar .brand{padding:28px 24px 22px;border-bottom:1px solid rgba(212,175,55,0.18);}
+.admin-sidebar .brand-mark{display:flex;align-items:center;gap:12px;}
+.admin-sidebar .brand-mono{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#D4AF37 0%,#E8C766 100%);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:22px;color:#0A1628;flex-shrink:0;}
+.admin-sidebar .brand-name{font-family:'Playfair Display',serif;font-size:19px;color:#FAFAF7;font-weight:600;line-height:1.1;}
+.admin-sidebar .brand-sub{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#D4AF37;margin-top:3px;}
+.admin-sidebar .nav-group-label{font-size:10px;text-transform:uppercase;letter-spacing:1.6px;color:rgba(250,250,247,0.4);padding:18px 24px 8px;font-weight:600;}
+.admin-sidebar .nav-list{list-style:none;padding:0;margin:0;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:rgba(212,175,55,0.45) transparent;}
+.admin-sidebar .nav-list::-webkit-scrollbar{width:6px;}
+.admin-sidebar .nav-list::-webkit-scrollbar-thumb{background:rgba(212,175,55,0.45);border-radius:999px;}
+.admin-sidebar .nav-item a{display:flex;align-items:center;gap:12px;padding:11px 24px;color:rgba(250,250,247,0.78);text-decoration:none;font-size:14px;font-weight:500;border-left:3px solid transparent;transition:all 0.15s ease;}
+.admin-sidebar .nav-item a:hover{background:rgba(212,175,55,0.08);color:#FAFAF7;border-left-color:rgba(212,175,55,0.4);}
+.admin-sidebar .nav-item.active a{background:rgba(212,175,55,0.14);color:#FAFAF7;border-left-color:#D4AF37;}
+.admin-sidebar .nav-item .icon{width:18px;height:18px;opacity:0.85;flex-shrink:0;}
+.admin-sidebar .nav-footer{padding:16px 24px;border-top:1px solid rgba(212,175,55,0.18);font-size:11px;color:rgba(250,250,247,0.4);letter-spacing:0.5px;}
+.main-content{margin-left:260px !important;}
+</style>
+<!-- Responsive layer: loaded after per-view styles so mobile/laptop overrides win. -->
+<link rel="stylesheet" href="/css/responsive.css" />
+<button class="nav-toggle" type="button" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')"><span class="bars"></span></button>
+<div class="nav-overlay" onclick="document.body.classList.remove('nav-open')"></div>
+<!-- AI Day F2: floating help assistant -->
+<script src="/js/assistant.js"></script>
+<aside class="admin-sidebar">
+  <div class="brand"><div class="brand-mark"><div class="brand-mono">D</div><div><div class="brand-name">Dhyaan</div><div class="brand-sub">Employee Portal</div></div></div></div>
+  <div class="nav-group-label">Overview</div>
+  <ul class="nav-list">
+    <li class="nav-item"><a href="/dashboard"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</a></li>
+    <li class="nav-item <%= isActive('dashboard') ? 'active' : '' %>"><a href="/dashboard"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> Dashboard</a></li>
+    <div class="nav-group-label">Manage</div>
+    <li class="nav-item <%= (isActive('leads') && !isActive('feedback')) ? 'active' : '' %>"><a href="/leads"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> My Leads</a></li>
+    <li class="nav-item <%= (isActive('properties') || isActive('property')) ? 'active' : '' %>"><a href="<%= _propsHref %>"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg> Properties</a></li>
+    <li class="nav-item <%= isActive('walk') ? 'active' : '' %>"><a href="/walkins"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Walk-ins</a></li>
+    <li class="nav-item <%= isActive('feedback') ? 'active' : '' %>"><a href="/feedback"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/></svg> Add Feedback</a></li>
+    <li class="nav-item <%= (isActive('closure') || isActive('closed')) ? 'active' : '' %>"><a href="/closure"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg> Mark Closure</a></li>
+    <li class="nav-item <%= isActive('leave') ? 'active' : '' %>"><a href="/leave"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><path d="M9 15l2 2 4-4"/></svg> My Leave</a></li>
+    <li class="nav-item <%= isActive('incentive') ? 'active' : '' %>"><a href="/incentives"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> My Incentives</a></li>
+    <li class="nav-item <%= isActive('payslip') ? 'active' : '' %>"><a href="/payslips"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="7" cy="15" r="1.5"/></svg> My Payslips</a></li>
+    <% if (user && (user.access_role === 'admin' || user.access_role === 'super_admin')) { %>
+    <div class="nav-group-label">System</div>
+    <li class="nav-item <%= (isActive('role') || isActive('panel')) ? 'active' : '' %>"><a href="/role"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Role Panels</a></li>
+    <% } %>
+  </ul>
+  <div class="nav-footer">Dhyaan Enterprises &middot; v1.0</div>
+</aside>
+
+<!-- ===================== MOBILE SHELL (Phase 1) — employee pages only =====================
+     Bottom tab bar + mobile top bar + capture/more sheets. Markup is inert on desktop
+     (design-system.css keeps .ds-* display:none; responsive.css only reveals them at
+     <=768px under body.mshell). Links target EXISTING routes — no route/query changes. -->
+<script>document.body.classList.add('mshell');</script>
+
+<header class="ds-mtop" id="dsMtop">
+  <a class="ds-mtop-back" href="/dashboard" onclick="if(history.length>1){history.back();return false;}" aria-label="Back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </a>
+  <div class="ds-mtop-title"><%= pageTitle || 'Dhyaan' %></div>
+  <button class="ds-mtop-more" type="button" onclick="dsSheet('dsMoreSheet')" aria-label="More">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+  </button>
+</header>
+
+<nav class="ds-tabbar" aria-label="Primary">
+  <a class="ds-tab <%= isActive('dashboard') ? 'active' : '' %>" href="/dashboard">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </a>
+  <a class="ds-tab <%= (isActive('leads') && !isActive('feedback')) ? 'active' : '' %>" href="/leads">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Leads
+  </a>
+  <button class="ds-fab" type="button" onclick="dsSheet('dsAddSheet')" aria-label="Quick add">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+  <a class="ds-tab <%= (isActive('properties') || isActive('property') || isActive('project')) ? 'active' : '' %>" href="<%= _propsHref %>">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
+    Projects
+  </a>
+  <button class="ds-tab" type="button" onclick="dsSheet('dsMoreSheet')" aria-label="More">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    More
+  </button>
+</nav>
+
+<div class="ds-sheet-backdrop" id="dsBackdrop" onclick="dsSheetClose()"></div>
+
+<div class="ds-sheet" id="dsAddSheet" role="dialog" aria-label="Quick add">
+  <div class="ds-sheet-grip"></div>
+  <a class="ds-sheet-item" href="/walkins"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Register Walk-in</a>
+  <a class="ds-sheet-item" href="/leads/new"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg> New Lead</a>
+</div>
+
+<div class="ds-sheet" id="dsMoreSheet" role="dialog" aria-label="More">
+  <div class="ds-sheet-grip"></div>
+  <a class="ds-sheet-item" href="/feedback"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/></svg> Add Feedback</a>
+  <a class="ds-sheet-item" href="/closure"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg> Mark Closure</a>
+  <a class="ds-sheet-item" href="/leave"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg> My Leave</a>
+  <a class="ds-sheet-item" href="/incentives"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> My Incentives</a>
+  <a class="ds-sheet-item" href="/payslips"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> My Payslips</a>
+  <% if (user && (user.access_role === 'admin' || user.access_role === 'super_admin')) { %>
+  <a class="ds-sheet-item" href="/role"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Role Panels</a>
+  <% } %>
+  <a class="ds-sheet-item danger" href="/logout"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</a>
+</div>
+
+<script>
+  (function(){
+    var top = ['/dashboard','/leads','/projects','/admin/projects','/walkins'];
+    var p = (location.pathname || '/').replace(/\/+$/,'') || '/';
+    if (top.indexOf(p) !== -1) { var m = document.getElementById('dsMtop'); if (m) m.classList.add('is-top'); }
+  })();
+  function dsSheet(id){
+    var s = document.getElementById(id), b = document.getElementById('dsBackdrop');
+    if (!s) return;
+    document.querySelectorAll('.ds-sheet.open').forEach(function(x){ x.classList.remove('open'); });
+    s.classList.add('open'); if (b) b.classList.add('open');
+  }
+  function dsSheetClose(){
+    document.querySelectorAll('.ds-sheet.open').forEach(function(x){ x.classList.remove('open'); });
+    var b = document.getElementById('dsBackdrop'); if (b) b.classList.remove('open');
+  }
+</script>
