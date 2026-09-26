@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= role.name %> | Dhyaan Portal</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .role-wrap { padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+
+    /* HERO */
+    .role-hero { display:flex; align-items:flex-start; gap:1.1rem; background:linear-gradient(135deg,#0A1628 0%,#1a2a40 100%); color:#FAFAF7; border-radius:14px; padding:1.6rem 1.8rem; margin-bottom:1.6rem; box-shadow:0 6px 24px rgba(10,22,40,0.12); }
+    .role-hero .hero-icon { width:54px; height:54px; border-radius:12px; background:linear-gradient(135deg,#D4AF37 0%,#E8C766 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .role-hero .hero-icon svg { width:28px; height:28px; stroke:#0A1628; }
+    .role-hero h1 { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:600; line-height:1.1; }
+    .role-hero .hero-tagline { color:rgba(250,250,247,0.78); font-size:0.92rem; margin-top:0.5rem; max-width:760px; line-height:1.5; }
+    .badge-row { display:flex; gap:0.5rem; margin-top:0.7rem; flex-wrap:wrap; }
+    .badge { font-size:0.66rem; text-transform:uppercase; letter-spacing:0.09em; font-weight:700; padding:0.28rem 0.6rem; border-radius:999px; }
+    .badge-cat { background:rgba(212,175,55,0.18); color:#E8C766; border:1px solid rgba(212,175,55,0.4); }
+    .badge-ro  { background:rgba(255,255,255,0.1); color:#FAFAF7; border:1px solid rgba(255,255,255,0.25); }
+
+    /* SECTION TITLE */
+    .sec-title { font-family:'Playfair Display',serif; font-size:1.15rem; color:#0A1628; font-weight:600; margin:0 0 0.9rem; padding-bottom:0.5rem; border-bottom:2px solid #D4AF37; }
+
+    /* WIDGET GRID */
+    .widget-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
+    .widget-card { background:#fff; border-radius:10px; padding:1.15rem; border-top:3px solid #D4AF37; box-shadow:0 2px 8px rgba(10,22,40,0.05); position:relative; }
+    .widget-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.07em; color:#6B7280; font-weight:600; }
+    .widget-value { font-family:'Playfair Display',serif; font-size:2rem; color:#0A1628; font-weight:600; line-height:1; margin:0.5rem 0 0.25rem; }
+    .widget-hint { font-size:0.72rem; color:#9CA3AF; }
+    .scaffold-tag { position:absolute; top:0.7rem; right:0.7rem; font-size:0.58rem; text-transform:uppercase; letter-spacing:0.06em; color:#B8961F; background:#FFFBEB; border:1px solid #F3E3B3; border-radius:5px; padding:0.12rem 0.35rem; font-weight:700; }
+
+    /* SECTIONS / QUICK LINKS */
+    .link-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:2rem; }
+    .link-card { display:block; text-decoration:none; background:#fff; border-radius:10px; padding:1.1rem 1.2rem; border-left:3px solid #B8961F; box-shadow:0 2px 8px rgba(10,22,40,0.05); transition:all 0.15s; }
+    .link-card:hover { background:#FFFBEB; transform:translateX(2px); }
+    .link-card .lc-title { font-weight:600; color:#0A1628; font-size:0.98rem; }
+    .link-card .lc-desc { font-size:0.8rem; color:#6B7280; margin-top:0.3rem; line-height:1.4; }
+    .link-card .lc-arrow { float:right; color:#B8961F; font-weight:700; }
+    .link-card.planned { border-left-color:#D1D5DB; background:#FAFAFA; cursor:default; }
+    .link-card.planned:hover { background:#FAFAFA; transform:none; }
+    .link-card.planned .lc-title { color:#6B7280; }
+    .lc-planned { float:right; font-size:0.58rem; text-transform:uppercase; letter-spacing:0.06em; color:#9CA3AF; background:#F3F4F6; border:1px solid #E5E7EB; border-radius:5px; padding:0.12rem 0.4rem; font-weight:700; }
+
+    /* CAPABILITIES & ROADMAP */
+    .cap-legend { display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.9rem; }
+    .cap-item { display:flex; align-items:flex-start; gap:0.7rem; background:#fff; border-radius:10px; padding:0.85rem 1rem; box-shadow:0 2px 8px rgba(10,22,40,0.05); margin-bottom:0.6rem; }
+    .cap-item .cap-body { flex:1; }
+    .cap-item .cap-name { font-weight:600; color:#0A1628; font-size:0.92rem; }
+    .cap-item .cap-desc { font-size:0.8rem; color:#6B7280; margin-top:0.2rem; line-height:1.4; }
+    .phase-badge { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.06em; font-weight:700; padding:0.22rem 0.5rem; border-radius:999px; white-space:nowrap; flex-shrink:0; }
+    .phase-now    { background:#DCFCE7; color:#166534; border:1px solid #86EFAC; }
+    .phase-p2     { background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; }
+    .phase-p3     { background:#DBEAFE; color:#1E40AF; border:1px solid #93C5FD; }
+    .phase-future { background:#F3F4F6; color:#6B7280; border:1px solid #D1D5DB; }
+
+    /* PERMISSIONS */
+    .perm-wrap { background:#fff; border-radius:10px; padding:1.2rem 1.3rem; box-shadow:0 2px 8px rgba(10,22,40,0.05); margin-bottom:2rem; }
+    .perm-chips { display:flex; flex-wrap:wrap; gap:0.45rem; }
+    .perm-chip { font-family:'Inter',monospace; font-size:0.74rem; background:#F3F4F6; color:#374151; border:1px solid #E5E7EB; border-radius:6px; padding:0.28rem 0.55rem; }
+    .perm-chip.all { background:#0A1628; color:#E8C766; border-color:#0A1628; }
+    .perm-note { font-size:0.74rem; color:#9CA3AF; margin-top:0.7rem; }
+
+    @media (max-width:1100px){ .widget-grid{grid-template-columns:repeat(2,1fr);} .link-grid{grid-template-columns:1fr 1fr;} }
+    @media (max-width:700px){ .widget-grid,.link-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="role-wrap">
+
+      <!-- HERO -->
+      <div class="role-hero">
+        <div class="hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><%- heroIconPath %></svg>
+        </div>
+        <div>
+          <h1><%= role.name %></h1>
+          <div class="hero-tagline"><%= cfg.tagline || role.description %></div>
+          <div class="badge-row">
+            <span class="badge badge-cat"><%= role.category %> hierarchy</span>
+            <% if (cfg.readOnly) { %><span class="badge badge-ro">Read-only</span><% } %>
+            <% if (role.inherits) { %><span class="badge badge-ro">Inherits: <%= role.inherits %></span><% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- WIDGETS -->
+      <% if (cfg.widgets && cfg.widgets.length) { %>
+        <h2 class="sec-title">Key Metrics</h2>
+        <div class="widget-grid">
+          <% cfg.widgets.forEach(function(w){ %>
+            <div class="widget-card">
+              <% if (!w.live) { %><span class="scaffold-tag">Pending data</span><% } %>
+              <div class="widget-label"><%= w.label %></div>
+              <div class="widget-value"><%= (w.value !== undefined && w.value !== null) ? w.value : '—' %></div>
+              <div class="widget-hint"><%= w.hint || '' %></div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <!-- SECTIONS / QUICK LINKS -->
+      <% if (cfg.sections && cfg.sections.length) { %>
+        <h2 class="sec-title">Work Areas</h2>
+        <div class="link-grid">
+          <% cfg.sections.forEach(function(s){ %>
+            <% if (s.planned || !s.href) { %>
+              <div class="link-card planned">
+                <span class="lc-planned">Planned</span>
+                <div class="lc-title"><%= s.label %></div>
+                <div class="lc-desc"><%= s.desc || '' %></div>
+              </div>
+            <% } else { %>
+              <a class="link-card" href="<%= s.href %>">
+                <span class="lc-arrow">&rarr;</span>
+                <div class="lc-title"><%= s.label %></div>
+                <div class="lc-desc"><%= s.desc || '' %></div>
+              </a>
+            <% } %>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <!-- CAPABILITIES & ROADMAP (from Tech Document, phase-tagged per §11) -->
+      <% if (cfg.modules && cfg.modules.length) {
+           var PH = { now:{cls:'phase-now',label:'Live'}, p2:{cls:'phase-p2',label:'Phase 2'}, p3:{cls:'phase-p3',label:'Phase 3'}, future:{cls:'phase-future',label:'Future'} };
+           var order = ['now','p2','p3','future'];
+           var sorted = cfg.modules.slice().sort(function(a,b){ return order.indexOf(a.phase) - order.indexOf(b.phase); });
+      %>
+        <h2 class="sec-title">Capabilities &amp; Roadmap</h2>
+        <% sorted.forEach(function(m){ var p = PH[m.phase] || PH.future; %>
+          <div class="cap-item">
+            <span class="phase-badge <%= p.cls %>"><%= p.label %></span>
+            <div class="cap-body">
+              <div class="cap-name"><%= m.name %></div>
+              <% if (m.desc) { %><div class="cap-desc"><%= m.desc %></div><% } %>
+            </div>
+          </div>
+        <% }); %>
+      <% } %>
+
+      <!-- PERMISSIONS -->
+      <h2 class="sec-title">Permissions</h2>
+      <div class="perm-wrap">
+        <div class="perm-chips">
+          <% if (!effectivePermissions || effectivePermissions.length === 0) { %>
+            <span class="perm-note">No permissions defined.</span>
+          <% } else { effectivePermissions.forEach(function(p){ %>
+            <span class="perm-chip <%= p === 'all' ? 'all' : '' %>"><%= p %></span>
+          <% }); } %>
+        </div>
+        <% if (role.inherits) { %>
+          <div class="perm-note">Includes inherited permissions from lower roles in the sales hierarchy.</div>
+        <% } %>
+      </div>
+
+    </div>
+  </main>
+</body>
+</html>

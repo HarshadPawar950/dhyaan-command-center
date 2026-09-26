@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Portal</title>
+    <!-- RENDER-SOURCE: views/properties.ejs (employee PROJECTS browse) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --shadow-hover: 0 12px 40px rgba(10, 22, 40, 0.14);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh;
+        }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+
+        /* TOPBAR */
+        .topbar {
+            background: #fff; border-bottom: 1px solid var(--border);
+            padding: 14px 28px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .back-link {
+            color: var(--gold-dark); font-size: 13px; font-weight: 600;
+            text-decoration: none;
+        }
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+        .user-pill {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--beige); padding: 6px 12px; border-radius: 999px;
+        }
+        .avatar-mini {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy); display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 12px;
+        }
+        .user-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+        .logout-btn {
+            padding: 8px 14px; font-size: 12px; font-weight: 600;
+            background: transparent; color: var(--muted);
+            border: 1px solid var(--border); border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .page-body { max-width: 1400px; margin: 24px auto; padding: 0 24px; }
+
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 26px 32px;
+            border-radius: 16px; margin-bottom: 22px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+        }
+        .page-hero::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+        }
+        .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+        .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+        .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+        .stat-pills {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 22px;
+        }
+        .stat-pill {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+        }
+        .stat-pill .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .stat-pill.d1 .dot { background: var(--gold); }
+        .stat-pill.d2 .dot { background: var(--blue); }
+        .stat-pill.d3 .dot { background: var(--green); }
+        .stat-pill.d4 .dot { background: var(--amber); }
+        .stat-pill .label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .stat-pill .num {
+            font-family: 'Playfair Display', serif; font-size: 22px;
+            font-weight: 700; color: var(--navy); line-height: 1;
+        }
+
+        .filter-bar {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 18px;
+            box-shadow: var(--shadow); margin-bottom: 18px;
+        }
+        .filter-form {
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+            gap: 10px; align-items: end;
+        }
+        @media (max-width: 1100px) { .filter-form { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 700px)  { .filter-form { grid-template-columns: 1fr; } }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label {
+            font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .filter-group input, .filter-group select {
+            font-family: inherit; font-size: 13px;
+            padding: 9px 12px; border: 1px solid var(--border);
+            border-radius: 8px; background: var(--offwhite);
+            color: var(--text); outline: none;
+        }
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: var(--gold); background: #fff;
+        }
+        .filter-actions { display: flex; gap: 8px; }
+        .btn {
+            padding: 9px 18px; min-height: 44px; border-radius: 8px;
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            text-decoration: none; cursor: pointer; border: none;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .btn-primary { background: var(--navy); color: var(--offwhite); }
+        .btn-clear { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 18px;
+        }
+        .prop-card {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            text-decoration: none; color: inherit;
+            display: flex; flex-direction: column;
+        }
+        .prop-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        .prop-card .gold-strip {
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%);
+        }
+        .card-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+        .ext-code {
+            font-size: 10px; color: var(--gold-dark);
+            font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.4px; margin-bottom: 5px;
+        }
+        .prop-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 19px; font-weight: 600; color: var(--navy);
+            line-height: 1.25; margin-bottom: 6px;
+        }
+        .builder-line {
+            font-size: 12px; color: var(--muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .builder-line .dot-tiny {
+            width: 4px; height: 4px; border-radius: 50%; background: var(--gold);
+        }
+
+        .card-body { padding: 14px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+        .meta-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+        .meta-label {
+            color: var(--muted); text-transform: uppercase;
+            font-weight: 600; letter-spacing: 0.6px; font-size: 10px;
+        }
+        .meta-value { color: var(--navy); font-weight: 500; text-align: right; max-width: 60%; }
+
+        .price-block {
+            background: linear-gradient(135deg, rgba(212,175,55,0.10) 0%, rgba(232,199,102,0.06) 100%);
+            border: 1px solid rgba(212,175,55,0.20);
+            border-radius: 10px; padding: 10px 12px;
+        }
+        .price-label {
+            font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--gold-dark);
+            font-weight: 600; margin-bottom: 3px;
+        }
+        .price-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; font-weight: 700; color: var(--navy);
+        }
+
+        .card-foot {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--beige);
+        }
+        .badges-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .badge {
+            display: inline-block; font-size: 9px;
+            text-transform: uppercase; letter-spacing: 0.9px;
+            font-weight: 700; padding: 3px 7px; border-radius: 4px;
+        }
+        .badge-tier {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+        }
+        .badge-status { background: rgba(37,99,235,0.10); color: var(--blue); }
+        .badge-type { background: rgba(10,22,40,0.06); color: var(--navy); }
+        .units-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 9px; border-radius: 999px;
+            background: #fff; border: 1px solid var(--border);
+            font-size: 11px; font-weight: 600; color: var(--navy);
+        }
+        .units-pill .pill-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 13px; color: var(--gold-dark);
+        }
+        .empty-state {
+            padding: 60px 24px; text-align: center;
+            color: var(--muted); font-size: 14px;
+            background: #fff; border-radius: 14px;
+            box-shadow: var(--shadow);
+        }
+        .showing-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; padding: 0 4px;
+        }
+        .showing-bar .count {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px; font-weight: 600; color: var(--navy);
+        }
+        .showing-bar .count-meta {
+            font-size: 11px; color: var(--gold-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('layout/sidebar') %>
+    <div class="main-content">
+
+    <div class="topbar">
+        <div class="topbar-left">
+        </div>
+        <div class="topbar-right">
+            <div class="user-pill">
+                <div class="avatar-mini"><%= (user.name || '?').charAt(0).toUpperCase() %></div>
+                <div class="user-name"><%= user.name %></div>
+            </div>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+
+        <div class="page-hero" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <h1>Projects</h1>
+                <p>Browse all <%= stats.total_projects %> projects in our inventory — share with your leads.</p>
+                <div class="gold-line"></div>
+            </div>
+            <% if (user && (user.access_role === 'admin' || user.access_role === 'super_admin')) { %><a href="/projects/new" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; background: linear-gradient(135deg, #D4AF37 0%, #E8C766 100%); color: #0A1628; font-weight: 700; font-size: 14px; text-decoration: none; border-radius: 10px; box-shadow: 0 4px 14px rgba(212,175,55,0.35); transition: transform 0.15s ease; position: relative; z-index: 2;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <span style="font-size: 18px; line-height: 1;">+</span> Add Property
+            </a><% } %>
+        </div>
+
+        <div class="stat-pills">
+            <div class="stat-pill d1"><div class="dot"></div><div><div class="label">Projects</div><div class="num"><%= stats.total_projects %></div></div></div>
+            <div class="stat-pill d2"><div class="dot"></div><div><div class="label">Properties</div><div class="num"><%= stats.total_units %></div></div></div>
+            <div class="stat-pill d3"><div class="dot"></div><div><div class="label">Builders</div><div class="num"><%= stats.total_builders %></div></div></div>
+            <div class="stat-pill d4"><div class="dot"></div><div><div class="label">Areas</div><div class="num"><%= stats.total_areas %></div></div></div>
+        </div>
+
+        <div class="filter-bar">
+            <form method="GET" action="/projects" class="filter-form">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="q" placeholder="Title, builder, location..." value="<%= filters.q %>" />
+                </div>
+                <div class="filter-group">
+                    <label>Builder</label>
+                    <select name="builder">
+                        <option value="">All</option>
+                        <% builders.forEach(function(b) { %>
+                            <option value="<%= b %>" <%= filters.builder === b ? 'selected' : '' %>><%= b %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Area</label>
+                    <select name="area">
+                        <option value="">All</option>
+                        <% areas.forEach(function(a) { %>
+                            <option value="<%= a %>" <%= filters.area === a ? 'selected' : '' %>><%= a %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Tier</label>
+                    <select name="tier">
+                        <option value="">All</option>
+                        <% tiers.forEach(function(t) { %>
+                            <option value="<%= t %>" <%= filters.tier === t ? 'selected' : '' %>><%= t %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status">
+                        <option value="">All</option>
+                        <% statusOptions.forEach(function(o) { %>
+                            <option value="<%= o.value %>" <%= filters.status === o.value ? 'selected' : '' %>><%= o.label %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Category</label>
+                    <select name="category">
+                        <option value="">All</option>
+                        <option value="residential" <%= filters.category==='residential'?'selected':'' %>>Residential</option>
+                        <option value="commercial" <%= filters.category==='commercial'?'selected':'' %>>Commercial</option>
+                        <option value="mixed" <%= filters.category==='mixed'?'selected':'' %>>Mixed-use</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">Apply</button>
+                    <a href="<%= backFor('projects') %>" class="btn btn-clear">Clear</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="showing-bar">
+            <span class="count">Inventory</span>
+            <span class="count-meta"><%= showing %> projects shown</span>
+        </div>
+
+        <% if (properties && properties.length > 0) { %>
+            <div class="properties-grid">
+                <% properties.forEach(function(p) { %>
+                    <a class="prop-card" href="/projects/<%= p.project_id %>">
+                        <div class="gold-strip"></div>
+                        <div class="card-head">
+                            <% if (p.external_id) { %>
+                                <div class="ext-code"><%= p.external_id %></div>
+                            <% } %>
+                            <div class="prop-title"><%= p.title %></div>
+                            <% if (p.builder) { %>
+                                <div class="builder-line">
+                                    <span class="dot-tiny"></span>
+                                    by <%= p.builder %>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="meta-row">
+                                <span class="meta-label">Location</span>
+                                <span class="meta-value"><%= p.location || '—' %></span>
+                            </div>
+                            <% if (p.configurations) { %>
+                            <div class="meta-row">
+                                <span class="meta-label">Configs</span>
+                                <span class="meta-value"><%= p.configurations %></span>
+                            </div>
+                            <% } %>
+                            <% if (p.possession) { %>
+                            <div class="meta-row">
+                                <span class="meta-label">Possession</span>
+                                <span class="meta-value"><%= p.possession %></span>
+                            </div>
+                            <% } %>
+
+                            <% if (p.price_range) { %>
+                                <div class="price-block">
+                                    <div class="price-label">Price Range</div>
+                                    <div class="price-text"><%= p.price_range %></div>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <div class="card-foot">
+                            <div class="badges-row">
+                                <% if (p.has_residential) { %><span class="badge" style="background:#0A1628;color:#D4AF37;">🏠 Res</span><% } %>
+                                <% if (p.has_commercial) { %><span class="badge" style="background:#0A1628;color:#D4AF37;">🏢 Comm</span><% } %>
+                                <% if (p.tier) { %>
+                                    <span class="badge badge-tier"><%= p.tier %></span>
+                                <% } %>
+                                <%# 053 / BUG-1: real status tags (status_of_property text[]), not the stale construction_status enum %>
+                                <% (Array.isArray(p.status_of_property) ? p.status_of_property : []).forEach(function(sk){ %>
+                                    <span class="badge badge-status"><%= (statusOptions.find(function(o){ return o.value === sk; }) || {}).label || sk.replace(/_/g, ' ') %></span>
+                                <% }); %>
+                                <% if (p.type) { %>
+                                    <span class="badge badge-type"><%= p.type %></span>
+                                <% } %>
+                            </div>
+                            <span class="units-pill">
+                                <span class="pill-num"><%= p.unit_count %></span>
+                                unit<%= p.unit_count === 1 ? '' : 's' %>
+                            </span>
+                        </div>
+                    </a>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                No projects match your filters. Try clearing some.
+            </div>
+        <% } %>
+
+    </div>
+
+    </div><!-- /.main-content -->
+
+</body>
+</html>
+
+

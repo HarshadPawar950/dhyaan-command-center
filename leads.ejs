@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %> | Dhyaan Realty</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <%- include('layout/sidebar') %>
+    <main class="main-content">
+      <%- include('layout/topbar') %>
+      <%- include('layout/messages') %>
+      <div class="page-hero" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h1>My Leads</h1>
+          <p>Your assigned leads - follow up, update status, and close deals.</p>
+        </div>
+        <a href="/leads/new" style="display:inline-flex; align-items:center; gap:8px; padding:12px 22px; min-height:44px; box-sizing:border-box; background:linear-gradient(135deg, #D4AF37 0%, #E8C766 100%); color:#0A1628; font-weight:700; font-size:14px; text-decoration:none; border-radius:10px; box-shadow:0 4px 14px rgba(212,175,55,0.35); position:relative; z-index:2;">
+          <span style="font-size:18px; line-height:1;">+</span> Add New Lead
+        </a>
+      </div>
+      <div style="display:flex; justify-content:center; margin:24px 0 8px;">
+        <div style="position:relative; width:100%; max-width:560px;">
+          <span style="position:absolute; left:18px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none; opacity:0.6;">🔍</span>
+          <input
+            type="text"
+            id="leadSearch"
+            onkeyup="filterLeads()"
+            placeholder="Search leads by name, phone, or status..."
+            style="width:100%; padding:14px 18px 14px 48px; font-size:14px; border:1.5px solid #D4AF37; border-radius:14px; outline:none; font-family:'Inter',sans-serif; background:#fff; box-shadow:0 4px 16px rgba(10,22,40,0.06); transition:all 0.2s; box-sizing:border-box;"
+            onfocus="this.style.boxShadow='0 4px 20px rgba(212,175,55,0.25)'; this.style.borderColor='#D4AF37';"
+            onblur="this.style.boxShadow='0 4px 16px rgba(10,22,40,0.06)';"
+          >
+        </div>
+      </div>
+      <div style="text-align:center; margin-bottom:16px;">
+        <span id="searchCount" style="color:#888; font-size:13px; font-family:'Inter',sans-serif;"></span>
+      </div>
+      <% var showTeam = (typeof seesTeam !== 'undefined' && seesTeam); %>
+      <% if (showTeam) { %>
+        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:16px;">
+          <button type="button" class="scope-chip active" data-scope="all"  onclick="setScope('all', this)">All</button>
+          <button type="button" class="scope-chip"        data-scope="mine" onclick="setScope('mine', this)">Mine</button>
+          <button type="button" class="scope-chip"        data-scope="team" onclick="setScope('team', this)">My Team</button>
+        </div>
+        <style>
+          .scope-chip { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; padding:8px 18px; border-radius:999px; border:1.5px solid #D4AF37; background:#fff; color:#0A1628; cursor:pointer; }
+          .scope-chip.active { background:#D4AF37; color:#0A1628; }
+          .owner-you { color:#6b6b6b; }
+          .scope-tag { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:700; background:rgba(10,22,40,0.08); color:#0A1628; vertical-align:middle; }
+        </style>
+      <% } %>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th><th>Phone</th><th>Status</th>
+              <% if (showTeam) { %><th>Owner</th><% } %>
+              <th>Last Feedback</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if(leads && leads.length > 0) { %>
+              <% leads.forEach(lead => { %>
+                <% var mine = (typeof lead.is_mine === 'undefined') ? true : !!lead.is_mine; %>
+                <tr data-scope="<%= mine ? 'mine' : 'team' %>">
+                  <td>
+                    <%= lead.name %>
+                    <% if (showTeam && !mine) { %><span class="scope-tag">TEAM</span><% } %>
+                  </td>
+                  <td><%= lead.phone %></td>
+                  <td><span class="status-badge status-<%= lead.status %>"><%= lead.status %></span></td>
+                  <% if (showTeam) { %>
+                    <td><% if (mine) { %><span class="owner-you">You</span><% } else { %><%= lead.owner_name || lead.owner_code || '—' %><% } %></td>
+                  <% } %>
+                  <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= lead.last_feedback || 'No feedback yet' %></td>
+                  <td><a href="/leads/<%= lead.lead_id %>" class="btn btn-accent" style="padding: 8px 16px; min-height: 44px; box-sizing: border-box; font-size: 0.85rem;">View</a></td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr><td colspan="<%= showTeam ? 6 : 5 %>" style="text-align: center; color: #666;">No leads assigned to you yet.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <script>
+    let currentScope = 'all';
+    function setScope(scope, btn) {
+      currentScope = scope;
+      document.querySelectorAll('.scope-chip').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      filterLeads();
+    }
+    function filterLeads() {
+      const q = document.getElementById('leadSearch').value.toLowerCase();
+      const rows = document.querySelectorAll('.table-container tbody tr');
+      let visible = 0;
+      rows.forEach(row => {
+        // skip the "no leads" placeholder row (single colspan cell)
+        if (row.cells.length < 3) { return; }
+        const scope = row.getAttribute('data-scope') || 'mine';
+        const scopeOk = (currentScope === 'all') || (scope === currentScope);
+        const textOk = row.innerText.toLowerCase().includes(q);
+        if (scopeOk && textOk) { row.style.display = ''; visible++; }
+        else { row.style.display = 'none'; }
+      });
+      const counter = document.getElementById('searchCount');
+      counter.textContent = (q || currentScope !== 'all') ? visible + ' lead(s) shown' : '';
+    }
+  </script>
+</body>
+</html>

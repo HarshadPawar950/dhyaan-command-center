@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; color:#1a1a1a; font-size:12px; }
+    .head { background:linear-gradient(135deg,#0A1628,#142238); color:#FAFAF7; padding:22px 26px; border-radius:10px; display:flex; justify-content:space-between; align-items:flex-start; }
+    .head h1 { font-family:'Playfair Display',serif; font-size:22px; color:#fff; }
+    .head .gold { color:#D4AF37; font-weight:600; letter-spacing:1px; font-size:11px; text-transform:uppercase; }
+    .meta { margin-top:2px; font-size:11px; color:rgba(250,250,247,.75); }
+    .sec { margin-top:18px; } .sec h3 { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:#6b6b6b; margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:4px; }
+    .grid { display:flex; gap:24px; } .grid > div { flex:1; }
+    .kv { display:flex; justify-content:space-between; padding:4px 0; font-size:12px; } .kv .k { color:#6b6b6b; } .kv .v { font-weight:600; color:#0A1628; font-variant-numeric:tabular-nums; }
+    .cols { display:flex; gap:24px; margin-top:14px; }
+    .col { flex:1; border:1px solid #eee; border-radius:8px; overflow:hidden; }
+    .col .ch { background:#F4EFE6; padding:8px 12px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#0A1628; }
+    .col .cr { display:flex; justify-content:space-between; padding:7px 12px; border-top:1px solid #f2f2f2; font-size:12px; }
+    .col .cr .v { font-variant-numeric:tabular-nums; font-weight:600; }
+    .total { display:flex; justify-content:space-between; padding:9px 12px; background:#0A1628; color:#fff; font-weight:700; }
+    .net { margin-top:16px; background:rgba(212,175,55,.12); border:1px solid rgba(212,175,55,.4); border-radius:8px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; }
+    .net .lbl { font-size:13px; font-weight:600; color:#0A1628; } .net .amt { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:#0A1628; }
+    .foot { margin-top:20px; font-size:10px; color:#999; text-align:center; }
+    .draftwm { color:#dc2626; font-weight:700; font-size:11px; }
+  </style>
+</head>
+<body>
+  <% function inr(n){ return '₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); } %>
+  <% var mth=new Date(ps.period_month).toLocaleDateString('en-IN',{month:'long',year:'numeric'}); %>
+  <div class="head">
+    <div><span class="gold">Dhyaan Enterprises</span><h1>Payslip</h1><div class="meta"><%= mth %> · <%= ps.emp_name %> (<%= ps.external_id %>)</div></div>
+    <div style="text-align:right;"><div class="meta">Status</div><div style="font-weight:700;color:#D4AF37;text-transform:uppercase;"><%= ps.run_status %></div><% if (ps.run_status!=='paid') { %><div class="draftwm">PROVISIONAL — NOT FINAL</div><% } %></div>
+  </div>
+
+  <div class="sec">
+    <div class="grid">
+      <div>
+        <div class="kv"><span class="k">Employee</span><span class="v"><%= ps.emp_name %></span></div>
+        <div class="kv"><span class="k">Employee ID</span><span class="v"><%= ps.external_id %></span></div>
+        <div class="kv"><span class="k">PAN</span><span class="v"><%= ps.pan || '—' %></span></div>
+        <div class="kv"><span class="k">PF UAN</span><span class="v"><%= ps.pf_uan || '—' %></span></div>
+      </div>
+      <div>
+        <div class="kv"><span class="k">Pay Period</span><span class="v"><%= mth %></span></div>
+        <div class="kv"><span class="k">Bank A/C</span><span class="v"><%= ps.bank_account || '—' %></span></div>
+        <div class="kv"><span class="k">IFSC</span><span class="v"><%= ps.bank_ifsc || '—' %></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="ch">Earnings</div>
+      <div class="cr"><span>Basic</span><span class="v"><%= inr(ps.basic) %></span></div>
+      <div class="cr"><span>HRA</span><span class="v"><%= inr(ps.hra) %></span></div>
+      <div class="cr"><span>Allowances</span><span class="v"><%= inr(ps.allowances) %></span></div>
+      <div class="cr"><span>Incentive</span><span class="v"><%= inr(ps.incentive_amount) %></span></div>
+      <div class="total"><span>Total Earnings</span><span><%= inr(Number(ps.gross)+Number(ps.incentive_amount)) %></span></div>
+    </div>
+    <div class="col">
+      <div class="ch">Deductions</div>
+      <div class="cr"><span>PF (employee)</span><span class="v"><%= inr(ps.pf_employee) %></span></div>
+      <div class="cr"><span>ESI (employee)</span><span class="v"><%= inr(ps.esi_employee) %></span></div>
+      <div class="cr"><span>Professional Tax</span><span class="v"><%= inr(ps.professional_tax) %></span></div>
+      <div class="cr"><span>TDS</span><span class="v"><%= inr(ps.tds) %></span></div>
+      <div class="total"><span>Total Deductions</span><span><%= inr(ps.total_deductions) %></span></div>
+    </div>
+  </div>
+
+  <div class="net"><span class="lbl">NET PAY</span><span class="amt"><%= inr(ps.net_pay) %></span></div>
+
+  <div class="sec" style="margin-top:16px;">
+    <h3>Employer Contributions (for records)</h3>
+    <div class="grid"><div class="kv"><span class="k">PF (employer)</span><span class="v"><%= inr(ps.pf_employer) %></span></div><div class="kv"><span class="k">ESI (employer)</span><span class="v"><%= inr(ps.esi_employer) %></span></div></div>
+  </div>
+
+  <div class="foot">Computer-generated payslip · Dhyaan Enterprises · statutory deductions per rates effective for <%= mth %>. Incentives are a separate earning (not run through PF/PT/ESI).</div>
+</body>
+</html>

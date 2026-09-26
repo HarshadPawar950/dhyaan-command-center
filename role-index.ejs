@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Role Panels | Dhyaan Portal</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .ri-wrap { padding:1.5rem 2rem; max-width:1400px; margin:0 auto; }
+    .ri-head { border-bottom:2px solid #D4AF37; padding-bottom:1rem; margin-bottom:1.5rem; }
+    .ri-head h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:#0A1628; font-weight:600; }
+    .ri-head p { color:#6B7280; font-size:0.88rem; margin-top:0.3rem; }
+    .ri-cat { font-family:'Playfair Display',serif; font-size:1.25rem; color:#0A1628; font-weight:600; margin:1.8rem 0 0.9rem; }
+    .ri-cat:first-of-type { margin-top:0.5rem; }
+    .ri-cat .ri-count { font-family:'Inter',sans-serif; font-size:0.72rem; color:#B8961F; font-weight:700; background:#FFFBEB; border:1px solid #F3E3B3; border-radius:6px; padding:0.15rem 0.5rem; margin-left:0.5rem; vertical-align:middle; }
+    .ri-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; }
+    .ri-card { display:block; text-decoration:none; background:#fff; border-radius:10px; padding:1.15rem 1.3rem; border-left:3px solid #D4AF37; box-shadow:0 2px 8px rgba(10,22,40,0.05); transition:all 0.15s; }
+    .ri-card:hover { background:#FFFBEB; transform:translateY(-2px); box-shadow:0 6px 16px rgba(10,22,40,0.1); }
+    .ri-card .rc-top { display:flex; justify-content:space-between; align-items:center; }
+    .ri-card .rc-name { font-family:'Playfair Display',serif; font-size:1.15rem; color:#0A1628; font-weight:600; }
+    .ri-card .rc-order { font-size:0.72rem; color:#B8961F; font-weight:700; background:#FFFBEB; border:1px solid #F3E3B3; border-radius:6px; padding:0.15rem 0.45rem; }
+    .ri-card .rc-desc { font-size:0.82rem; color:#6B7280; margin-top:0.45rem; line-height:1.45; }
+    @media (max-width:800px){ .ri-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <%- topbarHtml %>
+  <main class="main-content">
+    <div class="ri-wrap">
+      <div class="ri-head">
+        <h1>Role Panels</h1>
+        <p><%= totalRoles %> roles defined. People &amp; logins are assigned in a later step — these panels are the templates each role will land on.</p>
+      </div>
+      <% groups.forEach(function(g){ %>
+        <div class="ri-cat"><%= g.label %><span class="ri-count"><%= g.roles.length %></span></div>
+        <div class="ri-grid">
+          <% g.roles.forEach(function(r){ %>
+            <a class="ri-card" href="/role/<%= r.role_key %>">
+              <div class="rc-top">
+                <span class="rc-name"><%= r.name %></span>
+                <span class="rc-order">#<%= r.sort_order %></span>
+              </div>
+              <div class="rc-desc"><%= r.description %></div>
+            </a>
+          <% }); %>
+        </div>
+      <% }); %>
+    </div>
+  </main>
+</body>
+</html>

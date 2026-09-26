@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600; color: var(--navy);
+        }
+
+        /* TOPBAR */
+        .topbar {
+            background: #fff; border-bottom: 1px solid var(--border);
+            padding: 14px 28px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 1px 4px rgba(10,22,40,0.03);
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .logo-mark {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy); font-family: 'Playfair Display', serif;
+            font-weight: 700; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-text { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 17px; color: var(--navy); }
+        .brand-sub { font-size: 10px; letter-spacing: 2px; color: var(--gold-dark); text-transform: uppercase; }
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+        .user-pill {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--beige); padding: 6px 12px; border-radius: 999px;
+        }
+        .avatar-mini {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 12px;
+        }
+        .user-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+        .logout-btn {
+            padding: 8px 14px; font-size: 12px; font-weight: 600;
+            background: transparent; color: var(--muted);
+            border: 1px solid var(--border); border-radius: 8px;
+            text-decoration: none;
+        }
+        .logout-btn:hover { color: var(--navy); background: var(--beige); }
+
+        /* PAGE BODY */
+        .page-body { max-width: 900px; margin: 30px auto; padding: 0 24px; }
+
+        .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+        .breadcrumb a { color: var(--gold-dark); text-decoration: none; font-weight: 600; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* HERO */
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 26px 32px;
+            border-radius: 16px; margin-bottom: 22px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+        }
+        .page-hero::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+        .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+        .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+        /* FLASH */
+        .flash {
+            padding: 12px 18px; border-radius: 10px; margin-bottom: 18px;
+            font-size: 13px; font-weight: 500;
+        }
+        .flash-success { background: rgba(22,163,74,0.10); color: var(--green); border: 1px solid rgba(22,163,74,0.20); }
+        .flash-error   { background: rgba(220,38,38,0.10); color: var(--red);   border: 1px solid rgba(220,38,38,0.20); }
+        .flash-info    { background: rgba(37,99,235,0.10); color: var(--blue);  border: 1px solid rgba(37,99,235,0.20); }
+
+        /* FORM */
+        .form-card {
+            background: #fff; border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow); overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .section-head {
+            padding: 14px 24px; background: var(--beige);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-head .icon {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700;
+        }
+        .section-head h3 { font-size: 16px; }
+        .section-body { padding: 22px 24px; }
+
+        .field-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 16px 22px;
+        }
+        @media (max-width: 700px) {
+            .field-grid { grid-template-columns: 1fr; }
+        }
+        .field-full { grid-column: 1 / -1; }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label {
+            font-size: 11px; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--muted);
+            font-weight: 600;
+        }
+        .field label .req { color: var(--red); margin-left: 3px; }
+        .field input, .field select, .field textarea {
+            font-family: inherit; font-size: 14px;
+            padding: 11px 14px; border: 1px solid var(--border);
+            border-radius: 9px; background: var(--offwhite);
+            color: var(--text); outline: none;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .field input:focus, .field select:focus, .field textarea:focus {
+            border-color: var(--gold); background: #fff;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
+        }
+        .field textarea {
+            resize: vertical; min-height: 80px;
+            font-family: inherit; line-height: 1.5;
+        }
+        .field .hint {
+            font-size: 11px; color: var(--muted); margin-top: 2px;
+        }
+
+        /* ACTION BAR */
+        .action-bar {
+            display: flex; justify-content: flex-end; gap: 12px;
+            padding: 20px 0;
+            position: sticky; bottom: 0;
+            background: linear-gradient(to top, var(--offwhite) 70%, transparent);
+        }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; padding: 12px 24px; border-radius: 10px;
+            font-family: inherit; font-size: 14px; font-weight: 600;
+            text-decoration: none; cursor: pointer; border: none;
+            transition: all 0.15s ease;
+        }
+        .btn-cancel {
+            background: transparent; color: var(--muted);
+            border: 1px solid var(--border);
+        }
+        .btn-cancel:hover { background: var(--beige); color: var(--navy); }
+        .btn-save {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            box-shadow: 0 4px 14px rgba(212,175,55,0.30);
+        }
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(212,175,55,0.40);
+        }
+
+        /* STATUS PILLS for radio-like dropdown */
+        .status-pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .status-pill-group label {
+            cursor: pointer; padding: 8px 14px;
+            border: 1px solid var(--border); border-radius: 999px;
+            font-size: 12px; font-weight: 600;
+            background: #fff; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+        .status-pill-group label:hover {
+            border-color: var(--gold); color: var(--navy);
+        }
+        .status-pill-group input[type="radio"] { display: none; }
+        .status-pill-group input[type="radio"]:checked + span {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            border-color: var(--gold);
+        }
+        .status-pill-group .pill-text {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            transition: all 0.15s ease;
+        }
+        .status-pill-group input[type="radio"]:checked + .pill-text {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            border-color: var(--gold);
+        }
+        .status-pill-group .dot-hot   { background-color: var(--red); }
+        .status-pill-group .dot-warm  { background-color: var(--amber); }
+        .status-pill-group .dot-cold  { background-color: var(--blue); }
+    </style>
+</head>
+<body>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="logo-mark">D</div>
+            <div>
+                <div class="brand-text">Dhyaan</div>
+                <div class="brand-sub">Employee Portal</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="user-pill">
+                <div class="avatar-mini"><%= (user.name || '?').charAt(0).toUpperCase() %></div>
+                <div class="user-name"><%= user.name %></div>
+            </div>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+
+        <div class="breadcrumb">
+            <a href="<%= backFor('leads') %>">← Back to Leads</a>
+        </div>
+
+        <!-- HERO -->
+        <div class="page-hero">
+            <h1>Add New Lead</h1>
+            <p>Capture lead details — assign manually or auto round-robin to the next sales exec.</p>
+            <div class="gold-line"></div>
+        </div>
+
+        <!-- FLASH -->
+        <% if (flash) { %>
+            <div class="flash flash-<%= flash.type %>"><%= flash.text %></div>
+        <% } %>
+
+        <!-- DEDUP BLOCK PANEL -->
+        <% if (duplicate) { %>
+            <div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.35);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
+                <div style="font-weight:700;color:#dc2626;margin-bottom:6px;">&#9888; Possible duplicate lead</div>
+                <div style="font-size:14px;color:#1a1a1a;line-height:1.5;">
+                    An <strong>active</strong> lead with this phone already exists:
+                    <strong><%= duplicate.name %></strong> (<%= duplicate.external_id %>) —
+                    <%= duplicate.owner_name ? 'owned by ' + duplicate.owner_name + ' (' + (duplicate.owner_code || '') + ')' : 'currently unassigned' %>,
+                    status <strong><%= duplicate.status %></strong>.
+                </div>
+                <% if (isAdmin) { %>
+                    <div style="margin-top:8px;">
+                        <a href="/admin/leads/<%= duplicate.lead_id %>" style="color:#0A1628;font-weight:600;text-decoration:underline;">View existing lead &rarr;</a>
+                    </div>
+                    <div style="margin-top:10px;font-size:13px;color:#6b6b6b;">Tick the override box below the form to create this lead anyway (logged as &ldquo;duplicate override&rdquo;).</div>
+                <% } else { %>
+                    <div style="margin-top:10px;font-size:13px;color:#6b6b6b;">Use a different phone, or ask an admin to override.</div>
+                <% } %>
+            </div>
+        <% } %>
+
+        <!-- FORM -->
+        <form method="POST" action="/leads/new" autocomplete="off">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <!-- SECTION 1: BASIC INFO -->
+            <div class="form-card">
+                <div class="section-head">
+                    <div class="icon">1</div>
+                    <h3>Contact Information</h3>
+                </div>
+                <div class="section-body">
+                    <div class="field-grid">
+                        <div class="field">
+                            <label>Full Name <span class="req">*</span></label>
+                            <input type="text" name="name" required minlength="2" maxlength="120"
+                                   value="<%= formData.name || '' %>"
+                                   placeholder="e.g. Rajesh Sharma" autofocus />
+                        </div>
+                        <div class="field">
+                            <label>Phone Number <span class="req">*</span></label>
+                            <input type="tel" name="phone" required maxlength="20"
+                                   value="<%= formData.phone || '' %>"
+                                   placeholder="e.g. 9876543210" />
+                            <div class="hint">Checked against active leads (last-10-digits) — admin can override</div>
+                        </div>
+                        <div class="field">
+                            <label>Email</label>
+                            <input type="email" name="email" maxlength="120"
+                                   value="<%= formData.email || '' %>"
+                                   placeholder="e.g. rajesh@example.com" />
+                        </div>
+                        <div class="field">
+                            <label>Preferred Location</label>
+                            <input type="text" name="location" list="location-list" maxlength="200"
+                                   value="<%= formData.location || '' %>"
+                                   placeholder="e.g. Kharghar Sector 11" />
+                            <datalist id="location-list">
+                                <% locations.forEach(function(loc) { %>
+                                    <option value="<%= loc %>"></option>
+                                <% }); %>
+                            </datalist>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: REQUIREMENT -->
+            <div class="form-card">
+                <div class="section-head">
+                    <div class="icon">2</div>
+                    <h3>Requirement & Budget</h3>
+                </div>
+                <div class="section-body">
+                    <div class="field-grid">
+                        <div class="field">
+                            <label>Budget</label>
+                            <input type="text" name="budget" maxlength="80"
+                                   value="<%= formData.budget || '' %>"
+                                   placeholder="e.g. ₹1-2 Cr or 75 Lakh" />
+                            <div class="hint">Free text — include unit (Cr, Lakh, K)</div>
+                        </div>
+                        <div class="field">
+                            <label>Lead Status</label>
+                            <div class="status-pill-group">
+                                <label>
+                                    <input type="radio" name="status" value="hot"
+                                           <%= (formData.status === 'hot') ? 'checked' : '' %> />
+                                    <span class="pill-text">🔥 Hot</span>
+                                </label>
+                                <label>
+                                    <input type="radio" name="status" value="warm"
+                                           <%= (formData.status === 'warm') ? 'checked' : '' %> />
+                                    <span class="pill-text">☀️ Warm</span>
+                                </label>
+                                <label>
+                                    <input type="radio" name="status" value="cold"
+                                           <%= (!formData.status || formData.status === 'cold') ? 'checked' : '' %> />
+                                    <span class="pill-text">❄️ Cold</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="field field-full">
+                            <label>Requirement Details</label>
+                            <textarea name="requirement" maxlength="2000"
+                                      placeholder="e.g. 2 BHK in Kharghar with parking, ready possession, sea-facing if possible"><%= formData.requirement || '' %></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: SOURCE & NEXT STEPS -->
+            <div class="form-card">
+                <div class="section-head">
+                    <div class="icon">3</div>
+                    <h3>Source & Next Steps</h3>
+                </div>
+                <div class="section-body">
+                    <div class="field-grid">
+                        <div class="field">
+                            <label>Lead Source</label>
+                            <select name="source">
+                                <option value="">— Select source —</option>
+                                <% sources.forEach(function(s) { %>
+                                    <option value="<%= s %>" <%= formData.source === s ? 'selected' : '' %>><%= s %></option>
+                                <% }); %>
+                            </select>
+                            <div class="hint">Where did this lead come from?</div>
+                        </div>
+                        <div class="field">
+                            <label>Assign To</label>
+                            <select name="assignee">
+                                <option value="auto" <%= (!formData.assignee || formData.assignee === 'auto') ? 'selected' : '' %>>Auto-assign (round-robin)</option>
+                                <% execs.forEach(function(ex) { %>
+                                    <option value="<%= ex.employee_id %>" <%= formData.assignee === ex.employee_id ? 'selected' : '' %>><%= ex.name %> (<%= ex.external_id %>)</option>
+                                <% }); %>
+                            </select>
+                            <div class="hint">Leave on Auto to round-robin to the next sales exec</div>
+                        </div>
+                        <div class="field">
+                            <label>Site Visit Date</label>
+                            <input type="date" name="site_visit_date"
+                                   value="<%= formData.site_visit_date || '' %>" />
+                        </div>
+                        <div class="field">
+                            <label>Next Action</label>
+                            <input type="text" name="next_action" maxlength="200"
+                                   value="<%= formData.next_action || '' %>"
+                                   placeholder="e.g. Call on Monday, send brochure" />
+                        </div>
+                        <div class="field">
+                            <label>Next Action Date</label>
+                            <input type="date" name="next_action_date"
+                                   value="<%= formData.next_action_date || '' %>" />
+                        </div>
+                        <div class="field field-full">
+                            <label>Initial Notes / Feedback</label>
+                            <textarea name="initial_feedback" maxlength="2000"
+                                      placeholder="e.g. Met at Kharghar event, very interested in 2BHK, decision-maker"><%= formData.initial_feedback || '' %></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN DEDUP OVERRIDE -->
+            <% if (isAdmin && duplicate) { %>
+                <div class="form-card" style="border:1px solid rgba(220,38,38,0.35);">
+                    <div class="section-body">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;color:#dc2626;">
+                            <input type="checkbox" name="override_dup" value="1" style="width:auto;" />
+                            Override the duplicate block and create this lead anyway
+                        </label>
+                        <div class="hint">Logged to change history with reason &ldquo;duplicate override&rdquo;.</div>
+                    </div>
+                </div>
+            <% } %>
+
+            <%- include('partials/lead-client-profile') %>
+
+            <!-- ACTIONS -->
+            <div class="action-bar">
+                <a href="<%= backFor('leads') %>" class="btn btn-cancel">Cancel</a>
+                <button type="submit" class="btn btn-save">💾 Save Lead</button>
+            </div>
+
+        </form>
+
+    </div>
+
+</body>
+</html>

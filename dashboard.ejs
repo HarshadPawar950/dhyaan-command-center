@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Dhyaan Employee Portal</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Page-specific layout only — all visual primitives come from design-system.css (ds-*). */
+    .emp-dash { padding: 28px 32px; max-width: 1500px; margin: 0 auto; }
+    .emp-dash .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .emp-dash .report-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+    .emp-dash .report-sys { font-size: .82rem; color: var(--ds-info); margin-top: .25rem; }
+    .emp-dash .report-sys.dim { color: var(--ds-faint); }
+    @media (max-width: 900px) {
+      .emp-dash .two-col { grid-template-columns: 1fr; }
+      .emp-dash .report-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <%- include('layout/sidebar') %>
+  <%- include('layout/topbar') %>
+  <main class="main-content">
+    <div class="emp-dash">
+
+      <!-- HERO -->
+      <div class="ds-hero ds-mb-6">
+        <div class="ds-between ds-wrap ds-gap-4">
+          <div>
+            <h1>Welcome back, <%= user.name || 'Captain' %></h1>
+            <div class="ds-hero-sub">Here's your business at a glance</div>
+            <span class="ds-gold-rule"></span>
+          </div>
+          <div class="ds-text-right">
+            <div class="ds-hero-sub">Today's Date</div>
+            <div style="font-family: var(--ds-font-head); color: #fff; font-weight: 600; margin-top: 4px;">
+              <%= new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="ds-kpi-grid ds-mb-6">
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+          </div>
+          <div class="ds-kpi-label">Follow-ups Due</div>
+          <div class="ds-kpi-value"><%= kpis.followUps %></div>
+          <div class="ds-kpi-foot">Pending contact</div>
+        </div>
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="ds-kpi-label">Active Deals</div>
+          <div class="ds-kpi-value"><%= kpis.activeDeals %></div>
+          <div class="ds-kpi-foot">Hot + Converted</div>
+        </div>
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="ds-kpi-label">Commission (₹)</div>
+          <div class="ds-kpi-value">₹<%= kpis.commission.toLocaleString('en-IN') %></div>
+          <div class="ds-kpi-foot">Total earned</div>
+        </div>
+        <div class="ds-kpi-card">
+          <div class="ds-kpi-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div class="ds-kpi-label">Today's Status</div>
+          <div class="ds-kpi-value" style="font-size: 1.5rem; padding-top: .4rem;"><%= kpis.attendance %></div>
+          <div class="ds-kpi-foot">Attendance</div>
+        </div>
+      </div>
+
+      <!-- INVENTORY STATS BAR -->
+      <div class="ds-stat-strip ds-mb-6">
+        <div class="ds-stat">
+          <div class="ds-stat-num"><%= propertyStats.total_projects %></div>
+          <div class="ds-stat-lbl">Projects</div>
+        </div>
+        <div class="ds-stat">
+          <div class="ds-stat-num"><%= propertyStats.total_units %></div>
+          <div class="ds-stat-lbl">Properties</div>
+        </div>
+        <div class="ds-stat">
+          <div class="ds-stat-num"><%= propertyStats.total_zones %></div>
+          <div class="ds-stat-lbl">Areas</div>
+        </div>
+        <div class="ds-stat">
+          <div class="ds-stat-num"><%= propertyStats.total_builders %></div>
+          <div class="ds-stat-lbl">Builders</div>
+        </div>
+      </div>
+
+      <!-- MY UPCOMING SITE VISITS (next 7 days) -->
+      <div class="ds-panel ds-mb-6">
+        <div class="ds-panel-head">
+          <div class="ds-panel-title">📍 My Upcoming Site Visits</div>
+          <span class="ds-panel-tag">Next 7 days</span>
+        </div>
+        <div class="ds-panel-body">
+          <% if (upcomingVisits && upcomingVisits.length) { %>
+            <% upcomingVisits.forEach(function(v) { %>
+              <div class="ds-list-row ds-between ds-gap-4 ds-wrap">
+                <span class="ds-gold" style="font-weight:700;min-width:132px;"><%= new Date(v.scheduled_at).toLocaleString('en-IN', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) %></span>
+                <span class="ds-list-primary ds-grow"><%= v.lead_name %></span>
+                <span class="ds-muted"><%= v.property_title %></span>
+                <span class="ds-badge ds-badge-cold"><%= v.status %></span>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div class="ds-empty">No visits scheduled in the next 7 days.</div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- TODAY'S EVENING REPORT -->
+      <%
+        const tr = todayReport || {};
+        const rv = (k) => (tr && tr[k] != null) ? tr[k] : '';
+      %>
+      <div class="ds-card ds-mb-6">
+        <div class="ds-between ds-mb-4">
+          <div class="ds-panel-title">🌆 Today's Report</div>
+          <span class="ds-badge <%= todayReport ? 'ds-badge-success' : 'ds-badge-warm' %>">
+            <%= todayReport ? ('Submitted' + (todayReport.updated_at ? ' · edited' : '')) : 'Not submitted yet' %>
+          </span>
+        </div>
+        <form method="POST" action="/reports/daily">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="report-grid">
+            <div>
+              <label class="ds-label">Calls Made</label>
+              <input class="ds-input" type="number" name="calls_made" min="0" value="<%= rv('calls_made') %>" placeholder="0">
+              <div class="report-sys">Follow-ups (system): <%= todaySystem.sys_followups %></div>
+            </div>
+            <div>
+              <label class="ds-label">Follow-ups</label>
+              <input class="ds-input" type="number" name="followups_done" min="0" value="<%= rv('followups_done') %>" placeholder="0">
+              <div class="report-sys dim">self-reported</div>
+            </div>
+            <div>
+              <label class="ds-label">Site Visits</label>
+              <input class="ds-input" type="number" name="visits_done" min="0" value="<%= rv('visits_done') %>" placeholder="0">
+              <div class="report-sys">system: <%= todaySystem.sys_visits %></div>
+            </div>
+            <div>
+              <label class="ds-label">New Leads</label>
+              <input class="ds-input" type="number" name="new_leads" min="0" value="<%= rv('new_leads') %>" placeholder="0">
+              <div class="report-sys">system*: <%= todaySystem.sys_new_leads %></div>
+            </div>
+          </div>
+          <textarea class="ds-textarea ds-mb-4" name="notes" rows="2" maxlength="1000" placeholder="Notes on the day (optional)"><%= rv('notes') %></textarea>
+          <div class="ds-center ds-gap-4 ds-wrap">
+            <button type="submit" class="ds-btn ds-btn-gold"><%= todayReport ? 'Update Today\'s Report' : 'Submit Today\'s Report' %></button>
+            <span class="ds-hint">Editable until midnight. Blue = system-counted for today. <em>*new-leads = leads assigned to you today (no lead-creator field in schema).</em></span>
+          </div>
+        </form>
+      </div>
+
+      <!-- MAIN GRID: HOT LEADS + FEATURED PROPERTIES -->
+      <div class="two-col">
+
+        <!-- HOT LEADS -->
+        <div class="ds-panel">
+          <div class="ds-panel-head">
+            <div class="ds-panel-title">🔥 Hot Leads</div>
+            <a href="/leads" class="ds-panel-link">View All Leads →</a>
+          </div>
+          <div class="ds-panel-body">
+            <% if (hotLeads.length === 0) { %>
+              <div class="ds-empty">No hot leads yet. Push your warm leads!</div>
+            <% } else { %>
+              <% hotLeads.forEach(function(lead) { %>
+                <a href="/leads/<%= lead.lead_id %>" class="ds-list-row ds-accent-hot">
+                  <div class="ds-list-primary"><%= lead.name || 'Unknown' %></div>
+                  <div class="ds-list-meta">
+                    <span>📞 <%= lead.phone || 'No phone' %></span>
+                    <span>💰 <%= lead.budget || 'Not specified' %></span>
+                  </div>
+                  <% if (lead.requirement) { %>
+                    <div class="ds-list-meta"><span>🏠 <%= lead.requirement %></span></div>
+                  <% } %>
+                  <% if (lead.last_feedback) { %>
+                    <div class="ds-list-meta" style="font-style:italic;color:#92400E;">💬 <%= lead.last_feedback.length > 80 ? lead.last_feedback.substring(0, 80) + '...' : lead.last_feedback %></div>
+                  <% } %>
+                </a>
+              <% }); %>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- FEATURED PROPERTIES -->
+        <div class="ds-panel">
+          <div class="ds-panel-head">
+            <div class="ds-panel-title">🏘️ Featured Properties</div>
+            <a href="<%= propsBase %>" class="ds-panel-link">View All <%= propertyStats.total_projects %> Projects →</a>
+          </div>
+          <div class="ds-panel-body">
+            <% if (topProperties.length === 0) { %>
+              <div class="ds-empty">No properties available</div>
+            <% } else { %>
+              <% topProperties.forEach(function(prop) { %>
+                <a href="<%= propsBase %>/<%= prop.project_id %>" class="ds-list-row ds-accent-warm">
+                  <div class="ds-list-primary" style="font-family:var(--ds-font-head);"><%= prop.title %></div>
+                  <div class="ds-list-meta">
+                    <span>📍 <%= prop.area_zone || 'TBD' %></span>
+                    <span>🏠 <%= prop.configurations || 'TBD' %></span>
+                  </div>
+                  <div class="ds-gold" style="font-family:var(--ds-font-head);font-weight:600;margin-top:4px;"><%= prop.price_range || 'On request' %></div>
+                </a>
+              <% }); %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW: WARM LEADS + RECENT FEEDBACK -->
+      <div class="two-col">
+
+        <!-- WARM LEADS -->
+        <div class="ds-panel">
+          <div class="ds-panel-head">
+            <div class="ds-panel-title">🌡️ Warm Leads</div>
+            <a href="/leads" class="ds-panel-link">View All →</a>
+          </div>
+          <div class="ds-panel-body">
+            <% if (warmLeads.length === 0) { %>
+              <div class="ds-empty">No warm leads currently</div>
+            <% } else { %>
+              <% warmLeads.forEach(function(lead) { %>
+                <a href="/leads/<%= lead.lead_id %>" class="ds-list-row ds-accent-warm">
+                  <div class="ds-list-primary"><%= lead.name || 'Unknown' %></div>
+                  <div class="ds-list-meta">
+                    <span>📞 <%= lead.phone || 'No phone' %></span>
+                    <span>💰 <%= lead.budget || 'Not specified' %></span>
+                  </div>
+                </a>
+              <% }); %>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- RECENT FEEDBACK -->
+        <div class="ds-panel">
+          <div class="ds-panel-head">
+            <div class="ds-panel-title">💬 Recent Feedback</div>
+            <a href="/feedback" class="ds-panel-link">Add Feedback →</a>
+          </div>
+          <div class="ds-panel-body">
+            <% if (recentFeedback.length === 0) { %>
+              <div class="ds-empty">No feedback recorded yet</div>
+            <% } else { %>
+              <% recentFeedback.forEach(function(fb) { %>
+                <div class="ds-list-row">
+                  <div class="ds-list-primary"><%= fb.lead_name %> <% if (fb.rating) { %><span class="ds-gold"><%= '★'.repeat(fb.rating) %></span><% } %></div>
+                  <div class="ds-list-meta" style="display:block;"><%= (fb.comments || '').substring(0, 120) %><%= fb.comments && fb.comments.length > 120 ? '...' : '' %></div>
+                  <div class="ds-hint"><%= new Date(fb.created_at).toLocaleString('en-IN') %></div>
+                </div>
+              <% }); %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</body>
+</html>

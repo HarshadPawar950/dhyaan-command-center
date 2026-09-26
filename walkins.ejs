@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %> | Dhyaan Realty</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ---- WALK-IN — mobile-first, single column, one field per row ---- */
+    .wi-hero-line { display:inline-block; width:36px; height:3px; background:var(--accent-color); margin-top:12px; border-radius:2px; }
+
+    /* single centred column; comfortable on phone, not stretched on desktop */
+    .wi-wrap { max-width:620px; margin:20px auto 0; padding:0 18px; }
+
+    .wi-card { background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; }
+    .wi-strip { height:3px; background:linear-gradient(90deg,var(--accent-color) 0%,var(--gold-soft) 100%); }
+    .wi-head { padding:18px 22px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+    .wi-head .ic { width:38px; height:38px; border-radius:10px; background:rgba(212,175,55,0.14); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .wi-head h2 { font-size:19px; margin:0; }
+    .wi-head p { font-size:12px; color:var(--muted); margin:0; }
+    .wi-body { padding:18px 22px 22px; }
+
+    /* large, one-per-row inputs — 48px tap target, 16px text (no iOS zoom) */
+    .wi-body .form-group { margin-bottom:16px; }
+    .wi-body label { display:block; font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:6px; }
+    .wi-body .form-control { width:100%; min-height:48px; font-size:16px; padding:12px 14px; box-sizing:border-box; border-radius:10px; }
+    .wi-body textarea.form-control { min-height:96px; }
+
+    /* "Add more details" expander */
+    .wi-more { margin:4px 0 8px; border-top:1px dashed var(--border); }
+    .wi-more > summary { list-style:none; cursor:pointer; padding:14px 2px; font-size:14px; font-weight:600; color:var(--gold-dark); display:flex; align-items:center; gap:8px; min-height:44px; box-sizing:border-box; }
+    .wi-more > summary::-webkit-details-marker { display:none; }
+    .wi-more > summary .chev { transition:transform .2s; font-size:12px; }
+    .wi-more[open] > summary .chev { transform:rotate(90deg); }
+    .wi-more[open] > summary { border-bottom:1px solid var(--border); margin-bottom:16px; }
+
+    /* inline submit (desktop) */
+    .wi-submit-inline { width:100%; min-height:52px; font-size:16px; margin-top:4px; box-sizing:border-box; }
+
+    /* recent walk-ins — collapsed, stacked cards */
+    .wi-recent { margin-top:18px; }
+    .wi-recent > summary { list-style:none; cursor:pointer; padding:16px 20px; display:flex; align-items:center; gap:12px; min-height:44px; box-sizing:border-box; }
+    .wi-recent > summary::-webkit-details-marker { display:none; }
+    .wi-recent > summary .ic { width:34px; height:34px; border-radius:9px; background:rgba(212,175,55,0.14); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .wi-recent > summary h2 { font-size:16px; margin:0; }
+    .wi-recent > summary .wi-count { margin-left:auto; font-size:12px; font-weight:700; color:var(--gold-dark); background:rgba(212,175,55,0.14); padding:4px 11px; border-radius:999px; }
+    .wi-recent > summary .chev { transition:transform .2s; font-size:12px; color:var(--muted); }
+    .wi-recent[open] > summary .chev { transform:rotate(90deg); }
+    .wi-cards { padding:6px 16px 16px; display:flex; flex-direction:column; gap:10px; }
+    .wi-rcard { border:1px solid var(--border); border-radius:12px; padding:13px 15px; background:var(--beige); }
+    .wi-rcard-top { display:flex; align-items:center; gap:10px; }
+    .wi-rcard-top .nm { font-weight:700; font-size:14px; color:var(--primary-color); }
+    .wi-rcard-top .status-badge { margin-left:auto; }
+    .wi-rcard-sub { margin-top:5px; font-size:12px; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap; }
+    .wi-empty { text-align:center; color:var(--muted); font-size:14px; padding:34px 20px; line-height:1.7; }
+
+    /* ---- MOBILE (<=768, shell active): kill the double-navy hero, use the
+           sticky action bar for submit, clear space for it ---- */
+    @media (max-width:768px) {
+      body.mshell .wi-hero { display:none; }
+      body.mshell .wi-wrap { margin-top:8px; padding:0 14px 96px; }
+      body.mshell .ds-action-bar { display:block; }
+      body.mshell .wi-submit-inline { display:none; }
+      .ds-action-bar .btn { width:100%; min-height:50px; font-size:16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <%- include('layout/sidebar') %>
+    <main class="main-content">
+      <%- include('layout/topbar') %>
+      <%- include('layout/messages') %>
+
+      <!-- Desktop hero. Hidden on mobile (the navy .ds-mtop bar already supplies
+           the page title — showing this too would stack two navy bands). -->
+      <div class="page-hero wi-hero">
+        <h1>Walk-ins</h1>
+        <p>Register gallery walk-ins and assign them to yourself instantly.</p>
+        <div class="wi-hero-line"></div>
+      </div>
+
+      <div class="wi-wrap">
+        <!-- REGISTER FORM -->
+        <form action="/walkins" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="wi-card">
+            <div class="wi-strip"></div>
+            <div class="wi-head">
+              <div class="ic">🚶</div>
+              <div><h2>Register Walk-in</h2><p>Assigned to you on submit</p></div>
+            </div>
+            <div class="wi-body">
+              <div class="form-group">
+                <label for="name">Client Name *</label>
+                <input type="text" id="name" name="name" class="form-control" autocomplete="name" required>
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone Number *</label>
+                <input type="tel" id="phone" name="phone" class="form-control" inputmode="tel" autocomplete="tel" required>
+              </div>
+
+              <details class="wi-more">
+                <summary><span class="chev">▶</span> Add more details</summary>
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" class="form-control" inputmode="email" autocomplete="email">
+                </div>
+                <div class="form-group">
+                  <label for="requirement">Requirements</label>
+                  <textarea id="requirement" name="requirement" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="budget">Budget</label>
+                  <input type="text" id="budget" name="budget" class="form-control" inputmode="numeric" autocomplete="off">
+                </div>
+                <div class="form-group">
+                  <label for="location">Preferred Location</label>
+                  <input type="text" id="location" name="location" class="form-control" autocomplete="off">
+                </div>
+              </details>
+
+              <!-- desktop submit (in-flow); mobile uses the sticky bar below -->
+              <button type="submit" class="btn btn-accent wi-submit-inline">✓ Register &amp; Assign to Me</button>
+            </div>
+          </div>
+
+          <!-- MOBILE sticky action bar (shell primitive; revealed <=768) -->
+          <div class="ds-action-bar">
+            <button type="submit" class="btn btn-accent">✓ Register &amp; Assign to Me</button>
+          </div>
+        </form>
+
+        <!-- RECENT WALK-INS — collapsed, stacked cards -->
+        <details class="wi-card wi-recent">
+          <summary>
+            <span class="ic">📋</span>
+            <h2>Recent Walk-ins</h2>
+            <span class="wi-count"><%= walkins ? walkins.length : 0 %></span>
+            <span class="chev">▶</span>
+          </summary>
+          <div class="wi-cards">
+            <% if (walkins && walkins.length > 0) { %>
+              <% walkins.forEach(w => { %>
+                <div class="wi-rcard">
+                  <div class="wi-rcard-top">
+                    <span class="nm"><%= w.name %></span>
+                    <span class="status-badge status-<%= w.status %>"><%= w.status %></span>
+                  </div>
+                  <div class="wi-rcard-sub">
+                    <span><%= w.phone %></span>
+                    <span><%= new Date(w.created_at).toLocaleDateString() %></span>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="wi-empty">No walk-ins registered yet.<br>Register your first walk-in above.</div>
+            <% } %>
+          </div>
+        </details>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

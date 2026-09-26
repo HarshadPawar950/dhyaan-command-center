@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found | Dhyaan Realty</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0A1628 0%, #1a2a40 100%); font-family: 'Inter', sans-serif; }
+    .not-found-card { background: #FAFAF7; border-top: 4px solid #D4AF37; border-radius: 12px; padding: 3rem 3.5rem; max-width: 500px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .error-code { font-family: 'Playfair Display', serif; font-size: 5rem; color: #D4AF37; font-weight: 700; line-height: 1; margin-bottom: 0.5rem; }
+    .error-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #0A1628; margin-bottom: 0.75rem; }
+    .error-message { color: #6B7280; margin-bottom: 2rem; line-height: 1.6; }
+    .home-btn { display: inline-block; background: #D4AF37; color: #0A1628; padding: 0.8rem 2rem; border-radius: 6px; text-decoration: none; font-weight: 600; transition: background 0.2s; }
+    .home-btn:hover { background: #B8961F; }
+  </style>
+</head>
+<body>
+  <%
+    // Role-aware home — computed globally into res.locals.homePath (lib/navHome).
+    // Fallbacks keep this page bullet-proof even if a route rendered it directly.
+    var _u = (typeof user !== 'undefined') ? user : null;
+    var _home = (typeof homePath !== 'undefined' && homePath) ? homePath
+              : (_u && (_u.access_role === 'admin' || _u.access_role === 'super_admin') ? '/admin/dashboard'
+              : (_u ? '/dashboard' : '/login'));
+    var _label = _home === '/login' ? 'Go to Login'
+              : (_home === '/admin/dashboard' ? 'Back to Admin Dashboard'
+              : (_home === '/hr/dashboard' ? 'Back to HR Dashboard' : 'Back to Dashboard'));
+  %>
+  <div class="not-found-card">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Page Not Found</h1>
+    <p class="error-message">The page you're looking for doesn't exist or has been moved.</p>
+    <a href="<%= _home %>" class="home-btn">← <%= _label %></a>
+  </div>
+</body>
+</html>

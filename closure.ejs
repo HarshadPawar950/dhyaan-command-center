@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %> | Dhyaan Realty</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <%- include('layout/sidebar') %>
+    <main class="main-content">
+      <%- include('layout/topbar') %>
+      <%- include('layout/messages') %>
+      <div class="page-hero">
+        <h1>Mark Closure</h1>
+        <p>Celebrate the win - mark a deal as converted.</p>
+      </div>
+      <div class="card" style="max-width: 600px; margin: 24px auto 0;">
+        <h2 style="margin-bottom: 1rem; text-align: center; color: var(--success-color);">Mark Deal as Closed</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 2rem;">Select a lead and confirm the closure.</p>
+        <form action="/closure" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-group">
+            <label for="lead_id">Select Lead</label>
+            <select name="lead_id" id="lead_id" class="form-control" required>
+              <option value="" disabled selected>-- Choose a lead --</option>
+              <% leads.forEach(lead => { %>
+                <option value="<%= lead.lead_id %>"><%= lead.name %> - [<%= lead.status.toUpperCase() %>]</option>
+              <% }) %>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-accent" style="width: 100%; margin-top: 1rem; background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); border-color: #16a34a; color: #fff;">Confirm Closure</button>
+        </form>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
