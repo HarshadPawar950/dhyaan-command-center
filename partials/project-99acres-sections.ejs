@@ -1,0 +1,51 @@
+<%
+    // Shared 99acres READ sections (About / Amenities / Location Advantages).
+    // Included by BOTH property-detail.ejs (employee) and admin/projects-detail.ejs
+    // so the two detail pages can never diverge again. Expects `property`,
+    // `amenities` (array) in scope; degrades gracefully if absent.
+    var _p99  = (typeof property  !== 'undefined' && property)  ? property  : {};
+    var _am99 = (typeof amenities !== 'undefined' && amenities) ? amenities : [];
+    var _la99 = (_p99.location_advantages && _p99.location_advantages.length) ? _p99.location_advantages : [];
+%>
+<style>
+    .s99{background:#fff;border-radius:14px;border:1px solid rgba(10,22,40,0.08);box-shadow:0 4px 24px rgba(10,22,40,0.06);overflow:hidden;margin-bottom:22px;}
+    .s99-head{padding:16px 22px;border-bottom:1px solid rgba(10,22,40,0.08);display:flex;justify-content:space-between;align-items:center;}
+    .s99-head h2{font-family:'Playfair Display',serif;font-size:17px;color:#0A1628;font-weight:600;}
+    .s99-body{padding:20px 22px;}
+    .s99-amen{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+    .s99-amen .cell{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#F4EFE6;border-radius:10px;}
+    .s99-amen .tick{width:26px;height:26px;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;color:#16a34a;font-weight:700;flex-shrink:0;}
+    .s99-amen .nm{font-size:13px;font-weight:600;color:#0A1628;}
+    .s99-la{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
+    .s99-la li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:#1a1a1a;}
+    .s99-la .pin{color:#B8941F;font-weight:700;flex-shrink:0;}
+</style>
+
+<% if (_p99.about) { %>
+<div class="s99">
+    <div class="s99-head"><h2>About this Project</h2></div>
+    <div class="s99-body"><div style="font-size:14px;line-height:1.7;color:#1a1a1a;white-space:pre-line;"><%= _p99.about %></div></div>
+</div>
+<% } %>
+
+<% if (_am99.length) { %>
+<div class="s99">
+    <div class="s99-head"><h2>Amenities</h2><span style="font-size:11px;color:#B8941F;font-weight:600;letter-spacing:1px;"><%= _am99.length %></span></div>
+    <div class="s99-body">
+        <div class="s99-amen">
+            <% _am99.forEach(function(a){ %><div class="cell"><span class="tick">✓</span><span class="nm"><%= a.name %></span></div><% }); %>
+        </div>
+    </div>
+</div>
+<% } %>
+
+<% if (_la99.length) { %>
+<div class="s99">
+    <div class="s99-head"><h2>Location Advantages</h2></div>
+    <div class="s99-body">
+        <ul class="s99-la">
+            <% _la99.forEach(function(item){ %><li><span class="pin">📍</span><span><%= item %></span></li><% }); %>
+        </ul>
+    </div>
+</div>
+<% } %>

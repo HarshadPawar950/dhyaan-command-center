@@ -1,0 +1,303 @@
+<%
+    // Dhyaan project SHEET form — mirrors the workbook line by line (021+022+023).
+    // Expects: sheet, formData, canSeeMarketing. Optional (edit): amenityGroups,
+    // selectedAmenities. RULE 1: category card is the FIRST element; nothing else
+    // renders until >=1 category is ticked. RULE 2: groups 1->7 in exact order,
+    // G3+G4 duplicated per ticked side.
+    var S    = (typeof sheet !== 'undefined' && sheet) ? sheet : {};
+    var fd   = (typeof formData !== 'undefined' && formData) ? formData : {};
+    var mkt  = (typeof canSeeMarketing !== 'undefined') ? canSeeMarketing : false;
+    var groups = S.SHEET || [];
+    var sides  = S.SIDES || [];
+    var amenityGroups     = (typeof amenityGroups !== 'undefined') ? amenityGroups : null;
+    var selectedAmenities = (typeof selectedAmenities !== 'undefined') ? selectedAmenities : new Set();
+    function isChecked(f){ var v = fd[f]; return v === true || v === 'true' || v === 'on' || v === '1'; }
+    function esc(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    // render one input cell. name = actual field/column; fl = spec field
+    function cell(name, fl){
+        var val = fd[name];
+        var full = (fl.kind === 'textarea');
+        var h = '<div class="sheet-f' + (full ? ' full' : '') + '">';
+        h += '<label>' + esc(fl.label) + '</label>';
+        if (fl.kind === 'textarea') h += '<textarea name="' + name + '" maxlength="2000">' + esc(val) + '</textarea>';
+        else if (fl.kind === 'num') {
+            // Client-side first line of defence: a magnitude ceiling so a fat-fingered
+            // 20-digit number is rejected before submit. Integer fields step by 1; the
+            // real gate is the server-side validateNumbers() check. max=1e12 default.
+            var _mx = (fl.max != null) ? fl.max : 1000000000000;
+            var _step = fl.int ? '1' : 'any';
+            h += '<input type="number" step="' + _step + '" min="0" max="' + _mx + '" inputmode="' + (fl.int ? 'numeric' : 'decimal') + '" name="' + name + '" value="' + esc(val) + '" />';
+        }
+        else h += '<input type="text" name="' + name + '" maxlength="300" value="' + esc(val) + '" />';
+        return h + '</div>';
+    }
+%>
+<style>
+    .sheet-cat{display:flex;gap:10px;margin-bottom:8px;}
+    .sheet-cat label{flex:1;border:1.5px solid var(--border,#e5e5e5);border-radius:10px;padding:14px 16px;cursor:pointer;font-weight:600;text-align:center;background:#fff;font-size:15px;}
+    .sheet-cat input{position:absolute;opacity:0;}
+    .sheet-cat label:has(input:checked){border-color:#D4AF37;background:rgba(212,175,55,0.10);}
+    #sheet-body[hidden]{display:none;}
+    .sheet-gate-hint{font-size:13px;color:#6b6b6b;margin-top:6px;}
+    .sheet-acc{border:1px solid var(--border,#e5e5e5);border-radius:12px;margin-bottom:12px;overflow:hidden;background:#fff;}
+    .sheet-acc>summary{list-style:none;cursor:pointer;padding:14px 20px;font-family:'Playfair Display',serif;font-weight:600;color:#0A1628;font-size:15px;display:flex;justify-content:space-between;align-items:center;background:#F4EFE6;}
+    .sheet-acc>summary::-webkit-details-marker{display:none;}
+    .sheet-acc>summary::after{content:'▸';color:#B8941F;transition:transform .15s;}
+    .sheet-acc[open]>summary::after{transform:rotate(90deg);}
+    .sheet-acc .body{padding:18px 20px;}
+    .sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;}
+    @media(max-width:700px){.sheet-grid{grid-template-columns:1fr;}}
+    .sheet-f{display:flex;flex-direction:column;gap:5px;}
+    .sheet-f.full{grid-column:1/-1;}
+    .sheet-f label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b6b6b;font-weight:600;}
+    .sheet-f input,.sheet-f textarea{font-family:inherit;font-size:14px;padding:10px 13px;border:1px solid var(--border,#e5e5e5);border-radius:9px;background:#FAFAF7;}
+    .sheet-f textarea{min-height:64px;resize:vertical;}
+    .internal-badge{font-size:10px;font-weight:700;color:#dc2626;background:rgba(220,38,38,0.1);padding:2px 8px;border-radius:5px;letter-spacing:.5px;}
+    /* structured choices (024) */
+    .opt-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
+    .opt-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border:1px solid var(--border,#e5e5e5);border-radius:999px;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#0A1628;}
+    .opt-pill input{accent-color:#B8941F;width:15px;height:15px;margin:0;cursor:pointer;}
+    .opt-pill:has(input:checked){border-color:#D4AF37;background:rgba(212,175,55,0.13);}
+    .type-set{margin-top:10px;}
+    .type-set-h{font-size:12px;font-weight:700;color:#0A1628;margin-bottom:6px;}
+    .unit-rows{display:flex;flex-direction:column;gap:8px;margin:4px 0 8px;}
+    .unit-row{display:grid;grid-template-columns:1.2fr 1.2fr 1fr auto;gap:8px;align-items:center;}
+    .unit-row input{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--border,#e5e5e5);border-radius:9px;background:#FAFAF7;}
+    .unit-rm{border:none;background:rgba(220,38,38,0.1);color:#dc2626;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:700;}
+    .unit-add{border:1px dashed #D4AF37;background:rgba(212,175,55,0.08);color:#B8941F;border-radius:9px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:13px;}
+    .cat-block{border:1.5px solid rgba(212,175,55,0.35);border-radius:12px;padding:14px 16px 4px;margin-bottom:14px;background:rgba(212,175,55,0.04);}
+    .cat-block>.cbh{font-family:'Playfair Display',serif;font-weight:700;color:#0A1628;font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+    .cat-block>.cbh .chip{font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 9px;border-radius:20px;background:#0A1628;color:#D4AF37;}
+    .sheet-widget{grid-column:1/-1;padding:12px 14px;border:1px dashed var(--border,#e5e5e5);border-radius:9px;background:#FAFAF7;}
+    .sheet-widget .wl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#6b6b6b;font-weight:600;margin-bottom:8px;}
+    .amx{display:flex;flex-wrap:wrap;gap:8px;}
+    .amx label{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;border:1px solid var(--border,#e5e5e5);border-radius:999px;padding:6px 12px;cursor:pointer;background:#fff;}
+    .amx label:has(input:checked){border-color:#D4AF37;background:rgba(212,175,55,0.12);}
+</style>
+
+<!-- ===== RULE 1: CATEGORY FIRST — the only thing visible until a tick ===== -->
+<div class="form-card" id="category-card">
+    <div class="section-head"><div class="icon">◑</div><h3>Category <span class="req">*</span></h3></div>
+    <div class="section-body">
+        <div class="sheet-cat">
+            <% sides.forEach(function(sd){ %>
+                <label><input type="checkbox" name="<%= sd.flag %>" value="1" <%= isChecked(sd.flag) ? 'checked' : '' %> onchange="sheetReveal()"> <span><%= sd.icon %> <%= sd.label %></span></label>
+            <% }); %>
+        </div>
+        <div class="sheet-gate-hint">Basic info and Property Status (incl. Saleable &amp; Carpet area) are below and always editable. Tick <strong>Residential</strong>, <strong>Commercial</strong>, or both (mixed-use) to reveal the per-category Configuration, Pricing &amp; Marketing groups.</div>
+    </div>
+</div>
+
+<!-- ===== RULE 2: sheet groups in order. Groups 1-2 (project-level: name, location,
+     status/structure incl. Saleable + Carpet area) render ALWAYS — they are not
+     category-specific. Groups 3-7 (per-category Config & Pricing, Amenities,
+     Marketing) stay hidden inside #sheet-body until a category is ticked. The gate
+     div opens at the first group with n >= 3, so 1-2 sit above it, always visible. ===== -->
+<% var gatedOpen = false; %>
+<% groups.forEach(function(g){ %>
+    <% if (g.n >= 3 && !gatedOpen) { gatedOpen = true; %>
+<div id="sheet-body" <%= (isChecked('has_residential') || isChecked('has_commercial')) ? '' : 'hidden' %>>
+    <% } %>
+    <% if (g.internal && !mkt) { return; } %>
+    <% if (g.perCategory) { %>
+        <!-- PER-CATEGORY group: one block per ticked side -->
+        <% sides.forEach(function(sd){ %>
+            <div class="cat-block" data-side="<%= sd.key %>" style="<%= isChecked(sd.flag) ? '' : 'display:none;' %>">
+                <div class="cbh"><%= sd.icon %> <%= sd.label %> — Group <%= g.n %>: <%= g.title %> <span class="chip"><%= sd.badge %></span></div>
+                <div class="sheet-grid">
+                    <% g.fields.forEach(function(fl){ %>
+                        <% if (fl.kind === 'units') { %>
+                            <div class="sheet-f full">
+                                <label><%= fl.label %> <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#6b6b6b;">— the actual units currently available (Unit No · Area · Floor)</span></label>
+                                <div class="unit-rows" data-unit-side="<%= sd.key %>">
+                                    <% var _urows = (typeof unitsData !== 'undefined' && unitsData && unitsData[sd.key] && unitsData[sd.key].length) ? unitsData[sd.key] : [{unit_no:'',unit_area:'',floor_no:''}]; %>
+                                    <% _urows.forEach(function(u){ %>
+                                        <div class="unit-row">
+                                            <input type="text" name="<%= sd.key %>_unit_no" placeholder="Unit No (e.g. A-1203)" value="<%= esc(u.unit_no) %>">
+                                            <input type="text" name="<%= sd.key %>_unit_area" placeholder="Unit Area Available (e.g. 685 sqft)" value="<%= esc(u.unit_area) %>">
+                                            <input type="text" name="<%= sd.key %>_floor_no" placeholder="Floor No (optional)" value="<%= esc(u.floor_no) %>">
+                                            <button type="button" class="unit-rm" onclick="unitRm(this)" title="Remove">✕</button>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                                <button type="button" class="unit-add" onclick="unitAdd('<%= sd.key %>')">+ Add unit</button>
+                            </div>
+                        <% } else { %>
+                            <%- cell(sd.prefix + fl.name, fl) %>
+                        <% } %>
+                    <% }); %>
+                </div>
+            </div>
+        <% }); %>
+    <% } else { %>
+        <details class="sheet-acc" <%= g.n <= 2 ? 'open' : '' %>>
+            <summary><span>Group <%= g.n %>: <%= g.title %> <% if (g.internal) { %><span class="internal-badge">ADMIN ONLY</span><% } %></span></summary>
+            <div class="body">
+                <div class="sheet-grid">
+                    <% g.fields.forEach(function(fl){ %>
+                        <% if (fl.kind === 'widget' && fl.widget === 'amenities') { %>
+                            <div class="sheet-widget">
+                                <div class="wl">Amenities</div>
+                                <% if (amenityGroups) { %>
+                                    <div class="amx">
+                                        <% Object.keys(amenityGroups).forEach(function(cat){ amenityGroups[cat].forEach(function(a){ %>
+                                            <label><input type="checkbox" name="amenities" value="<%= a.amenity_id %>" <%= selectedAmenities.has(a.amenity_id) ? 'checked' : '' %>> <%= a.name %></label>
+                                        <% }); }); %>
+                                    </div>
+                                <% } else { %>
+                                    <div style="font-size:13px;color:#6b6b6b;">Save the project first, then add amenities from the edit screen.</div>
+                                <% } %>
+                            </div>
+                        <% } else if (fl.kind === 'widget') { %>
+                            <div class="sheet-widget">
+                                <div class="wl"><%= fl.label %></div>
+                                <div style="font-size:13px;color:#6b6b6b;"><%= fl.label %> files are managed in the media manager on the edit screen after saving.</div>
+                            </div>
+                        <% } else if (fl.kind === 'statuses') { %>
+                            <% var _selS = Array.isArray(fd.status_of_property) ? fd.status_of_property : (fd.status_of_property ? [fd.status_of_property] : []); %>
+                            <div class="sheet-f full">
+                                <label><%= fl.label %> <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#6b6b6b;">— multi-select</span></label>
+                                <div class="opt-row">
+                                    <% (S.STATUS_OPTIONS || []).forEach(function(o){ %>
+                                        <label class="opt-pill"><input type="checkbox" name="status_of_property" value="<%= o.value %>" <%= _selS.indexOf(o.value) !== -1 ? 'checked' : '' %>> <%= o.label %></label>
+                                    <% }); %>
+                                </div>
+                            </div>
+                        <% } else if (fl.kind === 'buckets') { %>
+                            <% var _selB = Array.isArray(fd.budget_ranges) ? fd.budget_ranges : (fd.budget_ranges ? [fd.budget_ranges] : []); %>
+                            <div class="sheet-f full">
+                                <label><%= fl.label %> <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#6b6b6b;">— multi-select</span></label>
+                                <div class="opt-row">
+                                    <% (S.BUDGET_OPTIONS || []).forEach(function(o){ %>
+                                        <label class="opt-pill"><input type="checkbox" name="budget_ranges" value="<%= o.key %>" <%= _selB.indexOf(o.key) !== -1 ? 'checked' : '' %>> <%= o.label %></label>
+                                    <% }); %>
+                                </div>
+                                <!-- 054: free-text figure for the 'Other' bucket — revealed only when Other is ticked -->
+                                <div id="budget-other-wrap" style="<%= _selB.indexOf('other') !== -1 ? '' : 'display:none;' %>margin-top:8px;">
+                                    <label>Other budget (specify)</label>
+                                    <input type="text" name="budget_other" value="<%= esc(fd.budget_other) %>" placeholder="e.g. 45L – 55L or On request">
+                                </div>
+                            </div>
+                        <% } else if (fl.kind === 'types') { %>
+                            <% var _selT = Array.isArray(fd.property_type) ? fd.property_type : (fd.property_type ? [fd.property_type] : []); %>
+                            <div class="sheet-f full">
+                                <label><%= fl.label %> <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#6b6b6b;">— multi-select</span></label>
+                                <% sides.forEach(function(sd){ var _opts = (S.TYPE_OPTIONS || {})[sd.key] || []; %>
+                                    <div class="type-set" data-side="<%= sd.key %>" style="<%= isChecked(sd.flag) ? '' : 'display:none;' %>">
+                                        <div class="type-set-h"><%= sd.icon %> <%= sd.label %></div>
+                                        <div class="opt-row">
+                                            <% _opts.forEach(function(t){ %>
+                                                <label class="opt-pill"><input type="checkbox" name="property_type" value="<%= esc(t) %>" <%= _selT.indexOf(t) !== -1 ? 'checked' : '' %>> <%= t %></label>
+                                            <% }); %>
+                                            <!-- 058: per-side "Other" free-text (mirror of budget_other) -->
+                                            <label class="opt-pill"><input type="checkbox" class="type-other-cb" data-side="<%= sd.key %>" name="<%= sd.key %>_type_other" value="1" <%= fd['property_type_other_' + sd.key] ? 'checked' : '' %>> Other</label>
+                                        </div>
+                                        <div class="type-other-wrap" data-side="<%= sd.key %>" style="<%= fd['property_type_other_' + sd.key] ? '' : 'display:none;' %>margin-top:6px;">
+                                            <input type="text" name="property_type_other_<%= sd.key %>" value="<%= esc(fd['property_type_other_' + sd.key]) %>" placeholder="e.g. Row House, Duplex, Shop-cum-office">
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        <% } else if (fl.kind === 'map') { %>
+                            <div class="sheet-f full">
+                                <label><%= fl.label %> <span style="font-weight:400;text-transform:none;letter-spacing:0;">(paste a Google Maps link — or type coordinates below)</span></label>
+                                <input type="url" name="google_maps_url" maxlength="600" placeholder="https://maps.app.goo.gl/…" value="<%= esc(fd.google_maps_url) %>" />
+                            </div>
+                            <div class="sheet-f">
+                                <label>Latitude <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                                <input type="number" step="any" min="-90" max="90" name="latitude" placeholder="e.g. 19.0330" value="<%= esc(fd.latitude) %>" />
+                            </div>
+                            <div class="sheet-f">
+                                <label>Longitude <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                                <input type="number" step="any" min="-180" max="180" name="longitude" placeholder="e.g. 73.0297" value="<%= esc(fd.longitude) %>" />
+                            </div>
+                        <% } else { %>
+                            <%- cell(fl.name, fl) %>
+                        <% } %>
+                    <% }); %>
+                </div>
+            </div>
+        </details>
+    <% } %>
+<% }); %>
+<% if (gatedOpen) { %></div><% } %>
+
+<%
+    // ===== Legacy / infrastructure fields NOT in the sheet — preserved as hidden
+    // inputs so a sheet-only save never nulls existing data. (google_maps_url +
+    // coords kept editable-by-preservation; edit them via the legacy path if needed.)
+    // NB: google_maps_url/latitude/longitude are now VISIBLE (Group 1 map field), not hidden.
+    var hiddenScalars = ['area_zone','tier','configurations','price_range','price','construction_status','type','notes','possession_date','launch_date','total_towers','land_area','land_area_unit','price_list_note','rera_number'];
+%>
+<% hiddenScalars.forEach(function(k){ %><input type="hidden" name="<%= k %>" value="<%= esc(fd[k]) %>"><% }); %>
+<% (Array.isArray(fd.bhk_config) ? fd.bhk_config : []).forEach(function(v){ %><input type="hidden" name="bhk_config" value="<%= esc(v) %>"><% }); %>
+<textarea hidden name="location_advantages"><%= esc(fd.location_advantages) %></textarea>
+
+<script>
+// RULE 1 reveal: the sheet body appears only when a category is ticked.
+function sheetReveal(){
+    var res = document.querySelector('input[name="has_residential"]');
+    var com = document.querySelector('input[name="has_commercial"]');
+    var on  = (res && res.checked) || (com && com.checked);
+    var body = document.getElementById('sheet-body');
+    if (body) body.hidden = !on;
+    document.querySelectorAll('.cat-block[data-side]').forEach(function(block){
+        var side = block.getAttribute('data-side');
+        var box  = side === 'res' ? res : com;
+        block.style.display = (box && box.checked) ? '' : 'none';
+    });
+    // Property Type option sets follow the same ticks.
+    document.querySelectorAll('.type-set[data-side]').forEach(function(set){
+        var side = set.getAttribute('data-side');
+        var box  = side === 'res' ? res : com;
+        set.style.display = (box && box.checked) ? '' : 'none';
+    });
+}
+sheetReveal();
+
+// 054: reveal the "Other budget" text field only while the Other bucket is ticked.
+// Bound via addEventListener (NOT an inline onchange) — an inline handler emitted
+// through escaping EJS tags had its attribute quotes entity-mangled and never fired.
+function budgetOtherToggle(){
+    var cb = document.querySelector('input[name="budget_ranges"][value="other"]');
+    var wrap = document.getElementById('budget-other-wrap');
+    if (wrap) wrap.style.display = (cb && cb.checked) ? '' : 'none';
+}
+(function(){
+    var cb = document.querySelector('input[name="budget_ranges"][value="other"]');
+    if (cb) cb.addEventListener('change', budgetOtherToggle);
+    budgetOtherToggle(); // set initial state (revealed if 'other' was pre-checked)
+})();
+
+// 058: reveal each side's Property Type "Other" text field only while its checkbox
+// is ticked; clear the input on untick so the save stores NULL (mirror of budget).
+// Bound via addEventListener (NOT inline onchange — the entity-mangling gotcha).
+(function(){
+    document.querySelectorAll('.type-other-cb').forEach(function(cb){
+        function toggle(){
+            var wrap = document.querySelector('.type-other-wrap[data-side="' + cb.getAttribute('data-side') + '"]');
+            if (!wrap) return;
+            if (cb.checked) { wrap.style.display = ''; }
+            else { wrap.style.display = 'none'; var inp = wrap.querySelector('input'); if (inp) inp.value = ''; }
+        }
+        cb.addEventListener('change', toggle);
+        toggle(); // initial state (revealed if pre-filled)
+    });
+})();
+
+// Available-units repeater.
+function unitAdd(side){
+    var wrap = document.querySelector('.unit-rows[data-unit-side="' + side + '"]');
+    if (!wrap) return;
+    var row = wrap.querySelector('.unit-row');
+    var clone = row.cloneNode(true);
+    clone.querySelectorAll('input').forEach(function(i){ i.value = ''; });
+    wrap.appendChild(clone);
+}
+function unitRm(btn){
+    var wrap = btn.closest('.unit-rows');
+    var row = btn.closest('.unit-row');
+    if (wrap && wrap.querySelectorAll('.unit-row').length > 1) row.remove();
+    else row.querySelectorAll('input').forEach(function(i){ i.value = ''; }); // keep one empty row
+}
+</script>

@@ -1,0 +1,223 @@
+<%
+    // ============================================================
+    // Shared SINGULAR property sheet form body — used by unit-new.ejs +
+    // unit-edit.ejs. Driven by lib/propertySheet.js (GROUPS) so form + detail
+    // never drift. Expects in scope: sheet (propertySheet), formData, and — on
+    // the edit form only — isEdit=true, unitId, csrfToken, images/videos/floorPlans.
+    // amenityGroups (byCategory) + selectedAmen (array of names) power G5.
+    // ============================================================
+    var S  = sheet;
+    var fd = (typeof formData !== 'undefined' && formData) ? formData : {};
+    var isEdit = (typeof isEdit !== 'undefined' && isEdit);
+    var amenityGroups = (typeof amenityGroups !== 'undefined' && amenityGroups) ? amenityGroups : {};
+    var selectedAmen  = (typeof selectedAmen !== 'undefined' && selectedAmen) ? selectedAmen : [];
+    var canSeeOwner   = (typeof canSeeOwnerInternal !== 'undefined') ? canSeeOwnerInternal : true;
+    function cap(s){ return s ? String(s).replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}) : ''; }
+    function esc(s){ return (s===null||s===undefined)?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+    function selOpts(list, val){ var o='<option value="">—</option>'; (list||[]).forEach(function(v){ o+='<option value="'+v+'"'+(val===v?' selected':'')+'>'+cap(v)+'</option>'; }); return o; }
+    var GROUP_ICONS = { basic:'★', status:'◷', unit:'▦', pricing:'₹', amenities:'✦', about:'✎' };
+%>
+
+<!-- CATEGORY — single-select, decides the whole form -->
+<div class="form-card">
+    <div class="section-head"><div class="icon">◐</div><h3>Category</h3></div>
+    <div class="section-body">
+        <div class="field field-full">
+            <label>This property is <span class="req">*</span></label>
+            <div class="cat-row">
+                <% S.CATEGORIES.forEach(function(c){ %>
+                <label class="cat-pill<%= fd.category===c.value?' on':'' %>">
+                    <input type="radio" name="category" value="<%= c.value %>" <%= fd.category===c.value?'checked':'' %> onchange="ufCat()"> <%= c.icon %> <%= c.label %>
+                </label>
+                <% }); %>
+            </div>
+            <div class="hint">Residential OR Commercial — this switches the Property Type list and the commercial-only fields.</div>
+        </div>
+    </div>
+</div>
+
+<!-- LISTING TYPE — Sell / Rent, both tickable (styled like Category) -->
+<div class="form-card">
+    <div class="section-head"><div class="icon">◑</div><h3>Listing Type</h3></div>
+    <div class="section-body">
+        <div class="field field-full">
+            <label>This property is listed for</label>
+            <div class="cat-row">
+                <% S.LISTING_OPTIONS.forEach(function(o){ var on = !!fd[o.name]; %>
+                <label class="cat-pill<%= on?' on':'' %>">
+                    <input type="checkbox" name="<%= o.name %>" value="on" <%= on?'checked':'' %> onchange="this.closest('label').classList.toggle('on', this.checked)"> <%= o.icon %> <%= o.label %>
+                </label>
+                <% }); %>
+            </div>
+            <div class="hint">Tick Sell, Rent, or both.</div>
+        </div>
+    </div>
+</div>
+
+<% S.GROUPS.forEach(function(g){ %>
+<div class="form-card">
+    <div class="section-head"><div class="icon"><%= GROUP_ICONS[g.key] || '•' %></div><h3>G<%= g.n %> · <%= g.title %></h3></div>
+    <div class="section-body">
+        <div class="field-grid">
+        <% g.fields.forEach(function(fl){
+            if (fl.gated && !canSeeOwner) return;                 // hide owner email/notes from non-managers
+            var commClass = fl.commercial ? ' comm-only' : '';
+            var full = fl.full ? ' field-full' : '';
+            var val = fd[fl.name];
+        %>
+            <% if (fl.kind === 'status') { %>
+                <div class="field field-full">
+                    <label><%= fl.label %></label>
+                    <div class="pill-row">
+                    <% S.STATUS_OPTIONS.forEach(function(o){ %>
+                        <label class="opt-pill<%= val===o.value?' on':'' %>"><input type="radio" name="status_of_property" value="<%= o.value %>" <%= val===o.value?'checked':'' %>> <%= o.label %></label>
+                    <% }); %>
+                        <label class="opt-pill<%= !val?' on':'' %>"><input type="radio" name="status_of_property" value="" <%= !val?'checked':'' %>> —</label>
+                    </div>
+                </div>
+            <% } else if (fl.kind === 'type') { %>
+                <div class="field<%= full %>">
+                    <label><%= fl.label %><% if(fl.required){ %> <span class="req">*</span><% } %></label>
+                    <select name="property_type" id="uf_type" data-current="<%= esc(val) %>"><option value="">— pick a type —</option></select>
+                    <div class="hint">Pick a category first; the list updates to match.</div>
+                </div>
+            <% } else if (fl.kind === 'area' || fl.kind === 'carea') { %>
+                <div class="field">
+                    <label><%= fl.label %></label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="number" name="<%= fl.name %>" id="uf_<%= fl.name %>" min="0" step="any" placeholder="e.g. 720" value="<%= esc(val) %>" style="flex:1;">
+                        <% if (fl.kind === 'area') { %><select name="area_unit" style="width:90px;"><% ['sqft','sqm','sqyd'].forEach(function(u){ %><option value="<%= u %>" <%= (fd.area_unit||'sqft')===u?'selected':'' %>><%= u %></option><% }); %></select><% } %>
+                    </div>
+                    <div class="hint"><% if (fl.kind === 'area') { %>Primary saleable area — drives ₹/sq.ft.<% } else { %>Actual carpet area (same unit as Sellable Area).<% } %></div>
+                </div>
+            <% } else if (fl.kind === 'parking') { %>
+                <div class="field field-full">
+                    <label><%= fl.label %></label>
+                    <div class="cat-row">
+                        <label class="cat-pill<%= fd.parking_available===true?' on':'' %>"><input type="radio" name="parking_available" value="yes" <%= fd.parking_available===true?'checked':'' %> onchange="ufParking()"> ✓ Yes</label>
+                        <label class="cat-pill<%= fd.parking_available===false?' on':'' %>"><input type="radio" name="parking_available" value="no" <%= fd.parking_available===false?'checked':'' %> onchange="ufParking()"> ✗ No</label>
+                    </div>
+                    <div id="uf_parking_detail" style="margin-top:12px;<%= fd.parking_available===true?'':'display:none;' %>">
+                        <div class="field-grid">
+                            <div class="field">
+                                <label>Parking Type</label>
+                                <select name="parking_type">
+                                    <option value="">—</option>
+                                    <option value="covered" <%= fd.parking_type==='covered'?'selected':'' %>>Covered</option>
+                                    <option value="open" <%= fd.parking_type==='open'?'selected':'' %>>Open</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>No. of Parking</label>
+                                <input type="number" name="parking_count" min="0" step="1" placeholder="e.g. 2" value="<%= esc(fd.parking_count) %>">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hint">Yes reveals type &amp; count; No keeps it simple.</div>
+                </div>
+            <% } else if (fl.kind === 'psf') { %>
+                <div class="field">
+                    <label><%= fl.label %> <span style="font-weight:400;color:#6b6b6b;">(auto)</span></label>
+                    <input type="text" id="uf_psf" readonly value="<%= val ? ('₹'+Number(val).toLocaleString('en-IN')) : '—' %>" style="background:#f4efe6;color:#6b6b6b;">
+                </div>
+            <% } else if (fl.kind === 'bool') { %>
+                <div class="field" style="justify-content:flex-end;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:13px;">
+                        <input type="checkbox" name="<%= fl.name %>" value="on" <%= val ? 'checked' : '' %>> <%= fl.label %>
+                    </label>
+                </div>
+            <% } else if (fl.kind === 'select') { %>
+                <div class="field<%= full %><%= commClass %>">
+                    <label><%= fl.label %></label>
+                    <select name="<%= fl.name %>"><%- selOpts(fl.opts, val) %></select>
+                </div>
+            <% } else if (fl.kind === 'textarea') { %>
+                <div class="field<%= full %><%= commClass %>">
+                    <label><%= fl.label %><% if(fl.required){ %> <span class="req">*</span><% } %></label>
+                    <textarea name="<%= fl.name %>" maxlength="2000"><%= (val===null||val===undefined)?'':val %></textarea>
+                </div>
+            <% } else if (fl.kind === 'amenities') { %>
+                <div class="field field-full">
+                    <label><%= fl.label %></label>
+                    <% var cats = Object.keys(amenityGroups); if(!cats.length){ %><div class="hint">No amenities master configured.</div><% } %>
+                    <% cats.forEach(function(cat){ %>
+                        <div style="margin:6px 0 2px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#6b6b6b;font-weight:700;"><%= cap(cat) %></div>
+                        <div class="amen-grid">
+                        <% (amenityGroups[cat]||[]).forEach(function(a){ var on = selectedAmen.indexOf(a.name)!==-1; %>
+                            <label class="amen-chip<%= on?' on':'' %>"><input type="checkbox" name="amenities" value="<%= esc(a.name) %>" <%= on?'checked':'' %>> <%= a.name %></label>
+                        <% }); %>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else if (fl.kind === 'map') { %>
+                <div class="field field-full">
+                    <label><%= fl.label %></label>
+                    <input type="text" name="google_maps_url" placeholder="https://maps.google.com/… or a share link" value="<%= esc(val) %>">
+                    <div style="display:flex;gap:8px;margin-top:8px;">
+                        <input type="number" name="latitude" step="any" placeholder="Latitude (optional)" value="<%= esc(fd.latitude) %>" style="flex:1;">
+                        <input type="number" name="longitude" step="any" placeholder="Longitude (optional)" value="<%= esc(fd.longitude) %>" style="flex:1;">
+                    </div>
+                    <div class="hint">Paste a Google Maps link (or lat/long) — it renders as an embedded map on the detail page.</div>
+                </div>
+            <% } else if (fl.kind === 'media') { %>
+                <% if (isEdit) { %><%- include('property-media') %><% } else { %>
+                <div class="field field-full"><label><%= fl.label %></label><div class="hint">📸 Save the property first — then add photos, videos and floor plans from the edit page.</div></div>
+                <% } %>
+            <% } else if (fl.kind === 'num') { %>
+                <div class="field<%= commClass %>">
+                    <label><%= fl.label %><% if(fl.required){ %> <span class="req">*</span><% } %></label>
+                    <input type="number" name="<%= fl.name %>"<%= fl.name==='expected_price'?' id="uf_price"':'' %> min="0" step="<%= fl.name==='expected_price'?'1':'any' %>" value="<%= esc(val) %>">
+                </div>
+            <% } else { %>
+                <div class="field<%= full %><%= commClass %>">
+                    <label><%= fl.label %><% if(fl.required){ %> <span class="req">*</span><% } %></label>
+                    <input type="text" name="<%= fl.name %>" maxlength="300" value="<%= esc(val) %>">
+                </div>
+            <% } %>
+        <% }); %>
+        </div>
+    </div>
+</div>
+<% }); %>
+
+<script>
+// Type-by-category + commercial-only reveal + live ₹/sqft.
+var UF_TYPES = <%- JSON.stringify(S.TYPE_BY_CATEGORY) %>;
+function ufCat(){
+  var cat = (document.querySelector('input[name=category]:checked')||{}).value || '';
+  // paint the chosen category pill
+  document.querySelectorAll('.cat-pill').forEach(function(p){ var r=p.querySelector('input'); p.classList.toggle('on', r && r.checked); });
+  // commercial-only fields
+  document.querySelectorAll('.comm-only').forEach(function(el){ el.style.display = (cat==='commercial') ? '' : 'none'; });
+  // property type options
+  var sel = document.getElementById('uf_type');
+  if (sel){
+    var cur = sel.getAttribute('data-current') || sel.value || '';
+    var list = UF_TYPES[cat] || [];
+    sel.innerHTML = '<option value="">— pick a type —</option>' + list.map(function(t){ return '<option value="'+t+'"'+(t===cur?' selected':'')+'>'+t+'</option>'; }).join('');
+  }
+}
+function ufPsf(){
+  var p=document.getElementById('uf_price'), c=document.getElementById('uf_sellable_area'), o=document.getElementById('uf_psf');
+  if(!o) return; var pv=parseFloat(p&&p.value), cv=parseFloat(c&&c.value);
+  o.value = (!isNaN(pv)&&!isNaN(cv)&&cv>0) ? '₹'+Math.round(pv/cv).toLocaleString('en-IN') : '—';
+}
+function ufParking(){
+  var yes=document.querySelector('input[name=parking_available][value=yes]');
+  var det=document.getElementById('uf_parking_detail');
+  if(det) det.style.display = (yes && yes.checked) ? '' : 'none';
+  document.querySelectorAll('input[name=parking_available]').forEach(function(r){ r.closest('label').classList.toggle('on', r.checked); });
+}
+document.addEventListener('DOMContentLoaded', function(){
+  ufCat(); ufParking();
+  var p=document.getElementById('uf_price'), c=document.getElementById('uf_sellable_area');
+  if(p) p.addEventListener('input', ufPsf); if(c) c.addEventListener('input', ufPsf);
+  // keep amenity chips + status/opt pills painted
+  document.querySelectorAll('.amen-chip input, .opt-pill input').forEach(function(i){
+    i.addEventListener('change', function(){
+      if(i.type==='radio'){ i.closest('.pill-row').querySelectorAll('.opt-pill').forEach(function(l){l.classList.remove('on');}); }
+      i.closest('label').classList.toggle('on', i.checked);
+    });
+  });
+});
+</script>

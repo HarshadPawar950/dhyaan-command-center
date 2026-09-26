@@ -1,0 +1,30 @@
+<%
+    // Property (standalone listing) media manager — edit form only.
+    // Expects: unitId, csrfToken, images, videos, floorPlans in scope.
+    var _imgs = (typeof images !== 'undefined' && images) ? images : [];
+    var _vids = (typeof videos !== 'undefined' && videos) ? videos : [];
+    var _fps  = (typeof floorPlans !== 'undefined' && floorPlans) ? floorPlans : [];
+    function mediaBlock(kind, label, accept, list){
+%>
+    <div class="field field-full" style="margin-top:6px;">
+        <label><%= label %></label>
+        <% if (list.length) { %>
+        <div class="media-strip">
+            <% list.forEach(function(m){ %>
+            <div class="media-thumb">
+                <% if (kind==='videos') { %><video src="<%= m.file_path %>" muted></video><% } else { %><img src="<%= m.file_path %>" alt=""><% } %>
+                <form method="POST" action="/properties/<%= unitId %>/images/<%= m.image_id %>/delete?_csrf=<%= csrfToken %>" onsubmit="return confirm('Remove this item?');"><button type="submit" class="media-del" title="Remove">×</button></form>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+        <form method="POST" action="/properties/<%= unitId %>/<%= kind %>?_csrf=<%= csrfToken %>" enctype="multipart/form-data" style="display:flex;gap:8px;align-items:center;margin-top:6px;">
+            <input type="file" name="<%= kind==='images'?'images':(kind==='videos'?'videos':'floorplans') %>" accept="<%= accept %>" multiple>
+            <button type="submit" class="btn btn-cancel" style="padding:8px 14px;">Upload</button>
+        </form>
+    </div>
+<%  }
+    mediaBlock('images', 'Photos', 'image/*', _imgs);
+    mediaBlock('videos', 'Videos', 'video/*', _vids);
+    mediaBlock('floorplans', 'Floor Plans', 'image/*', _fps);
+%>

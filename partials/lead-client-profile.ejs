@@ -1,0 +1,191 @@
+<%
+  // Shared Client Profile form section (027 + 029 v2) — used by lead-new + lead-edit.
+  // Expects in scope: formData (cp_* values). All fields optional EXCEPT the
+  // Urgency Note (required, min 50 chars — enforced client + server side).
+  var cp = (typeof formData !== 'undefined' && formData) ? formData : {};
+  var cpArr = function(v){ return Array.isArray(v) ? v : (v == null || v === '' ? [] : [v]); };
+  var cfg = cpArr(cp.cp_configuration), poss = cpArr(cp.cp_possession_pref), floor = cpArr(cp.cp_floor_pref);
+  function has(arr, v){ return arr.indexOf(v) !== -1; }
+  var BUDGET_TAGS = [['under_50l','Under 50 Lakh'],['50l_1cr','50 Lakh–1 Cr'],['1_3cr','1–3 Cr'],['3_10cr','3–10 Cr'],['above_10cr','Above 10 Cr'],['other','Other']];
+%>
+<div class="form-card">
+  <div class="section-head">
+    <div class="icon">★</div>
+    <h3>Client Profile <span style="font-size:12px;font-weight:400;color:#6b6b6b;">(optional except Urgency — sharpens the property matcher)</span></h3>
+  </div>
+  <div class="section-body">
+    <div class="field field-full">
+      <label>Configuration</label>
+      <div class="cp-pills">
+        <label class="cp-pill<%= has(cfg,'residential')?' on':'' %>"><input type="checkbox" name="cp_configuration" value="residential" <%= has(cfg,'residential')?'checked':'' %>> 🏠 Residential</label>
+        <label class="cp-pill<%= has(cfg,'commercial')?' on':'' %>"><input type="checkbox" name="cp_configuration" value="commercial" <%= has(cfg,'commercial')?'checked':'' %>> 🏢 Commercial</label>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Use</label>
+        <div class="cp-pills">
+          <% [['end_user','End User'],['investor','Investor']].forEach(function(o){ %>
+          <label class="cp-pill<%= cp.cp_use===o[0]?' on':'' %>"><input type="radio" name="cp_use" value="<%= o[0] %>" <%= cp.cp_use===o[0]?'checked':'' %>> <%= o[1] %></label>
+          <% }); %>
+        </div>
+      </div>
+      <div class="field">
+        <label>Occupation</label>
+        <div class="cp-pills">
+          <% [['business','Business'],['salaried','Salaried'],['retired','Retired']].forEach(function(o){ %>
+          <label class="cp-pill<%= cp.cp_occupation===o[0]?' on':'' %>"><input type="radio" name="cp_occupation" value="<%= o[0] %>" <%= cp.cp_occupation===o[0]?'checked':'' %>> <%= o[1] %></label>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Stand Alone or Township</label>
+        <div class="cp-pills">
+          <% [['standalone','Stand Alone'],['township','Township']].forEach(function(o){ %>
+          <label class="cp-pill<%= cp.cp_layout_pref===o[0]?' on':'' %>"><input type="radio" name="cp_layout_pref" value="<%= o[0] %>" <%= cp.cp_layout_pref===o[0]?'checked':'' %>> <%= o[1] %></label>
+          <% }); %>
+        </div>
+      </div>
+      <div class="field">
+        <label>Gated or Cosmos</label>
+        <div class="cp-pills">
+          <% [['gated','Gated'],['cosmos','Cosmos (open)']].forEach(function(o){ %>
+          <label class="cp-pill<%= cp.cp_community_pref===o[0]?' on':'' %>"><input type="radio" name="cp_community_pref" value="<%= o[0] %>" <%= cp.cp_community_pref===o[0]?'checked':'' %>> <%= o[1] %></label>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+    <div class="field field-full">
+      <label>With Amenities or Not</label>
+      <div class="cp-pills">
+        <% [['with_amenities','With Amenities'],['without','Without']].forEach(function(o){ %>
+        <label class="cp-pill<%= cp.cp_amenities_pref===o[0]?' on':'' %>"><input type="radio" name="cp_amenities_pref" value="<%= o[0] %>" <%= cp.cp_amenities_pref===o[0]?'checked':'' %>> <%= o[1] %></label>
+        <% }); %>
+      </div>
+    </div>
+
+    <div class="field field-full">
+      <label>Possession Preference <span style="font-size:11px;color:#6b6b6b;">(tick any)</span></label>
+      <div class="cp-pills">
+        <% [['ready_to_move','Ready to Move'],['under_construction','Under Construction'],['pre_launch','Pre Launch']].forEach(function(o){ %>
+        <label class="cp-pill<%= has(poss,o[0])?' on':'' %>"><input type="checkbox" name="cp_possession_pref" value="<%= o[0] %>" <%= has(poss,o[0])?'checked':'' %>> <%= o[1] %></label>
+        <% }); %>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Purchase Timeline</label>
+        <div class="cp-pills">
+          <% [['immediate','Immediate'],['1_3m','1–3 months'],['3_6m','3–6 months'],['6plus','6+ months']].forEach(function(o){ %>
+          <label class="cp-pill<%= cp.cp_purchase_timeline===o[0]?' on':'' %>"><input type="radio" name="cp_purchase_timeline" value="<%= o[0] %>" <%= cp.cp_purchase_timeline===o[0]?'checked':'' %>> <%= o[1] %></label>
+          <% }); %>
+        </div>
+      </div>
+      <div class="field">
+        <label>Floor of Choice <span style="font-size:11px;color:#6b6b6b;">(tick any)</span></label>
+        <div class="cp-pills">
+          <% [['lower','Lower'],['mid','Mid'],['higher','Higher']].forEach(function(o){ %>
+          <label class="cp-pill<%= has(floor,o[0])?' on':'' %>"><input type="checkbox" name="cp_floor_pref" value="<%= o[0] %>" <%= has(floor,o[0])?'checked':'' %>> <%= o[1] %></label>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Funding</label>
+        <div class="cp-pills">
+          <% [['self','Self'],['loan','Loan'],['cash','Cash']].forEach(function(o){ %>
+          <label class="cp-pill<%= cp.cp_funding===o[0]?' on':'' %>"><input type="radio" name="cp_funding" value="<%= o[0] %>" <%= cp.cp_funding===o[0]?'checked':'' %>> <%= o[1] %></label>
+          <% }); %>
+        </div>
+      </div>
+      <div class="field">
+        <label>Down Payment (₹)</label>
+        <input type="number" name="cp_down_payment" min="0" step="any" value="<%= cp.cp_down_payment || '' %>" placeholder="e.g. 2000000" />
+      </div>
+    </div>
+
+    <div class="field field-full">
+      <label>Budget Tag</label>
+      <div class="cp-pills">
+        <% BUDGET_TAGS.forEach(function(o){ %>
+        <label class="cp-pill<%= cp.cp_budget_tag===o[0]?' on':'' %>"><input type="radio" name="cp_budget_tag" value="<%= o[0] %>" <%= cp.cp_budget_tag===o[0]?'checked':'' %> onchange="cpBudgetOther()"> <%= o[1] %></label>
+        <% }); %>
+      </div>
+      <div id="cp_budget_other_box" style="margin-top:10px;<%= cp.cp_budget_tag==='other'?'':'display:none;' %>">
+        <input type="text" name="cp_budget_other" maxlength="120" value="<%= cp.cp_budget_other || '' %>" placeholder="Enter custom budget / range — e.g. 1.2–1.5 Cr" />
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Project Visited</label>
+        <input type="text" name="cp_projects_visited" maxlength="300" value="<%= cp.cp_projects_visited || '' %>" placeholder="Projects the client has already seen" />
+      </div>
+      <div class="field">
+        <label>Current Residence</label>
+        <input type="text" name="cp_current_residence" maxlength="300" value="<%= cp.cp_current_residence || '' %>" placeholder="Where they live now" />
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Visit Preference</label>
+        <div class="cp-pills">
+          <% [['weekday','Weekday'],['weekend','Weekend']].forEach(function(o){ %>
+          <label class="cp-pill<%= cp.cp_visit_pref===o[0]?' on':'' %>"><input type="radio" name="cp_visit_pref" value="<%= o[0] %>" <%= cp.cp_visit_pref===o[0]?'checked':'' %>> <%= o[1] %></label>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+    <div class="field field-full">
+      <label>Urgency Notes <span class="req">*</span> <span style="font-size:11px;color:#6b6b6b;">(required — min 50 characters)</span></label>
+      <textarea id="cp_urgency_note" name="cp_urgency_note" rows="3" required minlength="50" maxlength="1000" placeholder="Why is this lead urgent? Real context: timeline, motivation, competing options, decision-makers…"><%= cp.cp_urgency_note || '' %></textarea>
+      <div class="hint"><span id="cp_urgency_count">0/50 characters</span></div>
+    </div>
+  </div>
+</div>
+<style>
+  .cp-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+  .cp-pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#0A1628;background:#F4EFE6;border:1px solid rgba(10,22,40,0.10);border-radius:999px;padding:7px 14px;cursor:pointer;user-select:none;}
+  .cp-pill.on{background:linear-gradient(135deg,#D4AF37,#E8C766);border-color:#D4AF37;}
+  .cp-pill input{margin:0;}
+  #cp_urgency_note{width:100%;box-sizing:border-box;font-family:inherit;font-size:14px;padding:10px;border:1px solid rgba(10,22,40,0.18);border-radius:8px;resize:vertical;}
+</style>
+<script>
+  document.querySelectorAll('.cp-pill input').forEach(function(i){
+    i.addEventListener('change', function(){
+      if(i.type==='radio'){ document.querySelectorAll('input[name="'+i.name+'"]').forEach(function(o){ o.closest('.cp-pill').classList.remove('on'); }); }
+      i.closest('.cp-pill').classList.toggle('on', i.checked);
+    });
+  });
+  // Budget "Other" reveal
+  function cpBudgetOther(){
+    var r = document.querySelector('input[name="cp_budget_tag"][value="other"]');
+    var box = document.getElementById('cp_budget_other_box');
+    if(box) box.style.display = (r && r.checked) ? '' : 'none';
+  }
+  cpBudgetOther();
+  // Urgency 50-char counter + hard block (client side; server also enforces)
+  (function(){
+    var ta = document.getElementById('cp_urgency_note');
+    var ctr = document.getElementById('cp_urgency_count');
+    if(!ta || !ctr) return;
+    function upd(){
+      var n = ta.value.trim().length;
+      ctr.textContent = n + '/50 characters' + (n < 50 ? ' — need ' + (50 - n) + ' more' : ' ✓');
+      ctr.style.color = (n < 50) ? '#b00020' : '#2e7d32';
+      ta.setCustomValidity(n < 50 ? ('Urgency notes must be at least 50 characters (currently ' + n + ').') : '');
+    }
+    ta.addEventListener('input', upd);
+    upd();
+  })();
+</script>

@@ -1,0 +1,115 @@
+<%
+    // Read-only render of the Dhyaan sheet on the project detail page (021..025).
+    // Groups 1->7 in order; G3+G4 per active side; empties hidden; G7 gated.
+    // Structured: Status -> label, Property Type -> chips, Available Units -> table.
+    // Expects: sheet, property, canSeeMarketing. Optional: unitsData {res:[],com:[]}.
+    var S    = (typeof sheet !== 'undefined' && sheet) ? sheet : {};
+    var _p   = (typeof property !== 'undefined' && property) ? property : {};
+    var _mkt = (typeof canSeeMarketing !== 'undefined') ? canSeeMarketing : false;
+    var _units = (typeof unitsData !== 'undefined' && unitsData) ? unitsData : { res: [], com: [] };
+    var groups = S.SHEET || [];
+    var sides  = S.SIDES || [];
+    function _has(v){ return v !== null && v !== undefined && String(v).trim() !== ''; }
+    function _long(v){ return String(v || '').length > 60; }
+    // Build the render cells for a group on a given side ('' for shared).
+    function buildCells(g, side){
+        var cells = [];
+        g.fields.forEach(function(fl){
+            if (fl.kind === 'widget' || fl.kind === 'map' || fl.kind === 'units') return; // rendered elsewhere / N/A
+            var name = side ? (side.prefix + fl.name) : fl.name;
+            var val = _p[name];
+            if (fl.kind === 'statuses') { if (Array.isArray(val) && val.length) cells.push({ label: fl.label, chips: val.map(function(k){ return S.statusLabel ? S.statusLabel(k) : k; }) }); return; }
+            if (fl.kind === 'types')  {
+                var _tc = (Array.isArray(val) && val.length) ? { label: fl.label, chips: val } : null;
+                // 058: per-category "Other" free-text — display-only, never in property_type[]
+                if (_p.property_type_other_res || _p.property_type_other_com) {
+                    _tc = _tc || { label: fl.label, chips: [] };
+                    if (_p.property_type_other_res) _tc.otherRes = _p.property_type_other_res;
+                    if (_p.property_type_other_com) _tc.otherCom = _p.property_type_other_com;
+                }
+                if (_tc) cells.push(_tc);
+                return;
+            }
+            if (fl.kind === 'buckets'){ if (Array.isArray(val) && val.length) { var _bc = { label: fl.label, chips: val.map(function(k){ return S.bucketLabel ? S.bucketLabel(k) : k; }) }; if (val.indexOf('other') !== -1 && _p.budget_other) _bc.otherText = _p.budget_other; cells.push(_bc); } return; }
+            if (_has(val)) cells.push({ label: fl.label, value: val });
+        });
+        return cells;
+    }
+%>
+
+<% groups.forEach(function(g){ %>
+    <% if (g.internal && !_mkt) { return; } %>
+
+    <% if (g.perCategory) { %>
+        <% sides.forEach(function(side){ %>
+            <% if (!_p[side.flag]) { return; } %>
+            <% var cells = buildCells(g, side); var rows = (_units[side.key] || []); %>
+            <% var hasUnits = g.fields.some(function(f){ return f.kind === 'units'; }) && rows.length; %>
+            <% if (!cells.length && !hasUnits) { return; } %>
+            <div class="panel" style="margin-bottom:22px;border:1px solid rgba(212,175,55,0.4);">
+                <div class="panel-head" style="display:flex;align-items:center;gap:10px;">
+                    <h2 style="margin:0;"><%= side.icon %> <%= side.label %> — Group <%= g.n %>: <%= g.title %></h2>
+                    <span style="font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 10px;border-radius:20px;background:#0A1628;color:#D4AF37;"><%= side.badge %></span>
+                </div>
+                <div class="panel-body">
+                    <% if (hasUnits) { %>
+                        <div style="margin-bottom:14px;">
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#6b6b6b;font-weight:600;margin-bottom:6px;">Available Units</div>
+                            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                                <thead><tr style="text-align:left;color:#6b6b6b;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">
+                                    <th style="padding:6px 10px;border-bottom:1px solid rgba(10,22,40,0.1);">Unit No</th>
+                                    <th style="padding:6px 10px;border-bottom:1px solid rgba(10,22,40,0.1);">Area</th>
+                                    <th style="padding:6px 10px;border-bottom:1px solid rgba(10,22,40,0.1);">Floor</th>
+                                </tr></thead>
+                                <tbody>
+                                    <% rows.forEach(function(r){ %>
+                                        <tr>
+                                            <td style="padding:7px 10px;border-bottom:1px solid rgba(10,22,40,0.05);color:#0A1628;font-weight:600;"><%= r.unit_no || '—' %></td>
+                                            <td style="padding:7px 10px;border-bottom:1px solid rgba(10,22,40,0.05);color:#0A1628;"><%= r.unit_area || '—' %></td>
+                                            <td style="padding:7px 10px;border-bottom:1px solid rgba(10,22,40,0.05);color:#0A1628;"><%= r.floor_no || '—' %></td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } %>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;">
+                        <% cells.forEach(function(c){ %>
+                            <div style="grid-column:<%= (c.chips || _long(c.value)) ? '1 / -1' : 'auto' %>;">
+                                <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#6b6b6b;font-weight:600;margin-bottom:3px;"><%= c.label %></div>
+                                <div style="font-size:14px;color:#0A1628;font-weight:500;white-space:pre-line;"><%= c.value %></div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+
+    <% } else { %>
+        <% var cells = buildCells(g, null); %>
+        <% if (cells.length) { %>
+            <div class="panel" style="margin-bottom:22px;<%= g.internal ? 'border:1px solid rgba(220,38,38,0.25);' : '' %>">
+                <div class="panel-head"><h2>Group <%= g.n %>: <%= g.title %><% if (g.internal) { %> <span style="font-size:10px;font-weight:700;color:#dc2626;background:rgba(220,38,38,0.1);padding:2px 8px;border-radius:5px;letter-spacing:.5px;">ADMIN ONLY</span><% } %></h2></div>
+                <div class="panel-body">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;">
+                        <% cells.forEach(function(c){ %>
+                            <div style="grid-column:<%= (c.chips || _long(c.value)) ? '1 / -1' : 'auto' %>;">
+                                <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#6b6b6b;font-weight:600;margin-bottom:3px;"><%= c.label %></div>
+                                <% if (c.chips) { %>
+                                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                                        <% c.chips.forEach(function(t){ %><span style="font-size:12px;font-weight:600;color:#0A1628;background:rgba(212,175,55,0.16);border:1px solid rgba(212,175,55,0.4);border-radius:999px;padding:3px 11px;"><%= t %></span><% }); %>
+                                    </div>
+                                    <% if (c.otherText) { %><div style="margin-top:6px;font-size:13px;color:#0A1628;font-weight:500;">Other: <%= c.otherText %></div><% } %>
+                                    <% if (c.otherRes) { %><div style="margin-top:6px;font-size:13px;color:#0A1628;font-weight:500;">Other (Residential): <%= c.otherRes %></div><% } %>
+                                    <% if (c.otherCom) { %><div style="margin-top:6px;font-size:13px;color:#0A1628;font-weight:500;">Other (Commercial): <%= c.otherCom %></div><% } %>
+                                <% } else { %>
+                                    <div style="font-size:14px;color:#0A1628;font-weight:500;white-space:pre-line;"><%= c.value %></div>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    <% } %>
+<% }); %>

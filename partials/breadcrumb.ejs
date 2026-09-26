@@ -1,0 +1,26 @@
+<%
+// Shared breadcrumb + Back partial (Part 2 navigation system).
+// Include it and pass: crumbs (array of {label, href}; the LAST is the current
+// page and renders unlinked), homeHref (where the Home crumb points; default
+// /admin/dashboard), and optional backHref (renders a right-aligned Back link).
+var _crumbs = (typeof crumbs !== 'undefined' && Array.isArray(crumbs)) ? crumbs : [];
+var _home = (typeof homeHref !== 'undefined' && homeHref) ? homeHref : '/admin/dashboard';
+var _back = (typeof backHref !== 'undefined' && backHref) ? backHref : null;
+%>
+<nav class="dh-crumbs" aria-label="Breadcrumb">
+  <a class="dh-crumb" href="<%= _home %>">🏠 Home</a>
+  <% _crumbs.forEach(function(c, i){ %>
+    <span class="dh-sep">›</span>
+    <% if (c.href && i < _crumbs.length - 1) { %><a class="dh-crumb" href="<%= c.href %>"><%= c.label %></a><% } else { %><span class="dh-crumb dh-current"><%= c.label %></span><% } %>
+  <% }); %>
+  <% if (_back) { %><a class="dh-back" href="<%= _back %>">← Back</a><% } %>
+</nav>
+<style>
+.dh-crumbs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:#6b7280;margin:0 0 16px;}
+.dh-crumbs .dh-crumb{color:#B8941F;text-decoration:none;font-weight:600;}
+.dh-crumbs .dh-crumb:hover{text-decoration:underline;}
+.dh-crumbs .dh-current{color:#0A1628;font-weight:700;}
+.dh-crumbs .dh-sep{color:#cbd5e1;}
+.dh-crumbs .dh-back{margin-left:auto;color:#0A1628;border:1px solid rgba(10,22,40,0.14);border-radius:8px;padding:6px 12px;text-decoration:none;font-weight:600;font-size:12px;}
+.dh-crumbs .dh-back:hover{background:#F4EFE6;}
+</style>
