@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --gold:#D4AF37; --gold-dark:#B8941F; --navy:#0A1628; --navy-2:#142238; --offwhite:#FAFAF7; --beige:#F4EFE6; --text:#1a1a1a; --muted:#6b6b6b; --border:rgba(10,22,40,0.08); --shadow:0 4px 24px rgba(10,22,40,0.06); --green:#16a34a; --red:#dc2626; --amber:#d97706; --blue:#2563eb; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; background:var(--offwhite); color:var(--text); min-height:100vh; display:flex; }
+    h1,h2,h3 { font-family:'Playfair Display',serif; font-weight:600; color:var(--navy); }
+    .main-content { flex:1; margin-left:260px; min-height:100vh; display:flex; flex-direction:column; }
+    .page-body { padding:28px 40px; flex:1; }
+    .page-hero { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%); color:var(--offwhite); padding:26px 32px; border-radius:16px; margin-bottom:22px; position:relative; overflow:hidden; box-shadow:var(--shadow); }
+    .page-hero::before { content:""; position:absolute; top:-50%; right:-10%; width:300px; height:300px; background:radial-gradient(circle,rgba(212,175,55,0.18) 0%,transparent 70%); }
+    .page-hero h1 { color:var(--offwhite); font-size:28px; margin-bottom:4px; }
+    .page-hero p { color:rgba(250,250,247,0.7); font-size:14px; }
+    .flash { background:rgba(22,163,74,0.1); border:1px solid rgba(22,163,74,0.3); color:var(--green); padding:12px 18px; border-radius:10px; margin-bottom:18px; font-size:13px; font-weight:500; }
+    .err { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:var(--red); padding:12px 18px; border-radius:10px; margin-bottom:18px; font-size:13px; font-weight:500; }
+    .card { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:20px 24px; margin-bottom:18px; }
+    .card h3 { font-size:15px; margin-bottom:14px; }
+    .row { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+    .fg { display:flex; flex-direction:column; gap:4px; } .fg.grow { flex:1; min-width:180px; }
+    .fg label { font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); font-weight:700; }
+    .fg input, .fg select { font-size:13px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--offwhite); }
+    .btn { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; padding:9px 16px; border-radius:8px; border:none; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+    .btn-gold { background:var(--gold); color:var(--navy); } .btn-gold:hover { background:var(--gold-dark); color:#fff; }
+    .btn-sm { padding:6px 10px; font-size:12px; }
+    .btn-dl { background:rgba(37,99,235,0.12); color:var(--blue); } .btn-dl:hover { background:var(--blue); color:#fff; }
+    .btn-del { background:rgba(220,38,38,0.1); color:var(--red); } .btn-del:hover { background:var(--red); color:#fff; }
+    .panel { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); padding:11px 14px; border-bottom:2px solid var(--border); background:var(--beige); }
+    th.ctr, td.ctr { text-align:center; }
+    td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    .cname { font-weight:600; color:var(--navy); } .cmeta { font-size:11px; color:var(--muted); }
+    .badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; }
+    .badge.kind { background:rgba(37,99,235,0.12); color:var(--blue); }
+    .badge.draft { background:rgba(10,22,40,0.08); color:var(--muted); }
+    .badge.executed { background:rgba(22,163,74,0.12); color:var(--green); }
+    .badge.expired { background:rgba(220,38,38,0.12); color:var(--red); }
+    .exp-soon { color:var(--amber); font-weight:600; } .exp-past { color:var(--red); font-weight:700; }
+    .actions { display:flex; gap:6px; justify-content:center; } .inline-form { display:inline; }
+    .empty { text-align:center; color:var(--muted); padding:40px; font-size:14px; }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <div class="main-content">
+    <%- topbarHtml %>
+    <div class="page-body">
+      <% function fsize(b){ b=Number(b||0); return b>=1048576?(b/1048576).toFixed(2)+' MB':Math.max(1,Math.round(b/1024))+' KB'; } %>
+      <% function ld(d){ return d?new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'; } %>
+
+      <div class="page-hero">
+        <h1>Legal Vault</h1>
+        <p>Agreements, MOUs, RERA certificates, NOCs &amp; KYC — attached to a client, builder or project. Expiring docs surface in notifications.</p>
+      </div>
+
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <% if (err) { %><div class="err"><%= err %></div><% } %>
+
+      <div class="card">
+        <h3>Attach a Legal Document <span class="cmeta">pdf / jpg / png · max 10 MB</span></h3>
+        <form class="row" action="/admin/legal?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
+          <div class="fg"><label>Attach to</label>
+            <select name="entity_type" id="etype" required>
+              <option value="">— type —</option>
+              <option value="client">Client</option><option value="builder">Builder</option><option value="project">Project</option>
+            </select>
+          </div>
+          <% ['client','builder','project'].forEach(function(t){ %>
+          <div class="fg grow ent-pick" data-for="<%= t %>" style="display:none;"><label><%= t %></label>
+            <select name="entity_id_<%= t %>" data-role="entity">
+              <option value="">— select <%= t %> —</option>
+              <% (entityLists[t]||[]).forEach(function(o){ %><option value="<%= o.id %>"><%= o.name %></option><% }); %>
+            </select>
+          </div>
+          <% }); %>
+          <input type="hidden" name="entity_id" id="entity_id" />
+          <div class="fg"><label>Kind</label><select name="doc_kind"><% docKinds.forEach(function(k){ %><option value="<%= k %>"><%= k.toUpperCase() %></option><% }); %></select></div>
+          <div class="fg"><label>Party</label><input type="text" name="party" maxlength="200" placeholder="counterparty" /></div>
+          <div class="fg"><label>Executed</label><input type="date" name="execution_date" /></div>
+          <div class="fg"><label>Expiry</label><input type="date" name="expiry_date" /></div>
+          <div class="fg"><label>Status</label><select name="status"><% statuses.forEach(function(s){ %><option value="<%= s %>"><%= s %></option><% }); %></select></div>
+          <div class="fg grow"><label>File</label><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required /></div>
+          <button type="submit" class="btn btn-gold">Upload</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <form class="row" method="GET" action="/admin/legal">
+          <div class="fg"><label>Entity</label><select name="entity_type"><option value="">All</option><option value="client" <%= filters.entity_type==='client'?'selected':'' %>>Client</option><option value="builder" <%= filters.entity_type==='builder'?'selected':'' %>>Builder</option><option value="project" <%= filters.entity_type==='project'?'selected':'' %>>Project</option></select></div>
+          <div class="fg"><label>Kind</label><select name="doc_kind"><option value="">All</option><% docKinds.forEach(function(k){ %><option value="<%= k %>" <%= filters.doc_kind===k?'selected':'' %>><%= k.toUpperCase() %></option><% }); %></select></div>
+          <div class="fg grow"><label>Search</label><input type="text" name="q" value="<%= filters.q %>" placeholder="party / filename" /></div>
+          <button type="submit" class="btn btn-gold">Filter</button>
+          <a href="/admin/legal" class="btn btn-sm" style="background:rgba(10,22,40,0.06);color:var(--muted);">Clear</a>
+        </form>
+      </div>
+
+      <div class="panel">
+        <table>
+          <thead><tr><th>Document</th><th>Attached To</th><th class="ctr">Kind</th><th class="ctr">Status</th><th>Expiry</th><th class="ctr">Actions</th></tr></thead>
+          <tbody>
+            <% if (docs && docs.length) { %>
+              <% docs.forEach(function(d){ %>
+                <tr>
+                  <td><div class="cname"><%= d.original_name %></div><div class="cmeta"><%= d.party ? d.party+' · ' : '' %><%= fsize(d.file_size_bytes) %></div></td>
+                  <td><span class="cname"><%= d.entity_name || '—' %></span><div class="cmeta"><%= d.entity_type %></div></td>
+                  <td class="ctr"><span class="badge kind"><%= d.doc_kind %></span></td>
+                  <td class="ctr"><span class="badge <%= d.status %>"><%= d.status %></span></td>
+                  <td><% if (d.expiry_date) { %><span class="<%= d.is_past ? 'exp-past' : '' %>"><%= ld(d.expiry_date) %><% if (d.is_past) { %> ⚠<% } %></span><% } else { %>—<% } %></td>
+                  <td class="ctr"><div class="actions">
+                    <a class="btn btn-sm btn-dl" href="/admin/legal/<%= d.entity_type %>/<%= d.entity_id %>/<%= d.doc_id %>/download">Download</a>
+                    <form class="inline-form" action="/admin/legal/<%= d.doc_id %>/delete" method="POST" onsubmit="return confirm('Remove &quot;<%= d.original_name %>&quot;? (soft-delete)');">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button type="submit" class="btn btn-sm btn-del">Delete</button>
+                    </form>
+                  </div></td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="6" class="empty">No legal documents<%= (filters.entity_type||filters.doc_kind||filters.q)?' match your filters.':' yet.' %></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      var et = document.getElementById('etype'), hid = document.getElementById('entity_id');
+      var picks = document.querySelectorAll('.ent-pick');
+      function sync(){
+        var t = et.value;
+        picks.forEach(function(p){ var on = p.dataset.for===t; p.style.display = on?'flex':'none';
+          var sel = p.querySelector('[data-role=entity]'); if (!on) { /* keep value but ignore */ } });
+        var active = document.querySelector('.ent-pick[data-for="'+t+'"] [data-role=entity]');
+        hid.value = active ? active.value : '';
+      }
+      et.addEventListener('change', sync);
+      picks.forEach(function(p){ p.querySelector('[data-role=entity]').addEventListener('change', function(){ hid.value = this.value; }); });
+      sync();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-dark: #B8941F; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08); --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .hero-actions { position: absolute; top: 28px; right: 32px; z-index: 2; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 7px; }
+    .btn-view { background: rgba(22,163,74,0.12); color: var(--green); }
+    .btn-view:hover { background: var(--green); color: #fff; }
+    .btn-edit { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .btn-edit:hover { background: var(--blue); color: #fff; }
+    .btn-del { background: rgba(220,38,38,0.1); color: var(--red); }
+    .btn-del:hover { background: var(--red); color: #fff; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card.total { border-left: 4px solid var(--gold); }
+    .kpi-card.investors { border-left: 4px solid var(--blue); }
+    .kpi-card.active { border-left: 4px solid var(--green); }
+    .flash { background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.3); color: var(--green); padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.num, td.num { text-align: right; }
+    th.ctr, td.ctr { text-align: center; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .cname { font-weight: 600; color: var(--navy); }
+    .cmeta { font-size: 11px; color: var(--muted); }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.buyer { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.investor { background: rgba(212,175,55,0.18); color: var(--gold-dark); }
+    .badge.end_user { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.active { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.past { background: rgba(10,22,40,0.08); color: var(--muted); }
+    .badge.dormant { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .actions { display: flex; gap: 6px; justify-content: center; }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+    .inline-form { display: inline; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1>Client Database</h1>
+        <p>Permanent profiles for converted leads &mdash; portfolio &amp; transaction history.</p>
+        <div class="hero-actions">
+          <a href="/admin/clients/promote" class="btn btn-gold">+ Promote Lead</a>
+        </div>
+      </div>
+
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+      <div class="kpi-grid">
+        <div class="kpi-card total">
+          <div class="label">Total Clients</div>
+          <div class="value"><%= totals.total_clients %></div>
+        </div>
+        <div class="kpi-card investors">
+          <div class="label">Investors</div>
+          <div class="value"><%= totals.investors %></div>
+        </div>
+        <div class="kpi-card active">
+          <div class="label">Active</div>
+          <div class="value"><%= totals.active_clients %></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th class="ctr">Type</th>
+              <th class="ctr">Properties</th>
+              <th class="num">Total Paid</th>
+              <th class="ctr">Status</th>
+              <th class="ctr">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (clients && clients.length) { %>
+              <% clients.forEach(function(c) { %>
+                <tr>
+                  <td>
+                    <div class="cname"><%= c.name %></div>
+                    <div class="cmeta"><%= c.phone || '\u2014' %><%= c.location ? ' · ' + c.location : '' %></div>
+                  </td>
+                  <td class="ctr"><span class="badge <%= c.client_type %>"><%= c.client_type.replace('_',' ') %></span></td>
+                  <td class="ctr"><strong><%= c.properties %></strong></td>
+                  <td class="num">&#8377;<%= Number(c.total_paid).toLocaleString('en-IN') %></td>
+                  <td class="ctr"><span class="badge <%= c.status %>"><%= c.status %></span></td>
+                  <td class="ctr">
+                    <div class="actions">
+                      <a href="/admin/clients/view/<%= c.client_id %>" class="btn btn-sm btn-view">View</a>
+                      <a href="/admin/clients/edit/<%= c.client_id %>" class="btn btn-sm btn-edit">Edit</a>
+                      <form class="inline-form" action="/admin/clients/delete/<%= c.client_id %>" method="POST" onsubmit="return confirm('Remove client &quot;<%= c.name %>&quot;? (soft-delete, recoverable)');">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button type="submit" class="btn btn-sm btn-del">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="6" class="empty">No clients yet. Click &ldquo;+ Promote Lead&rdquo; to convert a booked lead into a client.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

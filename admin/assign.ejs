@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh; display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600; color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 26px 40px; flex: 1; }
+
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 26px 32px;
+            border-radius: 16px; margin-bottom: 22px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+        }
+        .page-hero::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+        .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+        .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+        /* FLASH */
+        .flash {
+            padding: 12px 18px; border-radius: 10px; margin-bottom: 18px;
+            font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px;
+        }
+        .flash-success { background: rgba(22,163,74,0.10); color: var(--green); border: 1px solid rgba(22,163,74,0.20); }
+        .flash-error   { background: rgba(220,38,38,0.10); color: var(--red);   border: 1px solid rgba(220,38,38,0.20); }
+        .flash-info    { background: rgba(37,99,235,0.10); color: var(--blue);  border: 1px solid rgba(37,99,235,0.20); }
+
+        /* STATS */
+        .stat-pills {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px; margin-bottom: 22px;
+        }
+        .stat-pill {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+        }
+        .stat-pill .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .stat-pill.dot-total .dot      { background: var(--gold); }
+        .stat-pill.dot-assigned .dot   { background: var(--green); }
+        .stat-pill.dot-unassigned .dot { background: var(--red); }
+        .stat-pill .label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .stat-pill .num {
+            font-family: 'Playfair Display', serif; font-size: 22px;
+            font-weight: 700; color: var(--navy); line-height: 1;
+        }
+
+        /* WORKLOAD */
+        .workload-card {
+            background: #fff; border-radius: 14px; border: 1px solid var(--border);
+            box-shadow: var(--shadow); overflow: hidden; margin-bottom: 22px;
+        }
+        .panel-head {
+            padding: 16px 22px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-head h2 { font-size: 17px; }
+        .panel-head .tag {
+            font-size: 11px; color: var(--gold-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .workload-list { padding: 6px 0; }
+        .workload-row {
+            display: grid; grid-template-columns: 36px 1fr auto;
+            gap: 14px; align-items: center;
+            padding: 12px 22px; border-bottom: 1px solid var(--border);
+        }
+        .workload-row:last-child { border-bottom: none; }
+        .workload-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13px;
+        }
+        .workload-info { min-width: 0; }
+        .workload-name { font-weight: 600; color: var(--navy); font-size: 14px; }
+        .workload-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .workload-bar {
+            position: relative; width: 200px; height: 6px;
+            background: var(--beige); border-radius: 3px; overflow: hidden;
+            margin-right: 10px; display: inline-block; vertical-align: middle;
+        }
+        .workload-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%);
+            border-radius: 3px;
+        }
+        .workload-num {
+            font-family: 'Playfair Display', serif; font-size: 18px;
+            font-weight: 700; color: var(--navy); min-width: 36px;
+            display: inline-block; text-align: right; vertical-align: middle;
+        }
+        @media (max-width: 700px) {
+            .workload-bar { width: 100px; }
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex; gap: 8px; margin-bottom: 16px;
+            background: var(--beige); padding: 4px; border-radius: 10px;
+            width: fit-content;
+        }
+        .tab {
+            padding: 8px 16px; border-radius: 7px;
+            font-size: 13px; font-weight: 600;
+            color: var(--muted); text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .tab:hover { color: var(--navy); }
+        .tab.active {
+            background: #fff; color: var(--navy);
+            box-shadow: 0 2px 6px rgba(10,22,40,0.06);
+        }
+
+        /* TABLE + SELECTION */
+        .leads-card {
+            background: #fff; border-radius: 14px; border: 1px solid var(--border);
+            box-shadow: var(--shadow); overflow: hidden; margin-bottom: 22px;
+        }
+        .lead-table { width: 100%; border-collapse: collapse; }
+        .lead-table thead th {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600;
+            text-align: left; padding: 12px 18px;
+            background: var(--beige); border-bottom: 1px solid var(--border);
+        }
+        .lead-table tbody td {
+            padding: 12px 18px; border-bottom: 1px solid var(--border);
+            font-size: 13px; vertical-align: middle;
+        }
+        .lead-table tbody tr:hover { background: rgba(212,175,55,0.05); }
+        .lead-table tbody tr.row-selected { background: rgba(212,175,55,0.12); }
+        .lead-table tbody tr:last-child td { border-bottom: none; }
+
+        .lead-check {
+            width: 18px; height: 18px; cursor: pointer; accent-color: var(--gold-dark);
+        }
+        .name-main { font-weight: 600; color: var(--navy); }
+        .name-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .lead-status {
+            display: inline-block; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+        }
+        .lead-status-cold { background: rgba(37,99,235,0.10);  color: var(--blue); }
+        .lead-status-warm { background: rgba(217,119,6,0.12);  color: var(--amber); }
+        .lead-status-hot  { background: rgba(220,38,38,0.12);  color: var(--red); }
+        .assigned-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 3px 9px; border-radius: 999px;
+            background: var(--beige); font-size: 11px; font-weight: 600; color: var(--navy);
+        }
+        .assigned-pill .dot-small { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+        .unassigned-pill {
+            display: inline-block; padding: 3px 9px; border-radius: 999px;
+            background: rgba(220,38,38,0.08); color: var(--red);
+            font-size: 11px; font-weight: 600;
+        }
+        .muted-cell { color: var(--muted); font-size: 12px; }
+        .empty-state {
+            padding: 50px 24px; text-align: center; color: var(--muted); font-size: 14px;
+        }
+
+        /* STICKY ACTION BAR */
+        .action-bar {
+            position: fixed; bottom: 24px; left: calc(260px + 40px); right: 40px;
+            background: var(--navy); color: var(--offwhite);
+            border-radius: 14px; padding: 14px 18px;
+            box-shadow: 0 12px 40px rgba(10,22,40,0.30);
+            display: none; align-items: center; gap: 14px; z-index: 50;
+        }
+        .action-bar.visible { display: flex; }
+        .action-bar .count-pill {
+            background: var(--gold); color: var(--navy);
+            font-family: 'Playfair Display', serif; font-weight: 700;
+            padding: 5px 12px; border-radius: 8px; font-size: 14px;
+        }
+        .action-bar .label {
+            font-size: 13px; color: var(--offwhite); opacity: 0.85;
+        }
+        .action-bar select {
+            font-family: inherit; font-size: 13px;
+            padding: 8px 12px; border-radius: 8px;
+            background: rgba(255,255,255,0.10); color: var(--offwhite);
+            border: 1px solid rgba(255,255,255,0.20); outline: none;
+            min-width: 220px;
+        }
+        .action-bar select option { color: var(--text); background: #fff; }
+        .action-bar .btn {
+            padding: 9px 18px; border-radius: 8px; font-family: inherit;
+            font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+            transition: all 0.15s ease;
+        }
+        .btn-go {
+            background: var(--gold); color: var(--navy);
+        }
+        .btn-go:hover { background: var(--gold-soft); }
+        .btn-go:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-cancel {
+            background: transparent; color: var(--offwhite); border: 1px solid rgba(255,255,255,0.30);
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.10); }
+
+        @media (max-width: 800px) {
+            .action-bar { left: 20px; right: 20px; flex-wrap: wrap; }
+            .action-bar select { min-width: 0; flex: 1; }
+        }
+
+        /* HELPERS */
+        .help-text {
+            font-size: 12px; color: var(--muted); padding: 12px 22px;
+            background: var(--beige); border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+      <%- include('../partials/breadcrumb', { crumbs:[{label:'Leads',href:'/admin/leads'},{label:'Lead Assignment'}], backHref:'/admin/leads' }) %>
+
+            <!-- HERO -->
+            <div class="page-hero">
+                <h1>Lead Assignment</h1>
+                <p>Distribute leads across your sales team. Select multiple, assign in one click.</p>
+                <div class="gold-line"></div>
+            </div>
+
+            <!-- FLASH MESSAGE -->
+            <% if (flash) { %>
+                <div class="flash flash-<%= flash.type %>"><%= flash.text %></div>
+            <% } %>
+
+            <!-- STATS -->
+            <div class="stat-pills">
+                <div class="stat-pill dot-total">
+                    <div class="dot"></div>
+                    <div><div class="label">Total Leads</div><div class="num"><%= stats.total_leads %></div></div>
+                </div>
+                <div class="stat-pill dot-assigned">
+                    <div class="dot"></div>
+                    <div><div class="label">Assigned</div><div class="num"><%= stats.assigned_leads %></div></div>
+                </div>
+                <div class="stat-pill dot-unassigned">
+                    <div class="dot"></div>
+                    <div><div class="label">Unassigned</div><div class="num"><%= stats.unassigned_leads %></div></div>
+                </div>
+                <div class="stat-pill" style="border-color: rgba(212,175,55,0.20);">
+                    <div class="dot" style="background: var(--gold);"></div>
+                    <div><div class="label">Active Sales</div><div class="num"><%= employees.length %></div></div>
+                </div>
+            </div>
+
+            <!-- WORKLOAD -->
+            <div class="workload-card">
+                <div class="panel-head">
+                    <h2>Team Workload</h2>
+                    <span class="tag">Current distribution</span>
+                </div>
+                <%
+                    const maxLeads = Math.max(1, ...employees.map(e => e.lead_count || 0));
+                %>
+                <div class="workload-list">
+                    <% if (employees.length === 0) { %>
+                        <div class="empty-state">No active sales employees yet.</div>
+                    <% } else { %>
+                        <% employees.forEach(function(e) { %>
+                            <% const pct = Math.round(((e.lead_count || 0) / maxLeads) * 100); %>
+                            <div class="workload-row">
+                                <div class="workload-avatar"><%= (e.name || '?').charAt(0).toUpperCase() %></div>
+                                <div class="workload-info">
+                                    <div class="workload-name"><%= e.name %></div>
+                                    <div class="workload-meta"><%= e.external_id %> · <%= e.job_title || 'Employee' %></div>
+                                </div>
+                                <div>
+                                    <div class="workload-bar"><div class="workload-bar-fill" style="width: <%= pct %>%"></div></div>
+                                    <span class="workload-num"><%= e.lead_count %></span>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div class="tabs">
+                <a class="tab <%= showFilter === 'unassigned' ? 'active' : '' %>" href="/admin/assign?show=unassigned">
+                    Unassigned (<%= stats.unassigned_leads %>)
+                </a>
+                <a class="tab <%= showFilter === 'assigned' ? 'active' : '' %>" href="/admin/assign?show=assigned">
+                    Assigned (<%= stats.assigned_leads %>)
+                </a>
+                <a class="tab <%= showFilter === 'all' ? 'active' : '' %>" href="/admin/assign?show=all">
+                    All (<%= stats.total_leads %>)
+                </a>
+            </div>
+
+            <!-- LEADS + SELECTION FORM -->
+            <form id="bulk-form" method="POST" action="/admin/assign/bulk">
+                <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <% } %>
+
+                <div class="leads-card">
+                    <div class="panel-head">
+                        <h2>
+                            <% if (showFilter === 'unassigned') { %>Unassigned Leads
+                            <% } else if (showFilter === 'assigned') { %>Assigned Leads
+                            <% } else { %>All Leads<% } %>
+                        </h2>
+                        <span class="tag"><%= leads.length %> shown</span>
+                    </div>
+
+                    <% if (leads && leads.length > 0) { %>
+                    <table class="lead-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">
+                                    <input type="checkbox" class="lead-check" id="select-all" />
+                                </th>
+                                <th>Lead</th>
+                                <th>Status</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Budget</th>
+                                <th>Current Owner</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% leads.forEach(function(l) { %>
+                                <tr data-lead-id="<%= l.lead_id %>">
+                                    <td>
+                                        <input type="checkbox" class="lead-check row-check" name="lead_ids" value="<%= l.lead_id %>" />
+                                    </td>
+                                    <td>
+                                        <div class="name-main"><%= l.name %></div>
+                                        <% if (l.external_id) { %>
+                                            <div class="name-sub"><%= l.external_id %></div>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="lead-status lead-status-<%= (l.status || 'cold').toLowerCase() %>">
+                                            <%= l.status || 'cold' %>
+                                        </span>
+                                    </td>
+                                    <td class="muted-cell"><%= l.phone || '—' %></td>
+                                    <td class="muted-cell"><%= l.location || '—' %></td>
+                                    <td class="muted-cell"><%= l.budget || '—' %></td>
+                                    <td>
+                                        <% if (l.assigned_to_name) { %>
+                                            <span class="assigned-pill">
+                                                <span class="dot-small"></span>
+                                                <%= l.assigned_to_name %>
+                                            </span>
+                                        <% } else { %>
+                                            <span class="unassigned-pill">Unassigned</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <% if (showFilter === 'unassigned') { %>
+                                🎉 Every lead has an owner. No unassigned leads.
+                            <% } else { %>
+                                No leads in this view.
+                            <% } %>
+                        </div>
+                    <% } %>
+
+                    <div class="help-text">
+                        💡 Tip: Click the checkboxes to select leads, then choose an employee from the bar below to assign in bulk.
+                    </div>
+                </div>
+
+                <!-- STICKY ACTION BAR -->
+                <div id="action-bar" class="action-bar">
+                    <span class="count-pill" id="selected-count">0</span>
+                    <span class="label">leads selected — assign to:</span>
+                    <select name="employee_id" id="employee-select" required>
+                        <option value="">— Choose employee —</option>
+                        <% employees.forEach(function(e) { %>
+                            <option value="<%= e.employee_id %>"><%= e.name %> (<%= e.external_id %>) · <%= e.lead_count %> leads</option>
+                        <% }); %>
+                    </select>
+                    <button type="submit" class="btn btn-go" id="assign-btn" disabled>Assign →</button>
+                    <button type="button" class="btn btn-cancel" id="clear-btn">Clear</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const selectAll  = document.getElementById('select-all');
+            const rowChecks  = document.querySelectorAll('.row-check');
+            const actionBar  = document.getElementById('action-bar');
+            const countPill  = document.getElementById('selected-count');
+            const empSelect  = document.getElementById('employee-select');
+            const assignBtn  = document.getElementById('assign-btn');
+            const clearBtn   = document.getElementById('clear-btn');
+            const form       = document.getElementById('bulk-form');
+
+            function selectedIds() {
+                return Array.from(rowChecks).filter(c => c.checked);
+            }
+
+            function updateUI() {
+                const sel = selectedIds();
+                const n = sel.length;
+                countPill.textContent = n;
+                if (n > 0) {
+                    actionBar.classList.add('visible');
+                } else {
+                    actionBar.classList.remove('visible');
+                }
+                assignBtn.disabled = !(n > 0 && empSelect.value);
+
+                // highlight rows
+                rowChecks.forEach(c => {
+                    const row = c.closest('tr');
+                    if (row) row.classList.toggle('row-selected', c.checked);
+                });
+
+                // select-all checkbox tristate-ish
+                if (selectAll) {
+                    if (n === 0) {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = false;
+                    } else if (n === rowChecks.length) {
+                        selectAll.checked = true;
+                        selectAll.indeterminate = false;
+                    } else {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = true;
+                    }
+                }
+            }
+
+            if (selectAll) {
+                selectAll.addEventListener('change', function() {
+                    rowChecks.forEach(c => { c.checked = selectAll.checked; });
+                    updateUI();
+                });
+            }
+
+            rowChecks.forEach(c => c.addEventListener('change', updateUI));
+
+            empSelect.addEventListener('change', updateUI);
+
+            clearBtn.addEventListener('click', function() {
+                rowChecks.forEach(c => { c.checked = false; });
+                empSelect.value = '';
+                updateUI();
+            });
+
+            form.addEventListener('submit', function(e) {
+                const sel = selectedIds();
+                if (sel.length === 0 || !empSelect.value) {
+                    e.preventDefault();
+                    return;
+                }
+                const empText = empSelect.options[empSelect.selectedIndex].text;
+                if (!confirm('Assign ' + sel.length + ' lead' + (sel.length === 1 ? '' : 's') + ' to ' + empText + '?')) {
+                    e.preventDefault();
+                }
+            });
+
+            updateUI();
+        })();
+    </script>
+
+</body>
+</html>

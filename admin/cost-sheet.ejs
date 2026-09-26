@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-dark: #B8941F; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08); --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --red: #dc2626; --amber: #b45309;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; max-width: 980px; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 24px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero h1 { color: var(--offwhite); font-size: 26px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .flash { background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.4); color: var(--gold-dark); padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+    .hintbox { background: rgba(180,83,9,0.08); border: 1px solid rgba(180,83,9,0.25); color: var(--amber); padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; }
+    .hintbox ul { margin-left: 18px; }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 28px; margin-bottom: 22px; }
+    .panel h2 { font-size: 18px; margin-bottom: 16px; }
+    .picker-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 12px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: 0.3px; }
+    input[type=text], input[type=number], select {
+      font-family: 'Inter', sans-serif; font-size: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--offwhite); color: var(--text); width: 100%;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--gold); background: #fff; }
+    select:disabled { opacity: 0.5; }
+    .checkrow { display: flex; align-items: center; gap: 10px; padding-top: 8px; }
+    .checkrow input { width: 18px; height: 18px; accent-color: var(--gold); }
+    .checkrow label { text-transform: none; letter-spacing: 0; font-weight: 500; }
+    .hint { font-size: 11px; color: var(--muted); }
+    .rera-line { font-size: 13px; margin-top: 10px; }
+    .rera-missing { color: var(--red); font-weight: 600; }
+    .rates-note { font-size: 11px; color: var(--muted); margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+    .form-actions { display: flex; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .btn { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; padding: 11px 22px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--beige); }
+    .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h1>Cost Sheet Generator</h1>
+          <p>Select a unit, review the pricing inputs, generate a branded Maharashtra cost sheet.</p>
+        </div>
+        <a href="/admin/cost-sheet/history" class="btn btn-ghost" style="color: var(--gold); border-color: rgba(212,175,55,0.5);">History →</a>
+      </div>
+
+      <% if (flash) { %>
+        <div class="flash"><%= flash %></div>
+      <% } %>
+
+      <!-- ============ PICKER: builder -> property -> unit ============ -->
+      <div class="panel">
+        <h2>1 &middot; Pick the Unit</h2>
+        <form action="/admin/cost-sheet" method="GET">
+          <div class="picker-grid">
+            <div class="field">
+              <label>Builder</label>
+              <select name="builder_id" onchange="this.form.project_id.value='';this.form.property_id.value='';this.form.submit()">
+                <option value="">— select builder —</option>
+                <% builders.forEach(function(b) { %>
+                  <option value="<%= b.builder_id %>" <%= selected.builderId === b.builder_id ? 'selected' : '' %>><%= b.name %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="field">
+              <label>Project</label>
+              <select name="project_id" <%= selected.builderId ? '' : 'disabled' %> onchange="this.form.property_id.value='';this.form.submit()">
+                <option value="">— select project —</option>
+                <% properties.forEach(function(p) { %>
+                  <option value="<%= p.project_id %>" <%= selected.propertyId === p.project_id ? 'selected' : '' %>><%= p.title %> (<%= p.construction_status.replace(/_/g, ' ') %>)</option>
+                <% }); %>
+              </select>
+              <% if (selected.builderId && properties.length === 0) { %>
+                <span class="hint">No active projects for this builder.</span>
+              <% } %>
+            </div>
+            <div class="field">
+              <label>Unit</label>
+              <select name="property_id" <%= selected.propertyId && property ? '' : 'disabled' %> onchange="this.form.submit()">
+                <option value="">— select unit —</option>
+                <% units.forEach(function(u) { %>
+                  <option value="<%= u.property_id %>" <%= selected.unitId === u.property_id ? 'selected' : '' %>>
+                    <%= u.config || 'unit' %><%= u.carpet_sqft ? ' · ' + u.carpet_sqft + ' sqft' : '' %><%= u.price_lakhs ? ' · ₹' + u.price_lakhs + 'L' : ' · no price' %>
+                  </option>
+                <% }); %>
+              </select>
+              <% if (property && units.length === 0) { %>
+                <span class="hint">No active units in this project.</span>
+              <% } %>
+            </div>
+          </div>
+          <noscript><button type="submit" class="btn btn-ghost" style="margin-top:12px;">Load</button></noscript>
+        </form>
+      </div>
+
+      <!-- ============ PRICING FORM (pre-filled, always editable) ============ -->
+      <% if (unit && property && prefill) { %>
+
+        <% if (hints.length > 0) { %>
+          <div class="hintbox">
+            <strong>Check before generating:</strong>
+            <ul>
+              <% hints.forEach(function(h) { %><li><%= h %></li><% }); %>
+            </ul>
+          </div>
+        <% } %>
+
+        <div class="panel">
+          <h2>2 &middot; Pricing Inputs — <%= property.title %> / <%= unit.config || 'unit' %></h2>
+
+          <div class="rera-line">
+            <% if (property.rera_number) { %>
+              RERA (project): <strong><%= property.rera_number %></strong>
+            <% } else { %>
+              <span class="rera-missing">⚠ No project RERA on record — sheet will print "RERA: ____"</span>
+            <% } %>
+          </div>
+
+          <form action="/admin/cost-sheet/generate" method="POST" style="margin-top:18px;">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <input type="hidden" name="builder_id" value="<%= selected.builderId %>" />
+            <input type="hidden" name="project_id" value="<%= selected.propertyId %>" />
+            <input type="hidden" name="property_id" value="<%= selected.unitId %>" />
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Base Price (₹)</label>
+                <input type="number" name="base_price" step="1" min="0" value="<%= prefill.base_price %>" required />
+                <span class="hint"><%= prefill.base_price === '' ? 'No price on record — enter manually' : 'Pre-filled from unit (' + (unit.price_lakhs || '') + ' lakhs)' %></span>
+              </div>
+              <div class="field">
+                <label>Carpet Area (sqft)</label>
+                <input type="number" name="carpet_sqft" step="0.01" min="0" value="<%= prefill.carpet_sqft %>" />
+                <span class="hint"><%= prefill.carpet_sqft === '' ? (prefill.raw_carpet ? 'On record: "' + prefill.raw_carpet + '" — enter a clean number' : 'Not on record') : 'Pre-filled from unit' %></span>
+              </div>
+
+              <div class="field">
+                <label>Floor Number</label>
+                <input type="number" name="floor_number" step="1" min="0" value="<%= prefill.floor_number %>" />
+                <span class="hint">Blank = ground / not known = no floor rise</span>
+              </div>
+              <div class="field">
+                <label>Floor Rise (₹ / sqft / floor)</label>
+                <input type="number" name="floor_rise_per_sqft" step="0.01" min="0" value="<%= prefill.floor_rise_per_sqft %>" />
+                <span class="hint">Blank = 0</span>
+              </div>
+
+              <div class="field">
+                <label>PLC — Preferred Location Charge (₹)</label>
+                <input type="number" name="plc_amount" step="1" min="0" value="<%= prefill.plc_amount %>" />
+                <span class="hint">Lump sum. Blank = 0</span>
+              </div>
+              <div class="field">
+                <label>Other Charges (₹)</label>
+                <input type="number" name="other_charges" step="1" min="0" value="<%= prefill.other_charges %>" />
+                <span class="hint">Society / infra / parking — excluded from stamp-duty base. Blank = 0</span>
+              </div>
+
+              <div class="field full">
+                <label>For Lead (optional)</label>
+                <input type="text" id="lead_display" name="lead_display" list="leads-dl" autocomplete="off"
+                       placeholder="Type a name or phone — leave empty for walk-in" />
+                <datalist id="leads-dl">
+                  <% leads.forEach(function(l) { %>
+                    <option value="<%= l.name %><%= l.phone ? ' · ' + l.phone : '' %>"></option>
+                  <% }); %>
+                </datalist>
+                <input type="hidden" name="lead_id" id="lead_id" value="" />
+                <span class="hint" id="lead-hint">Sheet will print "Prepared for: &lt;name&gt;" when a lead is attached.</span>
+                <script>
+                  (function () {
+                    var MAP = {};
+                    <% leads.forEach(function(l) { %>MAP[<%- JSON.stringify(l.name + (l.phone ? ' · ' + l.phone : '')) %>] = <%- JSON.stringify(l.lead_id) %>;
+                    <% }); %>
+                    var box = document.getElementById('lead_display');
+                    var hid = document.getElementById('lead_id');
+                    var hint = document.getElementById('lead-hint');
+                    function resolve() {
+                      var v = box.value.trim();
+                      hid.value = MAP[v] || '';
+                      if (v === '') { hint.textContent = 'Walk-in sheet — no lead attached.'; }
+                      else if (hid.value) { hint.textContent = '✓ Lead attached: ' + v; }
+                      else { hint.textContent = '⚠ Not a known lead yet — keep typing or pick from the list.'; }
+                    }
+                    box.addEventListener('input', resolve);
+                    box.addEventListener('change', resolve);
+                  })();
+                </script>
+              </div>
+
+              <div class="field full">
+                <div class="checkrow">
+                  <input type="checkbox" id="gst_applies" name="gst_applies" <%= prefill.gst_applies ? 'checked' : '' %> />
+                  <label for="gst_applies">GST applies (under-construction project)</label>
+                </div>
+                <div class="checkrow">
+                  <input type="checkbox" id="gst_affordable" name="gst_affordable" <%= prefill.gst_affordable ? 'checked' : '' %> />
+                  <label for="gst_affordable">Affordable housing — GST <%= ((rate.gst_affordable || 0.01) * 100) %>% instead of <%= ((rate.gst_standard || 0.05) * 100) %>%</label>
+                </div>
+                <div class="checkrow">
+                  <input type="checkbox" id="women_buyer" name="women_buyer" />
+                  <label for="women_buyer">Woman buyer — stamp duty <%= ((rate.stamp_duty_women || 0.05) * 100) %>% instead of <%= ((rate.stamp_duty || 0.06) * 100) %>%</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="rates-note">
+              Rates from pricing_config: stamp duty <%= ((rate.stamp_duty || 0.06) * 100) %>% (Navi Mumbai incl. metro cess) &middot;
+              registration <%= ((rate.registration_rate || 0.01) * 100) %>% capped ₹<%= (rate.registration_cap || 30000).toLocaleString('en-IN') %> &middot;
+              GST <%= ((rate.gst_affordable || 0.01) * 100) %>% / <%= ((rate.gst_standard || 0.05) * 100) %>% (under-construction only)
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-gold">Generate Cost Sheet</button>
+              <a href="/admin/cost-sheet" class="btn btn-ghost">Reset</a>
+            </div>
+          </form>
+        </div>
+
+      <% } else if (selected.propertyId && property && units.length > 0) { %>
+        <div class="panel"><p class="empty">Pick a unit above to load its pricing inputs.</p></div>
+      <% } %>
+
+    </div>
+  </div>
+</body>
+</html>

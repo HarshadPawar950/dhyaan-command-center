@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .hero-actions { position: absolute; top: 28px; right: 32px; display: flex; gap: 10px; z-index: 2; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost-light { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+    .btn-ghost-light:hover { background: rgba(255,255,255,0.2); }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 26px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .kpi-card.roas { border-left: 4px solid var(--green); }
+    .kpi-card.roas .value { color: var(--green); }
+    .kpi-card.spend { border-left: 4px solid var(--gold); }
+
+    .section-title { font-size: 18px; margin: 8px 0 14px; display: flex; align-items: center; gap: 10px; }
+    .section-title .dot { width: 7px; height: 7px; background: var(--gold); border-radius: 50%; }
+
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.num, td.num { text-align: right; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    .cname { font-weight: 600; color: var(--navy); }
+    .cmeta { font-size: 11px; color: var(--muted); }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.meta { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.google { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.offline { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.def { background: rgba(10,22,40,0.08); color: var(--navy); }
+    .roas-good { color: var(--green); font-weight: 600; }
+    .roas-zero { color: var(--muted); }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+    .note { font-size: 12px; color: var(--muted); margin-top: 10px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1>Marketing Spend &amp; ROI</h1>
+        <p>Is the money working? Spend, leads, bookings &amp; return &mdash; per campaign.</p>
+        <span class="gold-line"></span>
+        <div class="hero-actions">
+          <a href="/admin/marketing/campaign-new" class="ds-btn ds-btn-gold"><span style="font-size:18px;line-height:1;">+</span> New Campaign</a>
+          <a href="/admin/marketing/spend-new" class="btn btn-ghost-light">+ Log Spend</a>
+        </div>
+      </div>
+
+      <% if (typeof messages !== 'undefined' && messages.success && messages.success.length) { %>
+        <div class="panel" style="padding:12px 18px;margin-bottom:16px;color:var(--green);font-weight:500;">&#10003; <%= messages.success %></div>
+      <% } %>
+      <% if (typeof messages !== 'undefined' && messages.error && messages.error.length) { %>
+        <div class="panel" style="padding:12px 18px;margin-bottom:16px;color:var(--red);font-weight:500;"><%= messages.error %></div>
+      <% } %>
+
+      <!-- KPI ROW -->
+      <div class="kpi-grid">
+        <div class="kpi-card spend">
+          <div class="label">Total Spend</div>
+          <div class="value">&#8377;<%= Math.round(kpis.totalSpend).toLocaleString('en-IN') %></div>
+          <div class="sub"><%= kpis.campaignCount %> campaign<%= kpis.campaignCount === 1 ? '' : 's' %></div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Attributed Leads</div>
+          <div class="value"><%= kpis.attributedLeads %></div>
+          <div class="sub">from campaigns</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Cost / Lead</div>
+          <div class="value">&#8377;<%= kpis.cpl > 0 ? Math.round(kpis.cpl).toLocaleString('en-IN') : '0' %></div>
+          <div class="sub">CPL</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Bookings</div>
+          <div class="value"><%= kpis.bookings %></div>
+          <div class="sub">&#8377;<%= Math.round(kpis.bookingValue).toLocaleString('en-IN') %> value</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Cost / Booking</div>
+          <div class="value">&#8377;<%= kpis.cpa > 0 ? Math.round(kpis.cpa).toLocaleString('en-IN') : '0' %></div>
+          <div class="sub">CPA</div>
+        </div>
+        <div class="kpi-card roas">
+          <div class="label">ROAS</div>
+          <div class="value"><%= kpis.roas > 0 ? kpis.roas.toFixed(1) + 'x' : '0x' %></div>
+          <div class="sub">return on ad spend</div>
+        </div>
+      </div>
+
+      <!-- PER-CAMPAIGN TABLE -->
+      <h2 class="section-title"><span class="dot"></span> Campaign Performance</h2>
+      <div class="panel">
+        <% if (campaigns.length === 0) { %>
+          <div class="empty">No campaigns yet. Click <strong>+ New Campaign</strong> to start tracking spend &amp; ROI.</div>
+        <% } else { %>
+          <table>
+            <thead>
+              <tr>
+                <th>Campaign</th>
+                <th>Platform</th>
+                <th class="num">Spend</th>
+                <th class="num">Leads</th>
+                <th class="num">CPL</th>
+                <th class="num">Bookings</th>
+                <th class="num">ROAS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% campaigns.forEach(function(c){ %>
+                <tr>
+                  <td>
+                    <div class="cname"><%= c.name %></div>
+                    <div class="cmeta"><%= c.micro_market || '—' %> &middot; <%= c.status %></div>
+                  </td>
+                  <td>
+                    <% var pl = (c.platform || '').toLowerCase(); %>
+                    <span class="badge <%= pl.indexOf('meta')>=0||pl.indexOf('face')>=0||pl.indexOf('insta')>=0 ? 'meta' : (pl.indexOf('google')>=0 ? 'google' : (pl.indexOf('offline')>=0 ? 'offline' : 'def')) %>"><%= c.platform %></span>
+                  </td>
+                  <td class="num">&#8377;<%= Math.round(c.spend).toLocaleString('en-IN') %></td>
+                  <td class="num"><%= c.leads %></td>
+                  <td class="num">&#8377;<%= c.cpl > 0 ? Math.round(c.cpl).toLocaleString('en-IN') : '0' %></td>
+                  <td class="num"><%= c.bookings %></td>
+                  <td class="num">
+                    <% if (c.roas > 0) { %><span class="roas-good"><%= c.roas.toFixed(1) %>x</span><% } else { %><span class="roas-zero">0x</span><% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+      <p class="note">Booking &amp; ROAS metrics activate automatically once payments are recorded against campaign-attributed leads.</p>
+
+    </div>
+  </div>
+</body>
+</html>
+
+

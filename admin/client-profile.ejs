@@ -1,0 +1,431 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-dark: #B8941F; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08); --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .hero-actions { position: absolute; top: 28px; right: 32px; z-index: 2; display: flex; gap: 10px; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost-light { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25); }
+    .btn-ghost-light:hover { background: rgba(255,255,255,0.2); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card.paid { border-left: 4px solid var(--green); }
+    .kpi-card.paid .value { color: var(--green); }
+    .kpi-card.out { border-left: 4px solid var(--amber); }
+    .kpi-card.props { border-left: 4px solid var(--gold); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
+    .info-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 22px; }
+    .info-card h3 { font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .info-card h3 .dot { width: 7px; height: 7px; background: var(--gold); border-radius: 50%; }
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .info-row:last-child { border-bottom: none; }
+    .info-row .k { color: var(--muted); }
+    .info-row .v { color: var(--navy); font-weight: 500; text-align: right; max-width: 60%; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.buyer { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.investor { background: rgba(212,175,55,0.18); color: var(--gold-dark); }
+    .badge.end_user { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.active { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.past { background: rgba(10,22,40,0.08); color: var(--muted); }
+    .badge.dormant { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.paid { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.pending { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.partial { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.overdue { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.applied { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.sanctioned { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.disbursed { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.rejected { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.offered { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.completed { background: rgba(22,163,74,0.12); color: var(--green); }
+    details.edit { margin-top: 6px; }
+    details.edit summary { cursor: pointer; font-size: 12px; color: var(--blue); font-weight: 600; }
+    details.edit .urow { margin-top: 10px; }
+    .section-title { font-size: 18px; margin: 8px 0 14px; display: flex; align-items: center; gap: 10px; }
+    .section-title .dot { width: 7px; height: 7px; background: var(--gold); border-radius: 50%; }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.num, td.num { text-align: right; }
+    th.ctr, td.ctr { text-align: center; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .cname { font-weight: 600; color: var(--navy); }
+    .cmeta { font-size: 11px; color: var(--muted); }
+    .empty { text-align: center; color: var(--muted); padding: 30px; font-size: 13px; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid var(--border); flex-wrap: wrap; }
+    .tab-btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; padding: 11px 18px; cursor: pointer; }
+    .tab-btn:hover { color: var(--navy); }
+    .tab-btn.active { color: var(--navy); border-bottom-color: var(--gold); }
+    .from-lead { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); background: rgba(10,22,40,0.05); padding: 2px 7px; border-radius: 6px; margin-left: 6px; }
+    .upload-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 20px 22px; margin-bottom: 18px; }
+    .upload-card h3 { font-size: 15px; margin-bottom: 14px; }
+    .urow { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .ufg { display: flex; flex-direction: column; gap: 4px; }
+    .ufg label { font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; }
+    .ufg input, .ufg select { font-size: 13px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--offwhite); }
+    .btn-del { background: rgba(220,38,38,0.1); color: var(--red); } .btn-del:hover { background: var(--red); color: #fff; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 7px; }
+    .btn-dl { background: rgba(37,99,235,0.12); color: var(--blue); } .btn-dl:hover { background: var(--blue); color: #fff; }
+    .inline-form { display: inline; }
+    .flash { background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.3); color: var(--green); padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+    .err { background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); color: var(--red); padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <div class="main-content">
+    <%- topbarHtml %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1><%= client.name %></h1>
+        <p>Client profile &amp; property portfolio</p>
+        <div class="hero-actions">
+          <a href="/admin/clients/edit/<%= client.client_id %>" class="btn btn-gold">Edit Profile</a>
+          <a href="/admin/clients" class="btn btn-ghost-light">&larr; All Clients</a>
+        </div>
+      </div>
+
+      <% if (typeof flash !== 'undefined' && flash) { %><div class="flash"><%= flash %></div><% } %>
+      <% if (typeof err !== 'undefined' && err) { %><div class="err"><%= err %></div><% } %>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <% if (typeof canDocs !== 'undefined' && canDocs) { %><button class="tab-btn" data-tab="documents">Documents</button><% } %>
+        <% if (typeof canFinance !== 'undefined' && canFinance) { %><button class="tab-btn" data-tab="loan">Loan Status</button><% } %>
+        <% if (typeof canFinance !== 'undefined' && canFinance) { %><button class="tab-btn" data-tab="goals">Goals</button><% } %>
+        <button class="tab-btn" data-tab="referrals">Referrals</button>
+      </div>
+
+      <div class="tab-panel" id="tab-overview">
+      <!-- Portfolio summary -->
+      <div class="kpi-grid">
+        <div class="kpi-card paid">
+          <div class="label">Total Paid</div>
+          <div class="value">&#8377;<%= Number(summary.paid).toLocaleString('en-IN') %></div>
+        </div>
+        <div class="kpi-card out">
+          <div class="label">Outstanding</div>
+          <div class="value">&#8377;<%= Number(summary.outstanding).toLocaleString('en-IN') %></div>
+        </div>
+        <div class="kpi-card props">
+          <div class="label">Properties</div>
+          <div class="value"><%= summary.property_count %></div>
+        </div>
+      </div>
+
+      <!-- Profile + Preferences -->
+      <div class="two-col">
+        <div class="info-card">
+          <h3><span class="dot"></span> Contact</h3>
+          <div class="info-row"><span class="k">Phone</span><span class="v"><%= client.phone || '\u2014' %></span></div>
+          <div class="info-row"><span class="k">Email</span><span class="v"><%= client.email || '\u2014' %></span></div>
+          <div class="info-row"><span class="k">Location</span><span class="v"><%= client.location || '\u2014' %></span></div>
+          <div class="info-row"><span class="k">Type</span><span class="v"><span class="badge <%= client.client_type %>"><%= client.client_type.replace('_',' ') %></span></span></div>
+          <div class="info-row"><span class="k">Status</span><span class="v"><span class="badge <%= client.status %>"><%= client.status %></span></span></div>
+        </div>
+        <div class="info-card">
+          <h3><span class="dot"></span> Profile <span class="from-lead">from lead</span></h3>
+          <div class="info-row"><span class="k">Requirement</span><span class="v"><%= client.requirement || '\u2014' %></span></div>
+          <div class="info-row"><span class="k">Budget</span><span class="v"><%= client.budget || '\u2014' %></span></div>
+          <div class="info-row"><span class="k">Preferences</span><span class="v"><%= client.preferences || '\u2014' %></span></div>
+          <div class="info-row"><span class="k">Investment Profile</span><span class="v"><%= client.investment_profile || '\u2014' %></span></div>
+        </div>
+      </div>
+
+      <% if (client.notes) { %>
+        <div class="info-card" style="margin-bottom: 22px;">
+          <h3><span class="dot"></span> Notes</h3>
+          <div style="font-size: 13px; color: #333; line-height: 1.6;"><%= client.notes %></div>
+        </div>
+      <% } %>
+
+      <!-- Portfolio table -->
+      <h2 class="section-title"><span class="dot"></span> Property Portfolio &amp; Transactions</h2>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Builder</th>
+              <th class="num">Amount</th>
+              <th class="ctr">Status</th>
+              <th>Date</th>
+              <th>Possession</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (portfolio && portfolio.length) { %>
+              <% portfolio.forEach(function(p) { %>
+                <%
+                  let dt = '';
+                  if (p.paid_at) { const d = new Date(p.paid_at); if (!isNaN(d)) dt = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }); }
+                %>
+                <tr>
+                  <td>
+                    <div class="cname"><%= p.title || '\u2014' %></div>
+                    <div class="cmeta"><%= p.location || '' %></div>
+                  </td>
+                  <td><%= p.builder || '\u2014' %></td>
+                  <td class="num">&#8377;<%= Number(p.amount).toLocaleString('en-IN') %></td>
+                  <td class="ctr"><span class="badge <%= p.pay_status %>"><%= p.pay_status %></span></td>
+                  <td><%= dt || '\u2014' %></td>
+                  <td>
+                    <% var pst = p.possession_status || 'pending'; var pdt = p.possession_date ? new Date(p.possession_date).toISOString().slice(0,10) : ''; %>
+                    <span class="badge <%= pst %>"><%= pst %></span>
+                    <% if (p.possession_date) { %><div class="cmeta"><%= new Date(p.possession_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) %></div><% } %>
+                    <% if (typeof canBookings!=='undefined' && canBookings && p.payment_id) { %>
+                    <details class="edit">
+                      <summary>set</summary>
+                      <form action="/admin/bookings/<%= p.payment_id %>/possession" method="POST" style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <input type="hidden" name="back" value="/admin/clients/view/<%= client.client_id %>" />
+                        <select name="possession_status" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;background:var(--offwhite);">
+                          <% possessionStatuses.forEach(function(s){ %><option value="<%= s %>" <%= p.possession_status===s?'selected':'' %>><%= s %></option><% }); %>
+                        </select>
+                        <input type="date" name="possession_date" value="<%= pdt %>" style="font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;background:var(--offwhite);" />
+                        <button type="submit" class="btn btn-sm btn-gold">Save</button>
+                      </form>
+                    </details>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="6" class="empty">No transactions recorded yet for this client.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+      </div><!-- /tab-overview -->
+
+      <% if (typeof canDocs !== 'undefined' && canDocs) { %>
+      <% function fsize(b){ b=Number(b||0); return b>=1048576 ? (b/1048576).toFixed(2)+' MB' : Math.max(1,Math.round(b/1024))+' KB'; } %>
+      <div class="tab-panel" id="tab-documents" hidden>
+        <div class="upload-card">
+          <h3>Attach a Document <span class="from-lead">pdf / jpg / png · max 10 MB</span></h3>
+          <form class="urow" action="/admin/clients/<%= client.client_id %>/documents?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
+            <div class="ufg"><label>File</label><input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required /></div>
+            <div class="ufg"><label>Type</label>
+              <select name="doc_type">
+                <option value="kyc">KYC</option><option value="agreement">Agreement</option>
+                <option value="loan">Loan Paper</option><option value="other" selected>Other</option>
+              </select>
+            </div>
+            <div class="ufg" style="flex:1;min-width:200px;"><label>Notes</label><input type="text" name="notes" maxlength="300" placeholder="optional" /></div>
+            <button type="submit" class="btn btn-gold">Upload</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <table>
+            <thead><tr><th>Document</th><th>Type</th><th class="num">Size</th><th>Uploaded</th><th class="ctr">Actions</th></tr></thead>
+            <tbody>
+              <% if (typeof documents !== 'undefined' && documents.length) { %>
+                <% documents.forEach(function(d){ var dt = d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : ''; %>
+                  <tr>
+                    <td><div class="cname"><%= d.original_name %></div><% if (d.notes) { %><div class="cmeta"><%= d.notes %></div><% } %></td>
+                    <td><span class="badge buyer"><%= d.doc_type %></span></td>
+                    <td class="num"><%= fsize(d.file_size_bytes) %></td>
+                    <td><%= dt || '—' %></td>
+                    <td class="ctr">
+                      <a class="btn btn-sm btn-dl" href="/admin/clients/<%= client.client_id %>/documents/<%= d.doc_id %>/download">Download</a>
+                      <form class="inline-form" action="/admin/clients/<%= client.client_id %>/documents/<%= d.doc_id %>/delete" method="POST" onsubmit="return confirm('Remove &quot;<%= d.original_name %>&quot;? (soft-delete)');">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button type="submit" class="btn btn-sm btn-del">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr><td colspan="5" class="empty">No documents attached yet.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <% } %>
+
+      <% if (typeof canFinance !== 'undefined' && canFinance) { %>
+      <% function inrL(n){ return n==null?'—':('₹'+Number(n).toLocaleString('en-IN')); } %>
+      <% function ld(d){ return d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : ''; } %>
+      <% function ldISO(d){ return d ? new Date(d).toISOString().slice(0,10) : ''; } %>
+      <div class="tab-panel" id="tab-loan" hidden>
+        <div class="upload-card">
+          <h3>Add Loan Record</h3>
+          <form action="/admin/clients/<%= client.client_id %>/loans" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <div class="urow">
+              <div class="ufg"><label>Bank</label><input type="text" name="bank_name" maxlength="120" placeholder="e.g. HDFC" /></div>
+              <div class="ufg"><label>Loan Amount (₹)</label><input type="number" name="loan_amount" min="0" step="1" /></div>
+              <div class="ufg"><label>Sanctioned (₹)</label><input type="number" name="sanctioned_amount" min="0" step="1" /></div>
+              <div class="ufg"><label>Stage</label><select name="stage"><% loanStages.forEach(function(s){ %><option value="<%= s %>"><%= s %></option><% }); %></select></div>
+              <div class="ufg"><label>Applied</label><input type="date" name="applied_on" /></div>
+              <div class="ufg"><label>Sanctioned On</label><input type="date" name="sanctioned_on" /></div>
+              <div class="ufg"><label>Disbursed On</label><input type="date" name="disbursed_on" /></div>
+              <div class="ufg" style="flex:1;min-width:160px;"><label>Notes</label><input type="text" name="notes" maxlength="300" /></div>
+              <button type="submit" class="btn btn-gold">Add</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <table>
+            <thead><tr><th>Bank</th><th class="num">Loan</th><th class="num">Sanctioned</th><th class="ctr">Stage</th><th>Dates</th><th class="ctr">Actions</th></tr></thead>
+            <tbody>
+              <% if (typeof loans !== 'undefined' && loans.length) { %>
+                <% loans.forEach(function(l){ %>
+                  <tr>
+                    <td><div class="cname"><%= l.bank_name || '—' %></div><% if (l.notes) { %><div class="cmeta"><%= l.notes %></div><% } %></td>
+                    <td class="num"><%= inrL(l.loan_amount) %></td>
+                    <td class="num"><%= inrL(l.sanctioned_amount) %></td>
+                    <td class="ctr"><span class="badge <%= l.stage %>"><%= l.stage %></span></td>
+                    <td class="cmeta">
+                      <% if (l.applied_on) { %>Applied <%= ld(l.applied_on) %><br/><% } %>
+                      <% if (l.sanctioned_on) { %>Sanctioned <%= ld(l.sanctioned_on) %><br/><% } %>
+                      <% if (l.disbursed_on) { %>Disbursed <%= ld(l.disbursed_on) %><% } %>
+                      <% if (!l.applied_on && !l.sanctioned_on && !l.disbursed_on) { %>—<% } %>
+                    </td>
+                    <td class="ctr">
+                      <form class="inline-form" action="/admin/clients/<%= client.client_id %>/loans/<%= l.loan_id %>/delete" method="POST" onsubmit="return confirm('Remove this loan record?');">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button type="submit" class="btn btn-sm btn-del">Delete</button>
+                      </form>
+                      <details class="edit">
+                        <summary>Edit</summary>
+                        <form action="/admin/clients/<%= client.client_id %>/loans/<%= l.loan_id %>/edit" method="POST">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                          <div class="urow" style="text-align:left;">
+                            <div class="ufg"><label>Bank</label><input type="text" name="bank_name" value="<%= l.bank_name || '' %>" /></div>
+                            <div class="ufg"><label>Loan (₹)</label><input type="number" name="loan_amount" value="<%= l.loan_amount!=null?l.loan_amount:'' %>" /></div>
+                            <div class="ufg"><label>Sanctioned (₹)</label><input type="number" name="sanctioned_amount" value="<%= l.sanctioned_amount!=null?l.sanctioned_amount:'' %>" /></div>
+                            <div class="ufg"><label>Stage</label><select name="stage"><% loanStages.forEach(function(s){ %><option value="<%= s %>" <%= l.stage===s?'selected':'' %>><%= s %></option><% }); %></select></div>
+                            <div class="ufg"><label>Applied</label><input type="date" name="applied_on" value="<%= ldISO(l.applied_on) %>" /></div>
+                            <div class="ufg"><label>Sanctioned On</label><input type="date" name="sanctioned_on" value="<%= ldISO(l.sanctioned_on) %>" /></div>
+                            <div class="ufg"><label>Disbursed On</label><input type="date" name="disbursed_on" value="<%= ldISO(l.disbursed_on) %>" /></div>
+                            <div class="ufg" style="flex:1;min-width:160px;"><label>Notes</label><input type="text" name="notes" value="<%= l.notes || '' %>" /></div>
+                            <button type="submit" class="btn btn-sm btn-gold">Save</button>
+                          </div>
+                        </form>
+                      </details>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr><td colspan="6" class="empty">No loan records yet.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <% } %>
+
+      <% if (typeof canFinance !== 'undefined' && canFinance) { %>
+      <% var g = (typeof goals !== 'undefined' && goals) ? goals : {}; var gtypes = Array.isArray(g.property_type) ? g.property_type : []; %>
+      <div class="tab-panel" id="tab-goals" hidden>
+        <div class="upload-card" style="max-width:820px;">
+          <h3>Investment Goals <span class="from-lead">structured — supersedes the "from lead" free-text</span></h3>
+          <form action="/admin/clients/<%= client.client_id %>/goals" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <div class="urow">
+              <div class="ufg"><label>Budget Min (₹)</label><input type="number" name="budget_min" min="0" step="1" value="<%= g.budget_min!=null?g.budget_min:'' %>" /></div>
+              <div class="ufg"><label>Budget Max (₹)</label><input type="number" name="budget_max" min="0" step="1" value="<%= g.budget_max!=null?g.budget_max:'' %>" /></div>
+              <div class="ufg"><label>Timeline</label><input type="text" name="timeline" maxlength="60" placeholder="e.g. 3–6 months" value="<%= g.timeline || '' %>" /></div>
+            </div>
+            <div style="margin:16px 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700;">Property Type</div>
+            <div style="display:flex;flex-wrap:wrap;gap:14px;">
+              <% propertyTypes.forEach(function(pt){ %>
+                <label class="chk" style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" name="property_type" value="<%= pt %>" <%= gtypes.indexOf(pt)!==-1?'checked':'' %> /> <%= pt %></label>
+              <% }); %>
+            </div>
+            <div style="margin:16px 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700;">Purpose</div>
+            <div style="display:flex;gap:18px;">
+              <label class="chk" style="font-size:13px;"><input type="radio" name="purpose" value="end_use" <%= g.purpose==='end_use'?'checked':'' %> /> End-use</label>
+              <label class="chk" style="font-size:13px;"><input type="radio" name="purpose" value="investment" <%= g.purpose==='investment'?'checked':'' %> /> Investment</label>
+            </div>
+            <div class="urow" style="margin-top:16px;">
+              <div class="ufg" style="flex:1;min-width:240px;"><label>Preferred Locations</label><input type="text" name="preferred_locations" maxlength="300" value="<%= g.preferred_locations || '' %>" placeholder="e.g. Kharghar, Panvel" /></div>
+              <div class="ufg" style="flex:1;min-width:240px;"><label>Notes</label><input type="text" name="notes" maxlength="300" value="<%= g.notes || '' %>" /></div>
+            </div>
+            <div style="margin-top:16px;"><button type="submit" class="btn btn-gold">Save Goals</button></div>
+          </form>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="tab-panel" id="tab-referrals" hidden>
+        <div class="two-col">
+          <div class="info-card">
+            <h3><span class="dot"></span> Referred By</h3>
+            <div class="info-row"><span class="k">Referrer (client)</span><span class="v"><%= (typeof referrerName!=='undefined' && referrerName) ? referrerName : '—' %></span></div>
+            <div class="info-row"><span class="k">Referrer (name)</span><span class="v"><%= client.referred_by_name || '—' %></span></div>
+            <div class="info-row"><span class="k">Notes</span><span class="v"><%= client.referral_notes || '—' %></span></div>
+            <form action="/admin/clients/<%= client.client_id %>/referral" method="POST" style="margin-top:14px;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <div class="ufg" style="margin-bottom:10px;"><label>Referrer (existing client)</label>
+                <select name="referred_by_client_id">
+                  <option value="">— none / not a client —</option>
+                  <% (referrerOptions||[]).forEach(function(o){ %><option value="<%= o.client_id %>" <%= String(client.referred_by_client_id)===String(o.client_id)?'selected':'' %>><%= o.name %></option><% }); %>
+                </select>
+              </div>
+              <div class="ufg" style="margin-bottom:10px;"><label>Or referrer name (free text)</label><input type="text" name="referred_by_name" maxlength="200" value="<%= client.referred_by_name || '' %>" /></div>
+              <div class="ufg" style="margin-bottom:10px;"><label>Referral notes</label><input type="text" name="referral_notes" maxlength="300" value="<%= client.referral_notes || '' %>" /></div>
+              <button type="submit" class="btn btn-gold">Save Referral</button>
+            </form>
+          </div>
+          <div class="info-card">
+            <h3><span class="dot"></span> Clients Referred by <%= client.name %></h3>
+            <% if (typeof referredClients!=='undefined' && referredClients.length) { %>
+              <% referredClients.forEach(function(rc){ %>
+                <div class="info-row"><span class="k"><a href="/admin/clients/view/<%= rc.client_id %>" style="color:var(--blue);text-decoration:none;"><%= rc.name %></a></span><span class="v"><%= rc.phone || '' %></span></div>
+              <% }); %>
+            <% } else { %>
+              <div class="empty">No referred clients recorded.</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <script>
+    (function(){
+      var btns = document.querySelectorAll('.tab-btn'), panels = document.querySelectorAll('.tab-panel');
+      function show(tab){
+        btns.forEach(function(b){ b.classList.toggle('active', b.dataset.tab===tab); });
+        panels.forEach(function(p){ p.hidden = (p.id !== 'tab-'+tab); });
+        if (history.replaceState) history.replaceState(null, '', '#'+tab);
+      }
+      btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
+      var h = (location.hash||'').replace('#',''); if (h && document.getElementById('tab-'+h)) show(h);
+    })();
+  </script>
+</body>
+</html>
+
+

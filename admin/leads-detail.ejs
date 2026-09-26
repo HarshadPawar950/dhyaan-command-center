@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh; display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600; color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 24px 40px; flex: 1; }
+
+        .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+        .breadcrumb a { color: var(--gold-dark); text-decoration: none; font-weight: 600; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* ---------- PROFILE HEADER ---------- */
+        .profile-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 28px 32px;
+            border-radius: 16px; margin-bottom: 20px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+            display: flex; align-items: center; gap: 22px;
+        }
+        .profile-header::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .profile-avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 34px;
+            flex-shrink: 0; position: relative; z-index: 1;
+        }
+        .profile-meta { position: relative; z-index: 1; flex: 1; }
+        .profile-code {
+            color: var(--gold); font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;
+        }
+        .profile-name {
+            color: var(--offwhite); font-size: 28px; margin-bottom: 8px; letter-spacing: -0.5px;
+        }
+        .profile-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .profile-badges .badge {
+            display: inline-block; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: 700;
+            padding: 4px 9px; border-radius: 5px;
+        }
+        .badge-status-cold   { background: rgba(37,99,235,0.22);  color: #6ba1f5; }
+        .badge-status-warm   { background: rgba(217,119,6,0.22);  color: #f5a847; }
+        .badge-status-hot    { background: rgba(220,38,38,0.22);  color: #ff6b6b; }
+        .badge-status-closed,
+        .badge-status-converted,
+        .badge-status-won,
+        .badge-status-booked { background: rgba(22,163,74,0.22);  color: #5bd57f; }
+        .badge-source {
+            background: rgba(255,255,255,0.12); color: var(--offwhite);
+        }
+
+        /* ---------- TWO COLUMN ---------- */
+        .grid-2 {
+            display: grid; grid-template-columns: 2fr 1fr;
+            gap: 20px; margin-bottom: 22px;
+        }
+        @media (max-width: 1000px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: #fff; border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow); overflow: hidden;
+        }
+        .panel-head {
+            padding: 15px 22px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-head h2 { font-size: 17px; }
+        .panel-head .tag {
+            font-size: 11px; color: var(--gold-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .panel-body { padding: 20px 22px; }
+
+        /* ---------- INFO GRID ---------- */
+        .info-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 14px 22px;
+        }
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; }
+        }
+        .info-label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600; margin-bottom: 3px;
+        }
+        .info-value { font-size: 14px; color: var(--navy); font-weight: 500; }
+        .info-value-muted { color: var(--muted); }
+        .info-row-wide { grid-column: 1 / -1; }
+        .info-text {
+            font-size: 13px; color: var(--text); line-height: 1.6;
+            padding: 10px 12px; background: var(--beige); border-radius: 8px;
+        }
+
+        /* ---------- ASSIGNED ---------- */
+        .assigned-card {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px; border-radius: 10px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.10) 0%, rgba(232,199,102,0.06) 100%);
+            border: 1px solid rgba(212,175,55,0.20);
+        }
+        .assigned-avatar {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 18px;
+            flex-shrink: 0;
+        }
+        .assigned-name { font-weight: 600; color: var(--navy); font-size: 14px; }
+        .assigned-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .none-card {
+            text-align: center; padding: 18px;
+            background: var(--beige); border-radius: 10px;
+            color: var(--muted); font-size: 13px;
+        }
+
+        /* ---------- ASSIGNMENT HISTORY ---------- */
+        .assign-history { padding: 6px 0; }
+        .assign-row {
+            display: grid; grid-template-columns: 32px 1fr auto;
+            gap: 12px; align-items: center;
+            padding: 10px 22px; border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .assign-row:last-child { border-bottom: none; }
+        .assign-row .mini-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--beige); color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 12px;
+        }
+        .assign-row .assign-name { font-weight: 600; color: var(--navy); }
+        .assign-row .assign-date { font-size: 11px; color: var(--muted); }
+
+        /* ---------- FEEDBACK TIMELINE ---------- */
+        .timeline { padding: 6px 0; }
+        .timeline-item {
+            display: grid; grid-template-columns: 30px 1fr;
+            gap: 14px; padding: 14px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+        .timeline-item:last-child { border-bottom: none; }
+        .timeline-dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--gold); margin-top: 4px;
+            position: relative;
+        }
+        .timeline-dot::after {
+            content: ""; position: absolute;
+            left: 5px; top: 14px; width: 2px;
+            height: calc(100% + 12px);
+            background: var(--border);
+        }
+        .timeline-item:last-child .timeline-dot::after { display: none; }
+        .timeline-time {
+            font-size: 11px; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;
+        }
+        .timeline-body {
+            font-size: 13px; color: var(--text); line-height: 1.55;
+        }
+        .timeline-actor {
+            display: inline-block; font-size: 10px;
+            color: var(--gold-dark); font-weight: 600;
+            margin-top: 6px; padding: 2px 7px;
+            background: rgba(212,175,55,0.10); border-radius: 4px;
+            text-transform: uppercase; letter-spacing: 0.6px;
+        }
+
+        /* ---------- HISTORY LOG ---------- */
+        .history-item {
+            display: grid; grid-template-columns: 8px 1fr;
+            gap: 14px; align-items: start;
+            padding: 12px 22px; border-bottom: 1px solid var(--border);
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--gold); margin-top: 6px;
+        }
+        .history-action {
+            font-size: 13px; color: var(--navy); font-weight: 600; text-transform: capitalize;
+        }
+        .history-desc { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+        .history-time {
+            font-size: 10px; color: var(--muted); margin-top: 4px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .empty-state {
+            padding: 40px 22px; text-align: center;
+            color: var(--muted); font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+<div class="breadcrumb" style="display:flex; justify-content:space-between; align-items:center;">
+                <a href="/admin/leads">← All Leads</a>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <a href="/leads/<%= lead.lead_id %>/edit" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:linear-gradient(135deg,#D4AF37 0%,#E8C766 100%); color:#0A1628; font-weight:700; font-size:13px; text-decoration:none; border-radius:8px; box-shadow:0 3px 10px rgba(212,175,55,0.3);">✏️ Edit Lead</a>
+                    <form method="POST" action="/leads/<%= lead.lead_id %>/delete" onsubmit="return confirm('Delete this lead? It can be recovered later.');" style="margin:0;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:#fff; color:#dc2626; font-weight:700; font-size:13px; border:1px solid #dc2626; border-radius:8px; cursor:pointer;">🗑️ Delete</button>
+                    </form>
+                </div>
+            </div>
+
+         
+                        
+
+            <!-- PROFILE HEADER -->
+            <% const initial = (lead.name || '?').charAt(0).toUpperCase(); %>
+            <div class="profile-header">
+                <div class="profile-avatar"><%= initial %></div>
+                <div class="profile-meta">
+                    <% if (lead.external_id) { %>
+                        <div class="profile-code"><%= lead.external_id %></div>
+                    <% } %>
+                    <h1 class="profile-name"><%= lead.name %></h1>
+                    <div class="profile-badges">
+                        <span class="badge badge-status-<%= (lead.status || 'cold').toLowerCase() %>">
+                            <%= lead.status || 'cold' %>
+                        </span>
+                        <% if (lead.source) { %>
+                            <span class="badge badge-source"><%= lead.source %></span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INFO + ASSIGNED -->
+            <div class="grid-2">
+
+                <!-- LEFT: INFO -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Lead Details</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="info-grid">
+                            <div>
+                                <div class="info-label">Phone</div>
+                                <div class="info-value <%= !lead.phone ? 'info-value-muted' : '' %>">
+                                    <%= lead.phone || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-label">Email</div>
+                                <div class="info-value <%= !lead.email ? 'info-value-muted' : '' %>">
+                                    <%= lead.email || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-label">Location</div>
+                                <div class="info-value <%= !lead.location ? 'info-value-muted' : '' %>">
+                                    <%= lead.location || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-label">Budget</div>
+                                <div class="info-value <%= !lead.budget ? 'info-value-muted' : '' %>">
+                                    <%= lead.budget || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-label">Source</div>
+                                <div class="info-value <%= !lead.source ? 'info-value-muted' : '' %>">
+                                    <%= lead.source || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="info-label">Status</div>
+                                <div class="info-value"><%= lead.status %></div>
+                            </div>
+                            <% if (lead.requirement) { %>
+                            <div class="info-row-wide">
+                                <div class="info-label">Requirement</div>
+                                <div class="info-text"><%= lead.requirement %></div>
+                            </div>
+                            <% } %>
+                            <% if (lead.last_feedback) { %>
+                            <div class="info-row-wide">
+                                <div class="info-label">Last Feedback</div>
+                                <div class="info-text"><%= lead.last_feedback %></div>
+                            </div>
+                            <% } %>
+                            <% if (lead.next_action) { %>
+                            <div class="info-row-wide">
+                                <div class="info-label">Next Action</div>
+                                <div class="info-text">
+                                    <%= lead.next_action %>
+                                    <% if (lead.next_action_date) { %>
+                                        <span style="color: var(--gold-dark); font-weight: 600; margin-left: 8px;">
+                                            · <%= new Date(lead.next_action_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <% } %>
+                            <% if (lead.site_visit_date) { %>
+                            <div>
+                                <div class="info-label">Site Visit</div>
+                                <div class="info-value">
+                                    <%= new Date(lead.site_visit_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                </div>
+                            </div>
+                            <% } %>
+                            <% if (lead.closure_probability !== null && lead.closure_probability !== undefined) { %>
+                            <div>
+                                <div class="info-label">Closure Probability</div>
+                                <div class="info-value">
+                                    <%= Math.round(Number(lead.closure_probability) * 100) / 100 %>%
+                                </div>
+                            </div>
+                            <% } %>
+                            <div>
+                                <div class="info-label">Created</div>
+                                <div class="info-value">
+                                    <% if (lead.created_at) { %>
+                                        <%= new Date(lead.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                                    <% } else { %><span class="info-value-muted">—</span><% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: ASSIGNED + ASSIGNMENT HISTORY -->
+                <div>
+                    <div class="panel" style="margin-bottom: 16px;">
+                        <div class="panel-head"><h2>Currently Assigned</h2></div>
+                        <div class="panel-body">
+                            <% if (assignments && assignments.length > 0) { %>
+                                <% const cur = assignments[0]; %>
+                                <div class="assigned-card">
+                                    <div class="assigned-avatar"><%= (cur.employee_name || '?').charAt(0).toUpperCase() %></div>
+                                    <div style="flex: 1;">
+                                        <div class="assigned-name"><%= cur.employee_name %></div>
+                                        <div class="assigned-meta">
+                                            <%= cur.employee_code %>
+                                            <% if (cur.employee_job_title) { %> · <%= cur.employee_job_title %><% } %>
+                                        </div>
+                                        <div class="assigned-meta">
+                                            since <%= new Date(cur.assigned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } else { %>
+                                <div class="none-card">
+                                    Not yet assigned to anyone.
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <% if (assignments && assignments.length > 1) { %>
+                    <div class="panel">
+                        <div class="panel-head">
+                            <h2>Previous Owners</h2>
+                            <span class="tag"><%= assignments.length - 1 %></span>
+                        </div>
+                        <div class="assign-history">
+                            <% assignments.slice(1).forEach(function(a) { %>
+                                <div class="assign-row">
+                                    <div class="mini-avatar"><%= (a.employee_name || '?').charAt(0).toUpperCase() %></div>
+                                    <div>
+                                        <div class="assign-name"><%= a.employee_name %></div>
+                                        <div class="assign-date">
+                                            <%= a.employee_code %>
+                                            · <%= new Date(a.assigned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- FEEDBACK TIMELINE -->
+            <div class="panel" style="margin-bottom: 22px;">
+                <div class="panel-head">
+                    <h2>Feedback Timeline</h2>
+                    <span class="tag"><%= feedback.length %> entries</span>
+                </div>
+                <% if (feedback && feedback.length > 0) { %>
+                <div class="timeline">
+                    <% feedback.forEach(function(fb) { %>
+                        <%
+                            const ts = fb.created_at || fb.feedback_at || fb.updated_at || null;
+                            const body = fb.feedback_text || fb.notes || fb.comment || fb.message || fb.content || '';
+                            const author = fb.employee_name || fb.created_by || fb.author || null;
+                            const fbStatus = fb.lead_status || fb.status || null;
+                        %>
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div>
+                                <% if (ts) { %>
+                                    <div class="timeline-time">
+                                        <%= new Date(ts).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %>
+                                        <% if (fbStatus) { %> · <%= fbStatus %><% } %>
+                                    </div>
+                                <% } %>
+                                <div class="timeline-body">
+                                    <% if (body) { %>
+                                        <%= body %>
+                                    <% } else { %>
+                                        <span style="color: var(--muted); font-style: italic;">(no text on this feedback record)</span>
+                                    <% } %>
+                                </div>
+                                <% if (author) { %>
+                                    <span class="timeline-actor">by <%= author %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        No feedback entries yet for this lead.
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- CLIENT PROFILE (027) — feeds the matcher below -->
+            <%- include('../partials/lead-client-profile-view') %>
+
+            <!-- SUGGESTED PROPERTIES (AI Day, Feature 1 — deterministic matcher) -->
+            <div class="match-panel" style="margin-bottom:22px;"
+                 data-matches-url="/admin/leads/<%= lead.lead_id %>/matches"
+                 data-cost-base="/admin/cost-sheet">
+                <div class="mp-head">
+                    <h3>Suggested Properties</h3>
+                    <button type="button" class="mp-btn" data-find>Find Matches</button>
+                </div>
+                <div class="mp-sub">Best-fit units for this lead’s budget, location and configuration — scored /100 on our own inventory.</div>
+                <div data-results></div>
+            </div>
+            <script src="/js/matcher-panel.js"></script>
+
+            <!-- COST SHEETS -->
+            <div class="panel" style="margin-bottom: 22px;">
+                <div class="panel-head">
+                    <h2>Cost Sheets</h2>
+                    <span class="tag"><%= (typeof costSheets !== 'undefined' && costSheets) ? costSheets.length : 0 %> generated</span>
+                </div>
+                <% if (typeof costSheets !== 'undefined' && costSheets && costSheets.length > 0) { %>
+                    <div>
+                        <% costSheets.forEach(function(cs) { %>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13px;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--navy);">
+                                        <%= cs.property_title || 'Project' %> · <%= cs.unit_config || 'Unit' %>
+                                    </div>
+                                    <div style="color: var(--muted); font-size: 12px; margin-top: 2px;">
+                                        <%= cs.created_at ? new Date(cs.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '' %>
+                                        <% if (cs.generated_by_name) { %> · by <%= cs.generated_by_name %><% } %>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 14px; white-space: nowrap;">
+                                    <span style="font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums;">
+                                        ₹ <%= Number(cs.total_all_in || 0).toLocaleString('en-IN') %>
+                                    </span>
+                                    <a href="/admin/cost-sheet/view/<%= cs.cost_sheet_id %>" style="color: var(--gold-dark, #B8941F); font-weight: 600; text-decoration: none;">View →</a>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        No cost sheets generated for this lead yet.
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- CHANGE HISTORY -->
+            <% if (history && history.length > 0) { %>
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Change History</h2>
+                    <span class="tag">Last <%= history.length %></span>
+                </div>
+                <div>
+                    <% history.forEach(function(h) { %>
+                        <div class="history-item">
+                            <div class="history-dot"></div>
+                            <div>
+                                <div class="history-action">
+                                    <%= (h.action || 'event').replace(/_/g, ' ') %>
+                                    <% if (h.field_name) { %> · <%= h.field_name %><% } %>
+                                </div>
+                                <% if (h.notes) { %>
+                                    <div class="history-desc"><%= h.notes %></div>
+                                <% } else if (h.old_value || h.new_value) { %>
+                                    <div class="history-desc">
+                                        <%= h.old_value || '∅' %> → <%= h.new_value || '∅' %>
+                                    </div>
+                                <% } %>
+                                <div class="history-time">
+                                    <%= h.created_at ? new Date(h.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '' %>
+                                    <% if (h.changed_by_name) { %> · by <%= h.changed_by_name %><% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+
+        </div>
+    </div>
+
+</body>
+</html>

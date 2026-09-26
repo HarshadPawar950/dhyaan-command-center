@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .breadcrumb a { color: var(--gold-dark); text-decoration: none; font-weight: 600; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .hero-actions { position: absolute; top: 28px; right: 32px; z-index: 2; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 7px; }
+    .btn-edit { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .grid2 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: start; }
+    @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    .panel-head { padding: 14px 20px; background: var(--beige); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .panel-head h2 { font-size: 16px; }
+    .panel-body { padding: 18px 20px; }
+    .kv { display: flex; flex-direction: column; gap: 12px; }
+    .kv .k { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+    .kv .v { font-size: 14px; color: var(--navy); font-weight: 600; }
+    .kv .v.muted { color: var(--muted); font-weight: 400; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.excl { background: rgba(212,175,55,0.18); color: var(--gold-dark); }
+    .tag { background: rgba(10,22,40,0.06); color: var(--muted); padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.ctr, td.ctr { text-align: center; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .pname { font-weight: 600; color: var(--navy); text-decoration: none; }
+    .pname:hover { color: var(--gold-dark); }
+    .pmeta { font-size: 11px; color: var(--muted); }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="breadcrumb"><a href="/admin/builders">&larr; Builder Master</a></div>
+
+      <div class="page-hero">
+        <h1><%= builder.name %></h1>
+        <p><%= builder.contact_person ? builder.contact_person : 'Developer' %><%= builder.phone ? ' · ' + builder.phone : '' %></p>
+        <div class="hero-actions">
+          <a href="/admin/builders/edit/<%= builder.builder_id %>" class="btn btn-gold">Edit Builder</a>
+        </div>
+      </div>
+
+      <div class="grid2">
+
+        <!-- LEFT: builder facts -->
+        <div class="panel">
+          <div class="panel-head"><h2>Builder Details</h2></div>
+          <div class="panel-body">
+            <div class="kv">
+              <div><div class="k">RERA Number</div><div class="v <%= builder.rera_number ? '' : 'muted' %>"><%= builder.rera_number || '—' %></div></div>
+              <div><div class="k">GST Number</div><div class="v <%= builder.gst_number ? '' : 'muted' %>"><%= builder.gst_number || '—' %></div></div>
+              <div><div class="k">Email</div><div class="v <%= builder.email ? '' : 'muted' %>"><%= builder.email || '—' %></div></div>
+              <div>
+                <div class="k">Commission</div>
+                <div class="v">
+                  <% if (Number(builder.commission_rate) > 0) { %>
+                    <% if (builder.commission_type === 'percentage') { %><%= builder.commission_rate %>%
+                    <% } else if (builder.commission_type === 'flat') { %>&#8377;<%= Number(builder.commission_rate).toLocaleString('en-IN') %>
+                    <% } else { %>Slab: <%= builder.commission_rate %><% } %>
+                  <% } else { %><span class="muted">Not set</span><% } %>
+                </div>
+              </div>
+              <div><div class="k">Payment Terms</div><div class="v <%= builder.payment_terms ? '' : 'muted' %>"><%= builder.payment_terms || '—' %></div></div>
+              <div><div class="k">Exclusive Tie-up</div><div class="v"><% if (builder.is_exclusive) { %><span class="badge excl">Exclusive</span><% } else { %><span class="muted">No</span><% } %></div></div>
+              <% if (builder.notes) { %><div><div class="k">Notes</div><div class="v" style="font-weight:400;"><%= builder.notes %></div></div><% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Projects -->
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Projects</h2>
+            <span class="tag"><%= projects.length %> project<%= projects.length === 1 ? '' : 's' %></span>
+          </div>
+          <% if (projects && projects.length) { %>
+            <table>
+              <thead>
+                <tr>
+                  <th>Project</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th class="ctr">Units</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% projects.forEach(function(p){ %>
+                  <tr>
+                    <td>
+                      <a class="pname" href="/admin/projects/<%= p.project_id %>"><%= p.title %></a>
+                      <% if (p.external_id || p.configurations) { %><div class="pmeta"><%= p.external_id %><%= (p.external_id && p.configurations) ? ' · ' : '' %><%= p.configurations %></div><% } %>
+                    </td>
+                    <td><%= p.location || '—' %><% if (p.area_zone) { %><div class="pmeta"><%= p.area_zone %></div><% } %></td>
+                    <td><% var _sa = Array.isArray(p.status_of_property) ? p.status_of_property : []; %><%= _sa.length ? _sa.map(function(sk){ return (statusOptions.find(function(o){ return o.value === sk; }) || {}).label || sk.replace(/_/g,' '); }).join(', ') : '—' %></td>
+                    <td class="ctr"><strong><%= p.unit_count %></strong></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <div class="empty">No projects linked to this builder yet.</div>
+          <% } %>
+        </div>
+
+        <!-- PHASE 3 · C — OFFERS (active promotions; expired auto-hidden from active list) -->
+        <div class="panel" id="offers">
+          <div class="panel-head"><h2>Offers &amp; Promotions</h2></div>
+          <div class="panel-body">
+            <% var OF = (typeof builderOffers!=='undefined') ? builderOffers : []; %>
+            <% var activeOF = OF.filter(function(o){ return o.status==='active' && !o.is_expired; }); %>
+            <% var pastOF = OF.filter(function(o){ return o.status!=='active' || o.is_expired; }); %>
+            <% function ofd(d){ return d?new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):''; } %>
+            <% if (typeof canPricing!=='undefined' && canPricing) { %>
+            <form action="/admin/builders/<%= builder.builder_id %>/offers" method="POST" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:16px;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Offer</label><input type="text" name="offer_text" required maxlength="300" placeholder="builder-wide promotion" style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+              <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Valid From</label><input type="date" name="valid_from" style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+              <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Valid To</label><input type="date" name="valid_to" style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+              <button type="submit" style="background:#D4AF37;color:#0A1628;font-weight:600;font-size:13px;padding:9px 16px;border:none;border-radius:8px;cursor:pointer;">Add Offer</button>
+            </form>
+            <% } %>
+            <% if (activeOF.length) { %>
+              <% activeOF.forEach(function(o){ %>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid rgba(22,163,74,.25);background:rgba(22,163,74,.06);border-radius:10px;margin-bottom:8px;">
+                  <div><span style="font-weight:600;color:#0A1628;"><%= o.offer_text %></span><% if (o.project_title) { %><span style="font-size:11px;color:#6b6b6b;"> · scoped to <%= o.project_title %></span><% } %><% if (o.valid_to) { %><span style="font-size:11px;color:#6b6b6b;"> · till <%= ofd(o.valid_to) %></span><% } %></div>
+                  <% if (canPricing) { %><form action="/admin/offers/<%= o.offer_id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Remove this offer?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="back" value="/admin/builders/<%= builder.builder_id %>" /><button type="submit" style="background:rgba(220,38,38,.1);color:#dc2626;font-size:12px;font-weight:600;padding:5px 10px;border:none;border-radius:7px;cursor:pointer;">Delete</button></form><% } %>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <div style="color:#6b6b6b;font-size:13px;padding:4px 0;">No active offers.</div>
+            <% } %>
+            <% if (canPricing && pastOF.length) { %>
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;margin:14px 0 8px;">Expired / inactive</div>
+              <% pastOF.forEach(function(o){ %>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 12px;border:1px solid rgba(10,22,40,.08);border-radius:10px;margin-bottom:6px;opacity:.6;">
+                  <div><span style="color:#0A1628;"><%= o.offer_text %></span><span style="font-size:11px;color:#dc2626;"> · <%= o.is_expired ? 'expired '+ofd(o.valid_to) : o.status %></span></div>
+                  <form action="/admin/offers/<%= o.offer_id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Remove this offer?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="back" value="/admin/builders/<%= builder.builder_id %>" /><button type="submit" style="background:rgba(220,38,38,.1);color:#dc2626;font-size:12px;font-weight:600;padding:5px 10px;border:none;border-radius:7px;cursor:pointer;">Delete</button></form>
+                </div>
+              <% }); %>
+            <% } %>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Control — Dhyaan Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --navy: #0A1628;
+            --navy-2: #14233d;
+            --bg: #F4F1EA;
+            --card: #FFFFFF;
+            --border: #E4E0D6;
+            --muted: #8A8578;
+            --text: #1A1A1A;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 28px 40px; flex: 1; }
+        a { text-decoration: none; color: inherit; }
+
+        .back-link { color: var(--gold); font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 20px; }
+
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: #fff; padding: 26px 32px; border-radius: 16px; margin-bottom: 24px;
+            position: relative; overflow: hidden;
+        }
+        .page-hero h1 { color: #fff; font-size: 30px; margin-bottom: 8px; }
+        .page-hero p { color: #C9D2DE; font-size: 14px; max-width: 640px; }
+        .page-hero .bar { width: 54px; height: 3px; background: var(--gold); margin-top: 14px; border-radius: 2px; }
+
+        .flash {
+            background: #EAF6EF; border: 1px solid #BFE3CE; color: #2E7D52;
+            padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; margin-bottom: 22px;
+        }
+
+        .notice {
+            background: #FBF6E7; border: 1px solid #ECD98C; color: #7A5C12;
+            padding: 14px 18px; border-radius: 10px; font-size: 13px; margin-bottom: 26px;
+            display: flex; gap: 10px; align-items: flex-start;
+        }
+        .notice svg { flex-shrink: 0; margin-top: 1px; }
+
+        .export-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;
+        }
+        .export-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 26px; display: flex; flex-direction: column; gap: 14px;
+        }
+        .export-card .ico {
+            width: 46px; height: 46px; border-radius: 12px; background: var(--navy);
+            display: flex; align-items: center; justify-content: center; color: var(--gold);
+        }
+        .export-card h2 { font-size: 19px; }
+        .export-card .count { font-size: 13px; color: var(--muted); }
+        .export-card .count b { color: var(--navy); font-size: 15px; }
+        .dl-btn {
+            margin-top: auto; background: var(--gold); color: var(--navy); border: none; cursor: pointer;
+            padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 14px;
+            font-family: 'Inter', sans-serif; text-align: center; display: inline-flex;
+            align-items: center; justify-content: center; gap: 8px; transition: opacity .15s;
+        }
+        .dl-btn:hover { opacity: 0.85; }
+    </style>
+</head>
+<body>
+    <%- sidebarHtml %>
+    <div class="main-content">
+        <%- topbarHtml %>
+        <div class="page-body">
+            <a href="/admin/super-dashboard" class="back-link">← Back to Command Center</a>
+
+            <div class="page-hero">
+                <h1>Export Control</h1>
+                <p>Download portal data as CSV (opens in Excel). Restricted to Super Admin only — every export is recorded in the audit log.</p>
+                <div class="bar"></div>
+            </div>
+
+            <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+            <div class="notice">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                </svg>
+                <span>These files contain sensitive company data. Each download is logged with your name, time, and record count. Handle exported files securely.</span>
+            </div>
+
+            <div class="export-grid">
+
+                <!-- LEADS -->
+                <div class="export-card">
+                    <div class="ico">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h2>Leads</h2>
+                    <div class="count"><b><%= counts.leads %></b> active leads</div>
+                    <a href="/admin/super/export/leads" class="dl-btn">↓ Export Leads CSV</a>
+                </div>
+
+                <!-- CLIENTS -->
+                <div class="export-card">
+                    <div class="ico">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <h2>Clients</h2>
+                    <div class="count"><b><%= counts.clients %></b> active clients</div>
+                    <a href="/admin/super/export/clients" class="dl-btn">↓ Export Clients CSV</a>
+                </div>
+
+                <!-- PROPERTIES -->
+                <div class="export-card">
+                    <div class="ico">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    </div>
+                    <h2>Properties</h2>
+                    <div class="count"><b><%= counts.properties %></b> active properties</div>
+                    <a href="/admin/super/export/projects" class="dl-btn">↓ Export Properties CSV</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

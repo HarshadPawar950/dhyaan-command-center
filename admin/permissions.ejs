@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+    .flash.ok { background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.3); color: var(--green); }
+    .flash.bad { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.3); color: var(--red); }
+    .meta-line { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 12px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.ctr, td.ctr { text-align: center; }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .cat-row td { background: rgba(10,22,40,0.03); font-weight: 700; color: var(--navy); font-family: 'Playfair Display', serif; font-size: 13px; letter-spacing: 0.3px; }
+    .pk { font-weight: 600; color: var(--navy); }
+    .pk .code { font-size: 11px; color: var(--muted); font-weight: 400; display: block; font-variant-numeric: tabular-nums; }
+    .cell-form { margin: 0; display: inline-flex; }
+    .toggle { width: 20px; height: 20px; accent-color: var(--gold-dark); cursor: pointer; }
+    .locked { display: inline-flex; align-items: center; gap: 5px; color: var(--gold-dark); font-size: 12px; font-weight: 600; }
+    .tier-head { color: var(--navy); }
+    .tier-head .sub { display: block; font-size: 10px; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+    .legend { font-size: 12px; color: var(--muted); margin-top: 14px; display: flex; gap: 18px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1>Permission Editor</h1>
+        <p>Grant or revoke what each access tier can do. Changes are live and logged.</p>
+      </div>
+
+      <% if (flash) { %><div class="flash ok"><%= flash %></div><% } %>
+      <% if (err) { %><div class="flash bad"><%= err %></div><% } %>
+
+      <div class="meta-line">
+        <%= totalPerms %> permissions &middot; <%= totalGrants %> active grants &middot;
+        Super Admin is locked (always full access).
+      </div>
+
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Permission</th>
+              <% tiers.forEach(function(t){ %>
+                <th class="ctr tier-head"><%= t.label %><span class="sub"><%= t.key %></span></th>
+              <% }); %>
+            </tr>
+          </thead>
+          <tbody>
+            <% categories.forEach(function(cat){ %>
+              <tr class="cat-row"><td colspan="<%= tiers.length + 1 %>"><%= cat.name %></td></tr>
+              <% cat.perms.forEach(function(p){ %>
+                <tr>
+                  <td class="pk"><%= p.label %><span class="code"><%= p.key %></span></td>
+                  <% tiers.forEach(function(t){
+                       var isGranted = !!grantedMap[t.key + '|' + p.key];
+                       if (t.locked) { %>
+                    <td class="ctr">
+                      <span class="locked" title="Super Admin always holds every permission">&#128274; on</span>
+                    </td>
+                  <% } else {
+                       var nextAction = isGranted ? 'revoke' : 'grant'; %>
+                    <td class="ctr">
+                      <form class="cell-form" method="POST" action="/admin/permissions/toggle">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <input type="hidden" name="role_key" value="<%= t.key %>" />
+                        <input type="hidden" name="permission_key" value="<%= p.key %>" />
+                        <input type="hidden" name="action" value="<%= nextAction %>" />
+                        <input type="checkbox" class="toggle" <%= isGranted ? 'checked' : '' %>
+                               title="<%= nextAction %> <%= p.key %> for <%= t.key %>"
+                               onchange="this.form.submit()" />
+                      </form>
+                    </td>
+                  <% } }); %>
+                </tr>
+              <% }); %>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="legend">
+        <span>&#9745; ticked = granted (live)</span>
+        <span>&#128274; = Super Admin, locked</span>
+        <span>Each tick/untick is one logged change.</span>
+      </div>
+
+      <!-- FINE ROLES — only roles with at least one assigned employee. -->
+      <h2 style="font-size:19px; margin:30px 0 4px;">Fine Roles</h2>
+      <% if (fineRoles && fineRoles.length) { %>
+        <div class="meta-line">
+          Roles with at least one assigned employee. A grant here applies
+          <strong>per-person</strong> to everyone holding that role (via their assigned role),
+          on top of their access tier.
+        </div>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Permission</th>
+                <% fineRoles.forEach(function(t){ %>
+                  <th class="ctr tier-head"><%= t.label %><span class="sub">fine role &middot; <%= t.key %></span></th>
+                <% }); %>
+              </tr>
+            </thead>
+            <tbody>
+              <% categories.forEach(function(cat){ %>
+                <tr class="cat-row"><td colspan="<%= fineRoles.length + 1 %>"><%= cat.name %></td></tr>
+                <% cat.perms.forEach(function(p){ %>
+                  <tr>
+                    <td class="pk"><%= p.label %><span class="code"><%= p.key %></span></td>
+                    <% fineRoles.forEach(function(t){
+                         var isGranted = !!grantedMap[t.key + '|' + p.key];
+                         var nextAction = isGranted ? 'revoke' : 'grant'; %>
+                      <td class="ctr">
+                        <form class="cell-form" method="POST" action="/admin/permissions/toggle">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                          <input type="hidden" name="role_key" value="<%= t.key %>" />
+                          <input type="hidden" name="permission_key" value="<%= p.key %>" />
+                          <input type="hidden" name="action" value="<%= nextAction %>" />
+                          <input type="checkbox" class="toggle" <%= isGranted ? 'checked' : '' %>
+                                 title="<%= nextAction %> <%= p.key %> for <%= t.key %>"
+                                 onchange="this.form.submit()" />
+                        </form>
+                      </td>
+                    <% }); %>
+                  </tr>
+                <% }); %>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="meta-line">
+          None mapped yet. Assign a fine role to someone on their employee edit page
+          (e.g. tick &ldquo;Team Leader&rdquo;) and that role will appear here to grant permissions to.
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</body>
+</html>

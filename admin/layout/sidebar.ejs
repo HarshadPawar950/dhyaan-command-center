@@ -1,0 +1,698 @@
+<%
+// =============================================================
+// views/admin/layout/sidebar.ejs
+// CANONICAL admin nav sidebar — single source of truth for every
+// admin view (rendered via renderPartial('sidebar') or include).
+// Common items visible to all admins; Super Admin group gated.
+// Expects: pageTitle (string), user (session user object)
+// =============================================================
+const currentPath = (locals && locals.currentPath) ? locals.currentPath : '';
+const _pt = (pageTitle || '').toLowerCase();
+function isActive(label) { return _pt.includes(label.toLowerCase()); }
+const _isSuper = !!(user && (user.access_role === 'super_admin' || user.role === 'super_admin'));
+// Live permission set attached by the global middleware (non-enumerable on the
+// session user). canSee() hides an item the viewer's tier can't open, so the
+// nav never shows a link that 403s. Fails OPEN if perms are absent (super, or a
+// transient nav-compute miss) — routes still enforce access regardless.
+const _navPerms = (user && user.navPerms) ? user.navPerms : null;
+function canSee(key) {
+    if (_isSuper) return true;
+    if (!_navPerms) return true;
+    return _navPerms.indexOf('*') !== -1 || _navPerms.indexOf(key) !== -1;
+}
+%>
+<!-- Shared design-system primitives for all admin pages (ds- namespaced;
+     does not alter existing admin styles). -->
+<link rel="stylesheet" href="/css/design-system.css">
+<style>
+    .admin-sidebar {
+        position: fixed;
+        top: 0; left: 0;
+        width: 260px;
+        height: 100vh;
+        background: linear-gradient(180deg, #0A1628 0%, #142238 100%);
+        color: #FAFAF7;
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+        box-shadow: 2px 0 24px rgba(0,0,0,0.08);
+    }
+    .admin-sidebar .brand {
+        padding: 22px 24px 20px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+        display: flex;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .admin-sidebar .brand-logo-img {
+        height: 84px;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        display: block;
+    }
+    .admin-sidebar .nav-group-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.6px;
+        color: rgba(250, 250, 247, 0.4);
+        padding: 18px 24px 8px;
+        font-weight: 600;
+    }
+    .admin-sidebar .nav-list {
+        list-style: none;
+        padding: 0; margin: 0;
+        overflow-y: auto;
+        flex: 1;
+    }
+    .admin-sidebar .nav-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    .admin-sidebar .nav-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .admin-sidebar .nav-list::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.45);
+        border-radius: 999px;
+    }
+    .admin-sidebar .nav-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(212, 175, 55, 0.75);
+    }
+    .admin-sidebar .nav-list {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(212, 175, 55, 0.45) transparent;
+    }
+    .admin-sidebar .nav-item a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 24px;
+        color: rgba(250, 250, 247, 0.78);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        border-left: 3px solid transparent;
+        transition: all 0.15s ease;
+    }
+    .admin-sidebar .nav-item a:hover {
+        background: rgba(212, 175, 55, 0.08);
+        color: #FAFAF7;
+        border-left-color: rgba(212, 175, 55, 0.4);
+    }
+    .admin-sidebar .nav-item.active a {
+        background: rgba(212, 175, 55, 0.14);
+        color: #FAFAF7;
+        border-left-color: #D4AF37;
+    }
+    .admin-sidebar .nav-item .icon {
+        width: 18px; height: 18px;
+        opacity: 0.85;
+        flex-shrink: 0;
+    }
+    .admin-sidebar .nav-item .soon-tag {
+        margin-left: auto;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: rgba(212, 175, 55, 0.18);
+        color: #D4AF37;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    .admin-sidebar .side-card {
+        margin: 14px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(212, 175, 55, 0.18);
+        flex-shrink: 0;
+    }
+    .admin-sidebar .side-card-img {
+        height: 78px;
+        background: url('/img/building-strip.png') center / cover no-repeat;
+    }
+    .admin-sidebar .side-card-body { padding: 12px 15px 14px; }
+    .admin-sidebar .side-card-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 13.5px;
+        color: #FAFAF7;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+    .admin-sidebar .side-card-text {
+        font-size: 10.5px;
+        color: rgba(250, 250, 247, 0.55);
+        line-height: 1.55;
+        margin-top: 5px;
+    }
+</style>
+
+<!-- Responsive layer: loaded after per-view styles so mobile/laptop overrides win. -->
+<link rel="stylesheet" href="/css/responsive.css" />
+<button class="nav-toggle" type="button" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')"><span class="bars"></span></button>
+<div class="nav-overlay" onclick="document.body.classList.remove('nav-open')"></div>
+<!-- AI Day F2: floating help assistant (self-contained; fetches its own CSRF token) -->
+<script src="/js/assistant.js"></script>
+
+<aside class="admin-sidebar">
+
+    <div class="brand">
+        <img class="brand-logo-img" src="/img/dhyaan-logo.png?v=ac9fbfc" alt="Dhyaan Enterprises">
+    </div>
+
+    <ul class="nav-list">
+
+        <div class="nav-group-label">Navigation</div>
+
+        <%
+          // A non-admin who still reaches an admin page can ONLY be a fine-role
+          // grant holder (e.g. hr_manager on /admin/projects). The admin
+          // dashboard is ensureAdmin — a 403 dead-end for them — so send them
+          // HOME to their own console instead of the admin dashboard.
+          const _isAdminTier = _isSuper || (user && user.access_role === 'admin');
+        %>
+        <% if (_isAdminTier) { %>
+        <li class="nav-item">
+            <a href="/admin/dashboard">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Home</a>
+        </li>
+
+        <li class="nav-item <%= isActive('admin dashboard') ? 'active' : '' %>">
+            <a href="/admin/dashboard">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+                    <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+                </svg>
+                Dashboard
+            </a>
+        </li>
+        <% } else { %>
+        <li class="nav-item">
+            <a href="/hr/dashboard">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                </svg>
+                ← HR Console</a>
+        </li>
+        <% } %>
+
+        <li class="nav-item <%= (isActive('role panel') || isActive('role panels')) ? 'active' : '' %>">
+            <a href="/role">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Role Panels
+            </a>
+        </li>
+
+        <div class="nav-group-label">Manage</div>
+
+        <li class="nav-item <%= isActive('all employees') ? 'active' : '' %>">
+            <a href="/admin/employees">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                All Employees
+            </a>
+        </li>
+
+        <% if (canSee('leads.view_all')) { %>
+        <li class="nav-item <%= isActive('all leads') ? 'active' : '' %>">
+            <a href="/admin/leads">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                All Leads
+            </a>
+        </li>
+        <% } %>
+
+        <li class="nav-item <%= isActive('notification') ? 'active' : '' %>">
+            <a href="/admin/notifications">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Notifications
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('follow') ? 'active' : '' %>">
+            <a href="/admin/follow-ups">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Follow-Ups
+            </a>
+        </li>
+
+        <% if (canSee('leads.reassign')) { %>
+        <li class="nav-item <%= isActive('lead assignment') ? 'active' : '' %>">
+            <a href="/admin/assign">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Lead Assignment
+            </a>
+        </li>
+        <% } %>
+
+        <% if (canSee('properties.manage')) { %>
+        <div class="nav-group-label">Inventory</div>
+        <li class="nav-item <%= (isActive('projects') && !isActive('propert')) ? 'active' : '' %>">
+            <a href="/admin/projects">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h.01M9 12h.01M9 15h.01"/>
+                </svg>
+                Projects
+            </a>
+        </li>
+        <li class="nav-item <%= isActive('propert') ? 'active' : '' %>">
+            <a href="/admin/properties">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/>
+                </svg>
+                Properties
+            </a>
+        </li>
+        <% } %>
+
+        <li class="nav-item <%= isActive('cost sheet') ? 'active' : '' %>">
+            <a href="/admin/cost-sheet">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
+                </svg>
+                Cost Sheets
+            </a>
+        </li>
+
+        <% if (canSee('commissions.view')) { %>
+        <li class="nav-item <%= isActive('commission') ? 'active' : '' %>">
+            <a href="/admin/commissions">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                Commissions
+            </a>
+        </li>
+        <% } %>
+
+        <% if (canSee('bookings.manage')) { %>
+        <li class="nav-item <%= isActive('bookings') ? 'active' : '' %>">
+            <a href="/admin/bookings">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Bookings
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('receipts') ? 'active' : '' %>">
+            <a href="/admin/receipts">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M8 7h8M8 11h6"/>
+                </svg>
+                Token Receipts
+            </a>
+        </li>
+        <% } %>
+
+        <% if (canSee('clients.manage')) { %>
+        <li class="nav-item <%= isActive('clients') ? 'active' : '' %>">
+            <a href="/admin/clients">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Client Database
+            </a>
+        </li>
+        <% } %>
+
+        <% if (canSee('site_visits.manage')) { %>
+        <li class="nav-item <%= isActive('site visits') ? 'active' : '' %>">
+            <a href="/admin/site-visits">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Site Visits
+            </a>
+        </li>
+        <% } %>
+
+        <% if (canSee('marketing.view')) { %>
+        <li class="nav-item <%= isActive('marketing') ? 'active' : '' %>">
+            <a href="/admin/marketing">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>
+                </svg>
+                Marketing
+            </a>
+        </li>
+        <% } %>
+
+        <% if (canSee('reports.view')) { %>
+        <div class="nav-group-label">Reports</div>
+
+        <li class="nav-item <%= isActive('kpi') ? 'active' : '' %>">
+            <a href="/admin/kpi">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="4" width="3" height="14"/>
+                </svg>
+                KPI &amp; Targets
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('daily reports') ? 'active' : '' %>">
+            <a href="/admin/reports/daily">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/>
+                </svg>
+                Daily Reports
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('change history') ? 'active' : '' %>">
+            <a href="/admin/history">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 3"/>
+                </svg>
+                Change History
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('sales history') ? 'active' : '' %>">
+            <a href="/admin/sales">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="16"/>
+                </svg>
+                Sales History
+            </a>
+        </li>
+        <% } %>
+
+        <% if (canSee('finance.view') || canSee('finance.expenses.view')) { %>
+        <div class="nav-group-label">Finance</div>
+
+        <% if (canSee('finance.expenses.view')) { %>
+        <li class="nav-item <%= isActive('expenses') ? 'active' : '' %>">
+            <a href="/admin/finance/expenses">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+                Expenses
+            </a>
+        </li>
+        <% } %>
+        <% if (canSee('finance.view')) { %>
+        <li class="nav-item <%= isActive('gst summary') ? 'active' : '' %>">
+            <a href="/admin/finance/gst">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                GST Summary
+            </a>
+        </li>
+        <li class="nav-item <%= isActive('cash flow') ? 'active' : '' %>">
+            <a href="/admin/finance/cashflow">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>
+                </svg>
+                Cash Flow
+            </a>
+        </li>
+        <li class="nav-item <%= isActive('profit') ? 'active' : '' %>">
+            <a href="/admin/finance/pnl">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20"/><path d="M5 9l7-7 7 7"/><path d="M5 15l7 7 7-7" opacity="0.4"/>
+                </svg>
+                Profit &amp; Loss
+            </a>
+        </li>
+        <% } %>
+        <% } %>
+
+        <% if (canSee('legal.manage')) { %>
+        <div class="nav-group-label">Legal</div>
+        <li class="nav-item <%= isActive('legal') ? 'active' : '' %>">
+            <a href="/admin/legal">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 3v18"/><path d="M5 7l7-4 7 4"/><path d="M5 7l-2 6a4 4 0 0 0 8 0L9 7"/><path d="M19 7l-2 6a4 4 0 0 0 8 0l-2-6"/>
+                </svg>
+                Legal Vault
+            </a>
+        </li>
+        <% } %>
+
+        <% if (_isSuper) { %>
+        <div class="nav-group-label">Super Admin</div>
+
+        <li class="nav-item <%= isActive('super admin') ? 'active' : '' %>">
+            <a href="/admin/super">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Super Admin
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('permission') ? 'active' : '' %>">
+            <a href="/admin/permissions">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Permission Editor
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('builders') ? 'active' : '' %>">
+            <a href="/admin/builders">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01"/>
+                </svg>
+                Builder Master
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('contacts') ? 'active' : '' %>">
+            <a href="/admin/contacts">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Contacts
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('lead-scoring') || isActive('lead scoring') ? 'active' : '' %>">
+            <a href="/admin/lead-scoring">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/><path d="M18 9l-5 5-3-3-4 4"/><circle cx="18" cy="9" r="1.5" fill="currentColor"/>
+                </svg>
+                Lead Scoring
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('owner-dashboard') || isActive('owner dashboard') ? 'active' : '' %>">
+            <a href="/admin/owner-dashboard">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+                </svg>
+                Owner Dashboard
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('audit') ? 'active' : '' %>">
+            <a href="/admin/super/audit">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Audit Log
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('restore') ? 'active' : '' %>">
+            <a href="/admin/super/restore">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8"/><path d="M3 3v5h5"/>
+                </svg>
+                Restore Archive
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('export') ? 'active' : '' %>">
+            <a href="/admin/super/export">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Export Control
+            </a>
+        </li>
+
+        <li class="nav-item <%= isActive('approval') ? 'active' : '' %>">
+            <a href="/admin/approvals">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4"/><path d="M21 12c0 1.66-4 7-9 7s-9-5.34-9-7 4-7 9-7 9 5.34 9 7z"/>
+                </svg>
+                Approval Center
+            </a>
+        </li>
+        <% } %>
+
+    </ul>
+
+    <div class="side-card">
+        <div class="side-card-img"></div>
+        <div class="side-card-body">
+            <div class="side-card-title">Premium Real Estate Portal</div>
+            <div class="side-card-text">One Portal. Complete Control. Smarter Deals. Stronger Relationships.</div>
+        </div>
+    </div>
+
+</aside>
+
+<!-- ============ MOBILE SHELL (Phase 2) — ADMIN / SUPER-ADMIN ============
+     Mirrors the employee shell in views/layout/sidebar.ejs. This markup is INERT
+     on desktop: design-system.css keeps every .ds-* at display:none, and
+     responsive.css reveals them only at <=768px under body.mshell. Every href
+     targets an EXISTING admin route — no route, query or data-shape change.
+
+     DIFFERENCE FROM THE EMPLOYEE SHELL: the admin nav is ~27 permission-gated
+     items. Duplicating them into a sheet would mean every future nav change lands
+     twice, so the DRAWER above stays as the long tail (reopened by "All Sections")
+     and the sheet carries only what you'd actually open one-handed on site.
+     body.mshell-admin re-shows the drawer + overlay (see responsive.css).
+
+     Reuses canSee() / _isSuper / _isAdminTier already defined at the top of this
+     file — no new permission logic, so the tab bar can never link to a 403. -->
+<script>document.body.classList.add('mshell','mshell-admin');</script>
+
+<%
+  // Grant-aware tab targets: a fine-role holder (e.g. hr_manager on /admin/projects)
+  // is NOT admin tier, so send them somewhere they can actually open.
+  const _mHome  = _isAdminTier                ? '/admin/dashboard' : '/hr/dashboard';
+  const _mLeads = canSee('leads.view_all')    ? '/admin/leads'     : '/leads';
+  const _mProj  = canSee('properties.manage') ? '/admin/projects'  : '/projects';
+%>
+
+<header class="ds-mtop" id="dsMtop">
+    <div class="ds-mtop-brand">
+        <svg class="ds-mtop-logo" viewBox="0 0 258 299" fill="currentColor" aria-label="Dhyaan Enterprises" role="img"><g transform="translate(0,299) scale(0.1,-0.1)"><path d="M10 2978 c-1 -7 -1 -1635 0 -1645 1 -33 48 9 358 319 l332 332 0 308 0 308 28 1 c351 10 559 -34 768 -164 58 -36 164 -135 200 -187 14 -19 41 -57 60 -85 42 -59 108 -195 119 -245 4 -19 11 -39 15 -45 4 -5 18 -53 30 -105 34 -137 34 -444 1 -600 -28 -131 -105 -341 -131 -360 -4 -3 -17 -24 -29 -48 -12 -23 -28 -42 -37 -42 -8 0 -13 -4 -9 -10 19 -31 -250 -259 -288 -244 -8 3 -17 -1 -20 -9 -7 -18 -128 -60 -159 -55 l-23 3 -3 963 c-1 586 -6 962 -11 960 -20 -7 -97 -76 -183 -163 l-88 -90 0 -1027 c0 -810 3 -1029 13 -1035 19 -13 343 -4 437 11 148 25 340 80 340 98 0 5 11 8 24 8 14 0 27 4 30 9 4 5 41 28 83 51 42 22 89 51 104 63 15 12 44 33 64 47 78 53 242 232 293 319 14 25 29 48 33 51 18 13 111 229 139 323 69 232 88 515 51 755 -11 73 -23 137 -26 142 -4 6 -15 43 -26 83 -27 99 -159 359 -228 447 -109 141 -276 291 -391 352 -36 19 -81 44 -100 55 -103 57 -286 114 -450 138 -82 12 -1319 24 -1320 13z"/><path d="M541 1591 l-113 -116 0 -729 c1 -400 4 -731 7 -734 7 -7 243 -4 256 3 5 4 9 338 9 851 l0 844 -22 -2 c-15 -1 -64 -43 -137 -117z"/><path d="M121 1168 l-114 -112 -1 -519 c-1 -335 3 -522 9 -527 12 -10 218 -5 235 5 8 5 11 165 9 613 -1 583 -3 652 -18 652 -3 0 -57 -50 -120 -112z"/></g></svg>
+        <span class="ds-mtop-wordmark">DHYAAN ENTERPRISES</span>
+    </div>
+    <div class="ds-mtop-row">
+        <a class="ds-mtop-back" href="<%= _mHome %>" onclick="if(history.length>1){history.back();return false;}" aria-label="Back">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div class="ds-mtop-title"><%= pageTitle || 'Dhyaan Admin' %></div>
+        <button class="ds-mtop-more" type="button" onclick="dsSheet('dsMoreSheet')" aria-label="More">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+        </button>
+    </div>
+</header>
+
+<nav class="ds-tabbar" aria-label="Primary">
+    <a class="ds-tab <%= isActive('dashboard') ? 'active' : '' %>" href="<%= _mHome %>">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+    </a>
+    <a class="ds-tab <%= isActive('leads') ? 'active' : '' %>" href="<%= _mLeads %>">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Leads
+    </a>
+    <button class="ds-fab" type="button" onclick="dsSheet('dsAddSheet')" aria-label="Quick add">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <a class="ds-tab <%= (isActive('projects') && !isActive('propert')) ? 'active' : '' %>" href="<%= _mProj %>">
+        <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+        Projects
+    </a>
+    <button class="ds-tab" type="button" onclick="dsSheet('dsMoreSheet')" aria-label="More">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        More
+    </button>
+</nav>
+
+<div class="ds-sheet-backdrop" id="dsBackdrop" onclick="dsSheetClose()"></div>
+
+<div class="ds-sheet" id="dsAddSheet" role="dialog" aria-label="Quick add">
+    <div class="ds-sheet-grip"></div>
+    <a class="ds-sheet-item" href="/leads/new">
+        <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+        New Lead
+    </a>
+    <% if (canSee('leads.reassign')) { %>
+    <a class="ds-sheet-item" href="/admin/assign">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Lead Assignment
+    </a>
+    <% } %>
+</div>
+
+<div class="ds-sheet" id="dsMoreSheet" role="dialog" aria-label="More" style="max-height:82vh;overflow-y:auto;">
+    <div class="ds-sheet-grip"></div>
+    <a class="ds-sheet-item" href="/admin/follow-ups">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Follow-Ups
+    </a>
+    <a class="ds-sheet-item" href="/admin/notifications">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications
+    </a>
+    <% if (canSee('properties.manage')) { %>
+    <a class="ds-sheet-item" href="/admin/properties">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
+        Properties
+    </a>
+    <% } %>
+    <% if (canSee('site_visits.manage')) { %>
+    <a class="ds-sheet-item" href="/admin/site-visits">
+        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Site Visits
+    </a>
+    <% } %>
+    <% if (_isSuper) { %>
+    <a class="ds-sheet-item" href="/admin/approvals">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 1.66-4 7-9 7s-9-5.34-9-7 4-7 9-7 9 5.34 9 7z"/></svg>
+        Approval Center
+    </a>
+    <% } %>
+    <button class="ds-sheet-item" type="button" onclick="dsOpenNav()"
+            style="width:100%;background:none;border:none;font:inherit;text-align:left;cursor:pointer;">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        All Sections
+    </button>
+    <a class="ds-sheet-item danger" href="/logout">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+    </a>
+</div>
+
+<script>
+  (function(){
+    // Top-level tabs hide the back chevron (title stays centred), same as employee.
+    var top = ['/admin/dashboard','/admin/leads','/admin/projects','/hr/dashboard','/leads','/projects'];
+    var p = (location.pathname || '/').replace(/\/+$/,'') || '/';
+    if (top.indexOf(p) !== -1) { var m = document.getElementById('dsMtop'); if (m) m.classList.add('is-top'); }
+  })();
+  function dsSheet(id){
+    var s = document.getElementById(id), b = document.getElementById('dsBackdrop');
+    if (!s) return;
+    document.querySelectorAll('.ds-sheet.open').forEach(function(x){ x.classList.remove('open'); });
+    s.classList.add('open'); if (b) b.classList.add('open');
+  }
+  function dsSheetClose(){
+    document.querySelectorAll('.ds-sheet.open').forEach(function(x){ x.classList.remove('open'); });
+    var b = document.getElementById('dsBackdrop'); if (b) b.classList.remove('open');
+  }
+  // "All Sections" — close the sheet, slide in the existing drawer (the long tail).
+  function dsOpenNav(){ dsSheetClose(); document.body.classList.add('nav-open'); }
+</script>

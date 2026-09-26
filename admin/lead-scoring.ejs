@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .kpi-card.hot { border-left: 4px solid var(--red); }
+    .kpi-card.hot .value { color: var(--red); }
+    .kpi-card.warm { border-left: 4px solid var(--amber); }
+    .kpi-card.warm .value { color: var(--amber); }
+    .kpi-card.cold { border-left: 4px solid var(--blue); }
+    .kpi-card.avg { border-left: 4px solid var(--gold); }
+    .kpi-card.breached { border-left: 4px solid var(--red); }
+    .kpi-card.breached .value { color: var(--red); }
+    .kpi-card.due { border-left: 4px solid var(--amber); }
+    .kpi-card.due .value { color: var(--amber); }
+    .kpi-card.ontrack { border-left: 4px solid var(--green); }
+    .kpi-card.ontrack .value { color: var(--green); }
+    .kpi-card.noaction { border-left: 4px solid var(--muted); }
+    .section-title { font-size: 18px; margin: 8px 0 14px; display: flex; align-items: center; gap: 10px; }
+    .section-title .dot { width: 7px; height: 7px; background: var(--gold); border-radius: 50%; }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.num, td.num { text-align: right; }
+    th.ctr, td.ctr { text-align: center; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .cname { font-weight: 600; color: var(--navy); }
+    .cmeta { font-size: 11px; color: var(--muted); }
+    .rank { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--beige); color: var(--navy); font-size: 11px; font-weight: 700; }
+    .rank.gold { background: var(--gold); color: var(--navy); }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.hot { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.warm { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.cold { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .sla-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .sla-pill.breached { background: rgba(220,38,38,0.12); color: var(--red); }
+    .sla-pill.due_today { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .sla-pill.on_track { background: rgba(22,163,74,0.12); color: var(--green); }
+    .sla-pill.no_action { background: rgba(10,22,40,0.08); color: var(--muted); }
+    .score-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+    .score-bar { flex: 1; height: 8px; background: var(--beige); border-radius: 999px; overflow: hidden; }
+    .score-fill { height: 100%; border-radius: 999px; }
+    .score-fill.hi { background: var(--red); }
+    .score-fill.mid { background: var(--amber); }
+    .score-fill.lo { background: var(--blue); }
+    .score-num { font-weight: 700; color: var(--navy); font-size: 13px; min-width: 26px; text-align: right; }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+    .note { font-size: 12px; color: var(--muted); margin-top: 10px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1>Lead Scoring &amp; SLA</h1>
+        <p>Read-only &mdash; ranked lead quality and follow-up health.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <!-- ============ SCORE BANDS ============ -->
+      <h2 class="section-title"><span class="dot"></span> Score Bands</h2>
+      <div class="kpi-grid">
+        <div class="kpi-card hot">
+          <div class="label">Hot Leads</div>
+          <div class="value"><%= bands.hot_band %></div>
+          <div class="sub">Score 70 &amp; above</div>
+        </div>
+        <div class="kpi-card warm">
+          <div class="label">Warm Leads</div>
+          <div class="value"><%= bands.warm_band %></div>
+          <div class="sub">Score 40&ndash;69</div>
+        </div>
+        <div class="kpi-card cold">
+          <div class="label">Cold Leads</div>
+          <div class="value"><%= bands.cold_band %></div>
+          <div class="sub">Score below 40</div>
+        </div>
+        <div class="kpi-card avg">
+          <div class="label">Average Score</div>
+          <div class="value"><%= bands.avg_score %></div>
+          <div class="sub">Across active leads</div>
+        </div>
+      </div>
+
+      <!-- ============ SLA HEALTH ============ -->
+      <h2 class="section-title"><span class="dot"></span> SLA Health</h2>
+      <div class="kpi-grid">
+        <div class="kpi-card breached">
+          <div class="label">Breached</div>
+          <div class="value"><%= sla.breached %></div>
+          <div class="sub">Follow-up overdue</div>
+        </div>
+        <div class="kpi-card due">
+          <div class="label">Due Today</div>
+          <div class="value"><%= sla.due_today %></div>
+          <div class="sub">Action due now</div>
+        </div>
+        <div class="kpi-card ontrack">
+          <div class="label">On Track</div>
+          <div class="value"><%= sla.on_track %></div>
+          <div class="sub">Action scheduled</div>
+        </div>
+        <div class="kpi-card noaction">
+          <div class="label">No Action Set</div>
+          <div class="value"><%= sla.no_action %></div>
+          <div class="sub">Needs a next step</div>
+        </div>
+      </div>
+
+      <!-- ============ RANKED LEADS ============ -->
+      <h2 class="section-title"><span class="dot"></span> Top Ranked Leads</h2>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Lead</th>
+              <th class="ctr">Status</th>
+              <th style="width: 150px;">Score</th>
+              <th class="ctr">SLA</th>
+              <th>Next Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (leads && leads.length) { %>
+              <% leads.forEach(function(l, i) { %>
+                <%
+                  const sc = Number(l.score) || 0;
+                  const fillClass = sc >= 70 ? 'hi' : (sc >= 40 ? 'mid' : 'lo');
+                  const stClass = l.status === 'hot' ? 'hot' : (l.status === 'warm' ? 'warm' : 'cold');
+                  const slaLabel = { breached: 'Breached', due_today: 'Due Today', on_track: 'On Track', no_action: 'No Action', closed: 'Closed' }[l.sla] || l.sla;
+                  let actDate = '';
+                  if (l.next_action_date) {
+                    const d = new Date(l.next_action_date);
+                    actDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                  }
+                %>
+                <tr>
+                  <td><span class="rank <%= i === 0 ? 'gold' : '' %>"><%= i + 1 %></span></td>
+                  <td>
+                    <div class="cname"><%= l.name %></div>
+                    <div class="cmeta"><%- l.phone || '&mdash;' %></div>
+                  </td>
+                  <td class="ctr"><span class="badge <%= stClass %>"><%= l.status %></span></td>
+                  <td>
+                    <div class="score-wrap">
+                      <div class="score-bar"><div class="score-fill <%= fillClass %>" style="width: <%= sc %>%"></div></div>
+                      <span class="score-num"><%= sc %></span>
+                    </div>
+                  </td>
+                  <td class="ctr"><span class="sla-pill <%= l.sla %>"><%= slaLabel %></span></td>
+                  <td>
+                    <div><%- l.next_action || '&mdash;' %></div>
+                    <% if (actDate) { %><div class="cmeta"><%= actDate %></div><% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="6" class="empty">No active leads to score.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="note">Read-only view. Score = status + closure probability + budget tier + source quality (0&ndash;100). Converted &amp; lost leads excluded.</p>
+
+    </div>
+  </div>
+</body>
+</html>
+
+

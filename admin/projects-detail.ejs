@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Admin</title>
+    <!-- RENDER-SOURCE: views/admin/projects-detail.ejs (PROJECT detail) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh; display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600; color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 24px 40px; flex: 1; }
+
+        .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+        .breadcrumb a { color: var(--gold-dark); text-decoration: none; font-weight: 600; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* HEADER */
+        .property-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 32px 36px;
+            border-radius: 16px; margin-bottom: 22px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+        }
+        .property-header::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .property-header .ext-code {
+            color: var(--gold); font-size: 11px;
+            text-transform: uppercase; letter-spacing: 2px;
+            font-weight: 600; margin-bottom: 8px;
+        }
+        .property-header h1 {
+            color: var(--offwhite); font-size: 32px;
+            margin-bottom: 6px; letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+        .property-header .by-builder {
+            color: rgba(250,250,247,0.75); font-size: 15px; margin-bottom: 14px;
+        }
+        .property-header .header-badges {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .header-badges .badge {
+            display: inline-block; font-size: 10px;
+            text-transform: uppercase; letter-spacing: 1px;
+            font-weight: 700; padding: 5px 10px; border-radius: 5px;
+        }
+        .badge-tier {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+        }
+        .badge-status-pre_launch         { background: rgba(217,119,6,0.22);  color: #f5a847; }
+        .badge-status-under_construction { background: rgba(37,99,235,0.22);  color: #6ba1f5; }
+        .badge-status-near_possession    { background: rgba(217,119,6,0.22);  color: #f5a847; }
+        .badge-status-ready_to_move,
+        .badge-status-ready_possession,
+        .badge-status-ready              { background: rgba(22,163,74,0.22);  color: #5bd57f; }
+        .badge-area { background: rgba(255,255,255,0.16); color: var(--offwhite); }
+        .badge-type { background: rgba(255,255,255,0.12); color: var(--offwhite); }
+
+        /* INFO PANELS */
+        .info-grid {
+            display: grid; grid-template-columns: 2fr 1fr;
+            gap: 20px; margin-bottom: 22px;
+        }
+        @media (max-width: 1000px) {
+            .info-grid { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: #fff; border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow); overflow: hidden;
+        }
+        .panel-head {
+            padding: 16px 22px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-head h2 { font-size: 17px; }
+        .panel-head .tag {
+            font-size: 11px; color: var(--gold-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .panel-body { padding: 20px 22px; }
+
+        .detail-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 16px 24px;
+        }
+        @media (max-width: 600px) {
+            .detail-grid { grid-template-columns: 1fr; }
+        }
+        .detail-label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600; margin-bottom: 3px;
+        }
+        .detail-value { font-size: 14px; color: var(--navy); font-weight: 500; }
+        .detail-value-muted { color: var(--muted); }
+        .detail-row-wide { grid-column: 1 / -1; }
+        .detail-note {
+            font-size: 13px; color: var(--text); line-height: 1.6;
+            padding: 10px 12px; background: var(--beige); border-radius: 8px;
+        }
+
+        /* PRICE BLOCK */
+        .price-hero {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy); padding: 22px 24px;
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+        }
+        .price-hero .ph-label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+            font-weight: 700; opacity: 0.85; margin-bottom: 6px;
+        }
+        .price-hero .ph-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px; font-weight: 700;
+        }
+
+        /* CONFIG BREAKDOWN */
+        .config-list { padding: 6px 0; }
+        .config-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 22px; border-bottom: 1px solid var(--border);
+        }
+        .config-row:last-child { border-bottom: none; }
+        .config-label {
+            font-size: 13px; color: var(--navy); font-weight: 600;
+        }
+        .config-bar {
+            flex: 1; height: 6px; background: var(--beige);
+            border-radius: 3px; margin: 0 14px; overflow: hidden;
+        }
+        .config-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%);
+            border-radius: 3px;
+        }
+        .config-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; font-weight: 700; color: var(--navy);
+            min-width: 28px; text-align: right;
+        }
+
+        /* UNITS TABLE */
+        .units-card {
+            background: #fff; border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow); overflow: hidden;
+            margin-bottom: 22px;
+        }
+        .units-table { width: 100%; border-collapse: collapse; }
+        .units-table thead th {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600;
+            text-align: left; padding: 13px 22px;
+            background: var(--beige); border-bottom: 1px solid var(--border);
+        }
+        .units-table tbody td {
+            padding: 14px 22px; border-bottom: 1px solid var(--border);
+            font-size: 13px; vertical-align: middle;
+        }
+        .units-table tbody tr:hover { background: rgba(212,175,55,0.05); }
+        .units-table tbody tr:last-child td { border-bottom: none; }
+
+        .config-pill {
+            display: inline-block;
+            padding: 4px 10px; border-radius: 999px;
+            background: rgba(37,99,235,0.10); color: var(--blue);
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .price-strong {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700; color: var(--navy); font-size: 14px;
+        }
+        .lakhs-num {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold-dark); font-weight: 700;
+        }
+        .empty-state {
+            padding: 40px 22px; text-align: center;
+            color: var(--muted); font-size: 13px;
+        }
+        .muted-cell { color: var(--muted); }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+            <div class="breadcrumb" style="display:flex; justify-content:space-between; align-items:center;">
+                <a href="/admin/projects">← All Properties</a>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <a href="/projects/<%= property.project_id %>/edit" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:linear-gradient(135deg,#D4AF37 0%,#E8C766 100%); color:#0A1628; font-weight:700; font-size:13px; text-decoration:none; border-radius:8px; box-shadow:0 3px 10px rgba(212,175,55,0.3);">✏️ Edit Property</a>
+                    <form method="POST" action="/projects/<%= property.project_id %>/delete" onsubmit="return confirm('Delete this property? It can be recovered later.');" style="margin:0;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; background:#fff; color:#dc2626; font-weight:700; font-size:13px; border:1px solid #dc2626; border-radius:8px; cursor:pointer;">🗑️ Delete</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- HEADER -->
+            <div class="property-header">
+                <% if (property.external_id) { %>
+                    <div class="ext-code"><%= property.external_id %></div>
+                <% } %>
+                <h1><%= property.title %></h1>
+                <% if (property.builder || property.location) { %>
+                    <div class="by-builder">
+                        <% if (property.builder) { %>by <strong style="color: var(--gold);"><%= property.builder %></strong><% } %>
+                        <% if (property.builder && property.location) { %> · <% } %>
+                        <%= property.location %>
+                    </div>
+                <% } %>
+                <div class="header-badges">
+                    <% if (property.has_residential) { %><span class="badge" style="background:#0A1628;color:#D4AF37;font-weight:700;letter-spacing:.5px;">🏠 RESIDENTIAL</span><% } %>
+                    <% if (property.has_commercial) { %><span class="badge" style="background:#0A1628;color:#D4AF37;font-weight:700;letter-spacing:.5px;">🏢 COMMERCIAL</span><% } %>
+                    <% if (property.tier) { %>
+                        <span class="badge badge-tier"><%= property.tier %></span>
+                    <% } %>
+                    <%# 053 / BUG-1: real status tags (status_of_property text[]), not the stale construction_status enum %>
+                    <% (Array.isArray(property.status_of_property) ? property.status_of_property : []).forEach(function(sk){ %>
+                        <span class="badge badge-status-<%= sk %>"><%= (sheet && sheet.statusLabel) ? sheet.statusLabel(sk) : sk.replace(/_/g, ' ') %></span>
+                    <% }); %>
+                    <% if (property.area_zone) { %>
+                        <span class="badge badge-area"><%= property.area_zone %></span>
+                    <% } %>
+                    <% if (property.type) { %>
+                        <span class="badge badge-type"><%= property.type %></span>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- MEDIA — Photos | Videos | Brochures (Δ3 tabs, Δ10 downloads) -->
+            <%
+                var _imgs = (typeof images    !== 'undefined' && images)    ? images    : [];
+                var _vids = (typeof videos    !== 'undefined' && videos)    ? videos    : [];
+                var _brcs = (typeof brochures !== 'undefined' && brochures) ? brochures : [];
+            %>
+            <style>
+                .media-tabs input[type=radio]{position:absolute;opacity:0;pointer-events:none;}
+                .mt-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+                .mt-bar label{padding:9px 16px;border:1px solid rgba(10,22,40,0.12);border-radius:999px;font-size:13px;font-weight:600;color:#6b6b6b;background:#fff;cursor:pointer;user-select:none;}
+                .mt-bar label:hover{border-color:#D4AF37;}
+                .media-tabs #mt-photos:checked ~ .mt-bar label[for=mt-photos],
+                .media-tabs #mt-videos:checked ~ .mt-bar label[for=mt-videos],
+                .media-tabs #mt-brochures:checked ~ .mt-bar label[for=mt-brochures]{background:#0A1628;color:#D4AF37;border-color:#0A1628;}
+                .mt-panel{display:none;}
+                .media-tabs #mt-photos:checked ~ .mt-photos,
+                .media-tabs #mt-videos:checked ~ .mt-videos,
+                .media-tabs #mt-brochures:checked ~ .mt-brochures{display:block;}
+                .media-dl{position:absolute;bottom:8px;right:8px;background:rgba(10,22,40,0.82);color:#D4AF37;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;text-decoration:none;z-index:3;}
+                .media-dl:hover{background:#0A1628;}
+                .vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+                .vid-card video{width:100%;border-radius:10px;background:#000;display:block;}
+                .vid-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;}
+                .vid-meta .nm{font-size:12px;color:#6b6b6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+                .brc-list{display:flex;flex-direction:column;gap:10px;}
+                .brc-row{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid rgba(10,22,40,0.1);border-radius:10px;background:#fff;}
+                .brc-ico{font-size:26px;color:#D4AF37;}
+                .brc-nm{flex:1;font-size:14px;font-weight:600;color:#0A1628;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+                .brc-btn{font-size:12px;font-weight:600;color:#0A1628;border:1px solid rgba(10,22,40,0.14);border-radius:8px;padding:8px 12px;text-decoration:none;}
+                .media-empty{color:#6b6b6b;font-size:14px;padding:8px 0;}
+            </style>
+            <div class="media-tabs">
+                <input type="radio" name="mediatab" id="mt-photos" checked>
+                <input type="radio" name="mediatab" id="mt-videos">
+                <input type="radio" name="mediatab" id="mt-brochures">
+                <div class="mt-bar">
+                    <label for="mt-photos">📷 Photos (<%= _imgs.length %>)</label>
+                    <label for="mt-videos">🎬 Videos (<%= _vids.length %>)</label>
+                    <label for="mt-brochures">📄 Brochures (<%= _brcs.length %>)</label>
+                </div>
+
+                <!-- PHOTOS -->
+                <div class="mt-panel mt-photos">
+                    <div class="pg-gallery" data-count="<%= _imgs.length %>">
+                        <% if (_imgs.length) { %>
+                            <div class="pg-viewport">
+                                <div class="pg-track">
+                                    <% _imgs.forEach(function(img){ %>
+                                        <div class="pg-slide">
+                                            <img class="lb" src="<%= img.file_path %>" alt="<%= img.caption || property.title %>" loading="lazy">
+                                            <a class="media-dl" href="<%= img.file_path %>" download="<%= img.original_name || '' %>" title="Download photo">⬇</a>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                                <% if (_imgs.length > 1) { %>
+                                    <button class="pg-arrow pg-prev" type="button" aria-label="Previous photo">&#8249;</button>
+                                    <button class="pg-arrow pg-next" type="button" aria-label="Next photo">&#8250;</button>
+                                    <div class="pg-dots"></div>
+                                <% } %>
+                            </div>
+                        <% } else { %>
+                            <div class="pg-empty">No photos yet — add some from the Edit page.</div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- VIDEOS -->
+                <div class="mt-panel mt-videos">
+                    <% if (_vids.length) { %>
+                        <div class="vid-grid">
+                            <% _vids.forEach(function(v){ %>
+                                <div class="vid-card">
+                                    <video src="<%= v.file_path %>" controls preload="metadata"></video>
+                                    <div class="vid-meta">
+                                        <span class="nm" title="<%= v.original_name || '' %>"><%= v.original_name || 'video' %></span>
+                                        <a class="brc-btn" href="<%= v.file_path %>" download="<%= v.original_name || '' %>">⬇ Download</a>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %><div class="media-empty">No videos yet.</div><% } %>
+                </div>
+
+                <!-- BROCHURES -->
+                <div class="mt-panel mt-brochures">
+                    <% if (_brcs.length) { %>
+                        <div class="brc-list">
+                            <% _brcs.forEach(function(b){ %>
+                                <div class="brc-row">
+                                    <span class="brc-ico">📄</span>
+                                    <span class="brc-nm" title="<%= b.original_name || '' %>"><%= b.original_name || 'brochure.pdf' %></span>
+                                    <a class="brc-btn" href="<%= b.file_path %>" target="_blank" rel="noopener">Open</a>
+                                    <a class="brc-btn" href="<%= b.file_path %>" download="<%= b.original_name || '' %>">⬇ Download</a>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %><div class="media-empty">No brochures yet.</div><% } %>
+                </div>
+            </div>
+            <script src="/js/gallery.js"></script>
+
+            <!-- ============================================================= -->
+            <!-- INTERNAL BUILDER COST SHEETS (mig 055) — off-public, gated.    -->
+            <!-- Reaching this view means the user holds properties.manage,     -->
+            <!-- which is exactly the gate on the up/download routes. NEVER      -->
+            <!-- rendered on the employee project detail (property-detail.ejs).  -->
+            <!-- ============================================================= -->
+            <% var _cs = (typeof costSheets !== 'undefined' && costSheets) ? costSheets : [];
+               var _pid = (typeof projectId !== 'undefined' && projectId) ? projectId : (property.project_id || '');
+               var _tok = (typeof csrfToken !== 'undefined' && csrfToken) ? csrfToken : '';
+               function _fmtSize(n){ n = Number(n)||0; if(n < 1024) return n+' B'; if(n < 1048576) return (n/1024).toFixed(0)+' KB'; return (n/1048576).toFixed(1)+' MB'; }
+            %>
+            <style>
+                .cs-panel{border:1px solid rgba(212,175,55,0.45);border-radius:12px;background:#fffdf6;margin:22px 0;overflow:hidden;}
+                .cs-head{display:flex;align-items:center;gap:10px;padding:14px 18px;background:#0A1628;color:#fff;}
+                .cs-head h2{font-size:15px;margin:0;font-weight:700;letter-spacing:.3px;}
+                .cs-lock{font-size:11px;font-weight:700;color:#0A1628;background:#D4AF37;padding:3px 9px;border-radius:999px;margin-left:auto;letter-spacing:.4px;}
+                .cs-body{padding:16px 18px;}
+                .cs-note{font-size:12px;color:#7a5c00;background:#fff6d9;border:1px solid rgba(212,175,55,0.4);border-radius:8px;padding:9px 12px;margin-bottom:14px;}
+                .cs-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+                .cs-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid rgba(10,22,40,0.1);border-radius:10px;background:#fff;}
+                .cs-ico{font-size:22px;}
+                .cs-nm{flex:1;font-size:14px;font-weight:600;color:#0A1628;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+                .cs-meta{font-size:12px;color:#8a8a8a;white-space:nowrap;}
+                .cs-btn{font-size:12px;font-weight:600;color:#0A1628;border:1px solid rgba(10,22,40,0.16);border-radius:8px;padding:7px 12px;text-decoration:none;background:#fff;cursor:pointer;}
+                .cs-btn.del{color:#a11;border-color:rgba(170,17,17,0.3);}
+                .cs-empty{color:#6b6b6b;font-size:13px;padding:6px 0 14px;}
+                .cs-up{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px dashed rgba(10,22,40,0.14);padding-top:14px;}
+                .cs-up input[type=file]{font-size:13px;}
+                .cs-up input[type=text]{flex:1;min-width:160px;padding:8px 10px;border:1px solid rgba(10,22,40,0.16);border-radius:8px;font-size:13px;}
+                .cs-up button{background:#0A1628;color:#D4AF37;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;}
+            </style>
+            <div class="cs-panel" id="cost-sheets">
+                <div class="cs-head">
+                    <span>🧾</span><h2>Builder Cost Sheet</h2>
+                    <span class="cs-lock">🔒 INTERNAL ONLY</span>
+                </div>
+                <div class="cs-body">
+                    <div class="cs-note">🔒 <strong>Internal working data only</strong> — base price, floor-rise, PLC &amp; charges. Never shown to customers or on the employee view. Files are stored off-public and streamed only through this gated page.</div>
+                    <% if (_cs.length) { %>
+                        <div class="cs-list">
+                            <% _cs.forEach(function(s){ %>
+                                <div class="cs-row">
+                                    <span class="cs-ico">📊</span>
+                                    <span class="cs-nm" title="<%= s.original_name || '' %>"><%= s.original_name || 'cost-sheet' %></span>
+                                    <span class="cs-meta"><%= _fmtSize(s.file_size_bytes) %></span>
+                                    <a class="cs-btn" href="/admin/projects/<%= _pid %>/cost-sheets/<%= s.sheet_id %>/download">⬇ Download</a>
+                                    <form method="POST" action="/admin/projects/<%= _pid %>/cost-sheets/<%= s.sheet_id %>/delete" onsubmit="return confirm('Remove this cost sheet? (soft-delete, recoverable)');" style="margin:0;">
+                                        <input type="hidden" name="_csrf" value="<%= _tok %>">
+                                        <button type="submit" class="cs-btn del">Remove</button>
+                                    </form>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="cs-empty">No cost sheet uploaded yet.</div>
+                    <% } %>
+                    <form class="cs-up" method="POST" action="/admin/projects/<%= _pid %>/cost-sheets?_csrf=<%= _tok %>" enctype="multipart/form-data">
+                        <input type="file" name="cost_sheet" accept=".xlsx,.xls,.pdf,.csv" required>
+                        <input type="text" name="notes" placeholder="Note (optional)" maxlength="200">
+                        <button type="submit">⬆ Upload cost sheet</button>
+                    </form>
+                    <div class="cs-empty" style="padding-top:8px;">Accepted: Excel (.xlsx / .xls), PDF or CSV · up to 10 GB.</div>
+                </div>
+            </div>
+
+            <!-- INFO + SIDE -->
+            <div class="info-grid">
+
+                <!-- LEFT: PROJECT DETAILS -->
+                <div class="panel">
+                    <div class="panel-head"><h2>Project Details</h2></div>
+                    <div class="panel-body">
+                        <div class="detail-grid">
+                            <div>
+                                <div class="detail-label">Builder</div>
+                                <div class="detail-value <%= !property.builder ? 'detail-value-muted' : '' %>">
+                                    <%= property.builder || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Location</div>
+                                <div class="detail-value <%= !property.location ? 'detail-value-muted' : '' %>">
+                                    <%= property.location || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Area Zone</div>
+                                <div class="detail-value <%= !property.area_zone ? 'detail-value-muted' : '' %>">
+                                    <%= property.area_zone || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Tier</div>
+                                <div class="detail-value <%= !property.tier ? 'detail-value-muted' : '' %>">
+                                    <%= property.tier || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Type</div>
+                                <div class="detail-value <%= !property.type ? 'detail-value-muted' : '' %>">
+                                    <%= property.type || '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Status</div>
+                                <div class="detail-value">
+                                    <% var _sa = Array.isArray(property.status_of_property) ? property.status_of_property : []; %>
+                                    <%= _sa.length ? _sa.map(function(sk){ return (sheet && sheet.statusLabel) ? sheet.statusLabel(sk) : sk.replace(/_/g,' '); }).join(' · ') : '—' %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Configurations</div>
+                                <div class="detail-value <%= !property.configurations ? 'detail-value-muted' : '' %>">
+                                    <%= property.configurations || '—' %>
+                                </div>
+                            </div>
+                            <% var _bhk = Array.isArray(property.bhk_config) ? property.bhk_config : []; %>
+                            <% if (_bhk.length) { %>
+                            <div class="detail-row-wide">
+                                <div class="detail-label">Unit Configurations Offered</div>
+                                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:4px;">
+                                    <% _bhk.forEach(function(c){ %>
+                                        <span style="padding:5px 12px;border-radius:999px;background:rgba(212,175,55,0.14);border:1px solid rgba(212,175,55,0.4);color:#B8941F;font-size:12px;font-weight:700;"><%= c %></span>
+                                    <% }); %>
+                                </div>
+                            </div>
+                            <% } %>
+                            <div>
+                                <div class="detail-label">Possession</div>
+                                <div class="detail-value <%= !property.possession ? 'detail-value-muted' : '' %>">
+                                    <%= property.possession || '—' %>
+                                </div>
+                            </div>
+                            <% if (property.notes) { %>
+                                <div class="detail-row-wide">
+                                    <div class="detail-label">Notes</div>
+                                    <div class="detail-note"><%= property.notes %></div>
+                                </div>
+                            <% } %>
+                            <div>
+                                <div class="detail-label">Listed</div>
+                                <div class="detail-value">
+                                    <% if (property.listed_at) { %>
+                                        <%= new Date(property.listed_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                                    <% } else { %><span class="detail-value-muted">—</span><% } %>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="detail-label">Source Doc</div>
+                                <div class="detail-value <%= !property.source_doc ? 'detail-value-muted' : '' %>">
+                                    <%= property.source_doc || '—' %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: PRICE + CONFIG BREAKDOWN -->
+                <div>
+                    <% if (property.price_range) { %>
+                    <div class="price-hero">
+                        <div class="ph-label">Price Range</div>
+                        <div class="ph-value"><%= property.price_range %></div>
+                    </div>
+                    <% } %>
+
+                    <% if (configBreakdown && Object.keys(configBreakdown).length > 0) { %>
+                    <div class="panel">
+                        <div class="panel-head">
+                            <h2>Configurations</h2>
+                            <span class="tag"><%= units.length %> properties</span>
+                        </div>
+                        <div class="config-list">
+                            <%
+                                const cfgEntries = Object.entries(configBreakdown).sort((a,b) => b[1] - a[1]);
+                                const maxCfg = Math.max(1, ...cfgEntries.map(e => e[1]));
+                            %>
+                            <% cfgEntries.forEach(function(pair) { %>
+                                <% const pct = Math.round((pair[1] / maxCfg) * 100); %>
+                                <div class="config-row">
+                                    <span class="config-label"><%= pair[0] %></span>
+                                    <div class="config-bar"><div class="config-bar-fill" style="width: <%= pct %>%"></div></div>
+                                    <span class="config-num"><%= pair[1] %></span>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- 99acres read sections — SAME shared partial as the employee detail -->
+            <%- include('../partials/project-99acres-sections') %>
+
+            <!-- Dhyaan sheet groups (internal marketing gated to admin/super) -->
+            <%- include('../partials/project-sheet-display') %>
+
+            <!-- PHASE 3 · B — PRICE UPDATES (dated revisions) -->
+            <div class="units-card" id="pricing" style="margin-bottom:20px;">
+                <div class="panel-head"><h2>Price Updates</h2></div>
+                <div style="padding:18px 20px;">
+                    <% var PU = (typeof priceUpdates!=='undefined') ? priceUpdates : []; %>
+                    <% function pud(d){ return d?new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'; } %>
+                    <% if (typeof canPricing!=='undefined' && canPricing) { %>
+                    <form action="/admin/projects/<%= property.project_id %>/price-updates" method="POST" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:16px;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Effective Date</label><input type="date" name="effective_date" required style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+                        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:200px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Price / Note</label><input type="text" name="price_note" required maxlength="200" placeholder="e.g. ₹12,500/sqft" style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+                        <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Source</label><input type="text" name="source" maxlength="120" placeholder="builder circular" style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+                        <button type="submit" style="background:#D4AF37;color:#0A1628;font-weight:600;font-size:13px;padding:9px 16px;border:none;border-radius:8px;cursor:pointer;">Add</button>
+                    </form>
+                    <% } %>
+                    <% if (PU.length) { %>
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead><tr>
+                            <th style="text-align:left;padding:9px 10px;border-bottom:2px solid rgba(10,22,40,.1);font-size:11px;text-transform:uppercase;color:#6b6b6b;">Effective</th>
+                            <th style="text-align:left;padding:9px 10px;border-bottom:2px solid rgba(10,22,40,.1);font-size:11px;text-transform:uppercase;color:#6b6b6b;">Price / Note</th>
+                            <th style="text-align:left;padding:9px 10px;border-bottom:2px solid rgba(10,22,40,.1);font-size:11px;text-transform:uppercase;color:#6b6b6b;">Source</th>
+                            <% if (canPricing) { %><th style="padding:9px 10px;border-bottom:2px solid rgba(10,22,40,.1);"></th><% } %>
+                        </tr></thead>
+                        <tbody>
+                        <% PU.forEach(function(p, ix){ %>
+                            <tr>
+                                <td style="padding:9px 10px;border-bottom:1px solid rgba(10,22,40,.08);"><%= pud(p.effective_date) %><% if (ix===0){ %> <span style="font-size:10px;font-weight:700;color:#16a34a;">CURRENT</span><% } %></td>
+                                <td style="padding:9px 10px;border-bottom:1px solid rgba(10,22,40,.08);font-weight:600;color:#0A1628;"><%= p.price_note %></td>
+                                <td style="padding:9px 10px;border-bottom:1px solid rgba(10,22,40,.08);color:#6b6b6b;"><%= p.source || '—' %></td>
+                                <% if (canPricing) { %>
+                                <td style="padding:9px 10px;border-bottom:1px solid rgba(10,22,40,.08);text-align:right;">
+                                    <form action="/admin/projects/<%= property.project_id %>/price-updates/<%= p.price_update_id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Remove this price update?');">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                        <button type="submit" style="background:rgba(220,38,38,.1);color:#dc2626;font-size:12px;font-weight:600;padding:5px 10px;border:none;border-radius:7px;cursor:pointer;">Delete</button>
+                                    </form>
+                                </td>
+                                <% } %>
+                            </tr>
+                        <% }); %>
+                        </tbody>
+                    </table>
+                    <% } else { %>
+                        <div style="color:#6b6b6b;font-size:13px;padding:8px 0;">No price updates recorded.</div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- PHASE 3 · C — OFFERS (active promotions; expired auto-hidden from active list) -->
+            <div class="units-card" id="offers" style="margin-bottom:20px;">
+                <div class="panel-head"><h2>Offers &amp; Promotions</h2></div>
+                <div style="padding:18px 20px;">
+                    <% var OF = (typeof projectOffers!=='undefined') ? projectOffers : []; %>
+                    <% var activeOF = OF.filter(function(o){ return o.status==='active' && !o.is_expired; }); %>
+                    <% var pastOF = OF.filter(function(o){ return o.status!=='active' || o.is_expired; }); %>
+                    <% function ofd(d){ return d?new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):''; } %>
+                    <% if (typeof canPricing!=='undefined' && canPricing) { %>
+                    <form action="/admin/projects/<%= property.project_id %>/offers" method="POST" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:16px;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Offer</label><input type="text" name="offer_text" required maxlength="300" placeholder="e.g. No floor rise till Aug 31" style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+                        <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Valid From</label><input type="date" name="valid_from" style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+                        <div style="display:flex;flex-direction:column;gap:4px;"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;">Valid To</label><input type="date" name="valid_to" style="font-size:13px;padding:8px 10px;border:1px solid rgba(10,22,40,.12);border-radius:8px;" /></div>
+                        <button type="submit" style="background:#D4AF37;color:#0A1628;font-weight:600;font-size:13px;padding:9px 16px;border:none;border-radius:8px;cursor:pointer;">Add Offer</button>
+                    </form>
+                    <% } %>
+                    <% if (activeOF.length) { %>
+                        <% activeOF.forEach(function(o){ %>
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid rgba(22,163,74,.25);background:rgba(22,163,74,.06);border-radius:10px;margin-bottom:8px;">
+                                <div><span style="font-weight:600;color:#0A1628;"><%= o.offer_text %></span><% if (o.valid_to) { %><span style="font-size:11px;color:#6b6b6b;"> · till <%= ofd(o.valid_to) %></span><% } %></div>
+                                <% if (canPricing) { %><form action="/admin/offers/<%= o.offer_id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Remove this offer?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="back" value="/admin/projects/<%= property.project_id %>" /><button type="submit" style="background:rgba(220,38,38,.1);color:#dc2626;font-size:12px;font-weight:600;padding:5px 10px;border:none;border-radius:7px;cursor:pointer;">Delete</button></form><% } %>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div style="color:#6b6b6b;font-size:13px;padding:4px 0;">No active offers.</div>
+                    <% } %>
+                    <% if (canPricing && pastOF.length) { %>
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#6b6b6b;font-weight:700;margin:14px 0 8px;">Expired / inactive</div>
+                        <% pastOF.forEach(function(o){ %>
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 12px;border:1px solid rgba(10,22,40,.08);border-radius:10px;margin-bottom:6px;opacity:.6;">
+                                <div><span style="color:#0A1628;"><%= o.offer_text %></span><span style="font-size:11px;color:#dc2626;"> · <%= o.is_expired ? 'expired '+ofd(o.valid_to) : o.status %></span></div>
+                                <form action="/admin/offers/<%= o.offer_id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Remove this offer?');"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><input type="hidden" name="back" value="/admin/projects/<%= property.project_id %>" /><button type="submit" style="background:rgba(220,38,38,.1);color:#dc2626;font-size:12px;font-weight:600;padding:5px 10px;border:none;border-radius:7px;cursor:pointer;">Delete</button></form>
+                            </div>
+                        <% }); %>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- LOCATION & MAP (Launch Day) -->
+            <div class="units-card" style="margin-bottom:20px;">
+                <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2>Location</h2>
+                    <% if (typeof map !== 'undefined' && map && map.openUrl) { %>
+                        <a href="<%= map.openUrl %>" target="_blank" rel="noopener"
+                           style="font-size:12px;font-weight:600;color:#0A1628;border:1px solid rgba(10,22,40,0.14);border-radius:8px;padding:8px 12px;text-decoration:none;">Open in Google Maps →</a>
+                    <% } %>
+                </div>
+                <div style="padding:16px;">
+                    <% if (typeof map !== 'undefined' && map && map.embedSrc) { %>
+                        <div style="width:100%;border-radius:12px;overflow:hidden;border:1px solid rgba(10,22,40,0.08);">
+                            <iframe src="<%= map.embedSrc %>" width="100%" height="300" style="border:0;display:block;"
+                                    loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Property location map"></iframe>
+                        </div>
+                    <% } else { %>
+                        <div style="color:#6b6b6b;font-size:14px;">Location not set.</div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- UNITS TABLE -->
+            <div class="units-card">
+                <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; gap:10px; align-items:center;">
+        <h2>Properties</h2>
+        <span class="tag"><%= units.length %> total</span>
+    </div>
+    <a href="/properties/new" style="display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:linear-gradient(135deg,#D4AF37 0%,#E8C766 100%); color:#0A1628; font-weight:700; font-size:13px; text-decoration:none; border-radius:8px; box-shadow:0 3px 10px rgba(212,175,55,0.3);">+ Add Property</a>
+</div>
+                <% if (units && units.length > 0) { %>
+                <%
+                    function _cap(s){ return s ? String(s).replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}) : null; }
+                    function _carpet(u){ if(u.carpet_area!=null&&!isNaN(Number(u.carpet_area)))return Number(u.carpet_area); if(u.carpet_sqft&&!isNaN(Number(u.carpet_sqft)))return Number(u.carpet_sqft); return null; }
+                    function _priceNum(u){ if(u.expected_price!=null)return Number(u.expected_price); if(u.price_lakhs!=null)return Number(u.price_lakhs)*100000; return null; }
+                %>
+                <table class="units-table" id="inv-table">
+                    <thead>
+                        <tr>
+                            <th>Configuration</th>
+                            <th>Carpet</th>
+                            <th class="sortable" onclick="sortInv()" style="cursor:pointer;user-select:none;">Price <span id="inv-sort-ind">▲</span></th>
+                            <th>Floor</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="inv-body">
+                        <% units.forEach(function(u) { %>
+                            <tr data-price="<%= _priceNum(u)!=null ? _priceNum(u) : -1 %>">
+                                <td><% if (u.config) { %><span class="config-pill"><%= u.config %></span><% if (u.title) { %> <span style="color:#6b6b6b;font-size:12px;"><%= u.title %></span><% } %><% } else { %><span class="muted-cell">—</span><% } %></td>
+                                <td><% var _ca=_carpet(u); %><% if(_ca!=null){ %><%= _ca %><span class="muted-cell" style="font-size:11px;"> <%= u.area_unit||'sqft' %></span><% }else{ %><span class="muted-cell">—</span><% } %></td>
+                                <td class="price-strong"><% if(u.expected_price!=null){ %>₹<%= Number(u.expected_price).toLocaleString('en-IN') %><% if(u.price_per_sqft!=null){ %><div class="lakhs-num" style="font-size:11px;">₹<%= Number(u.price_per_sqft).toLocaleString('en-IN') %>/sqft</div><% } %><% }else if(u.price_lakhs!=null){ %><span class="lakhs-num">₹<%= Number(u.price_lakhs).toLocaleString('en-IN') %> L</span><% }else{ %><span class="muted-cell">—</span><% } %></td>
+                                <td><% if(u.floor_number!=null){ %><%= u.floor_number %><% if(u.total_floors!=null){ %><span class="muted-cell" style="font-size:11px;"> / <%= u.total_floors %></span><% } %><% }else{ %><span class="muted-cell">—</span><% } %></td>
+                                <td><% if(u.possession_status){ %><span style="display:inline-block;padding:3px 9px;border-radius:999px;background:rgba(37,99,235,0.10);color:#2563eb;font-size:11px;font-weight:700;"><%= _cap(u.possession_status) %></span><% }else{ %><span class="muted-cell">—</span><% } %></td>
+                                <td style="white-space:nowrap;">
+                                    <a href="/properties/<%= u.property_id %>" style="color:#B8941F;font-weight:700;text-decoration:none;font-size:13px;">view →</a>
+                                    <a href="/properties/<%= u.property_id %>/edit" title="Edit" style="margin-left:8px;text-decoration:none;">✏️</a>
+                                    <form method="POST" action="/properties/<%= u.property_id %>/delete" onsubmit="return confirm('Delete this property? It can be recovered later.');" style="margin:0;display:inline;">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <button type="submit" title="Delete" style="background:none;border:none;cursor:pointer;font-size:13px;">🗑️</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+                <script>
+                // Sort the inventory table by price (toggles asc/desc).
+                var _invAsc = true;
+                function sortInv(){
+                    var body = document.getElementById('inv-body');
+                    var rows = Array.prototype.slice.call(body.querySelectorAll('tr'));
+                    rows.sort(function(a,b){ var pa=+a.dataset.price, pb=+b.dataset.price; return _invAsc ? pa-pb : pb-pa; });
+                    _invAsc = !_invAsc;
+                    document.getElementById('inv-sort-ind').textContent = _invAsc ? '▲' : '▼';
+                    rows.forEach(function(r){ body.appendChild(r); });
+                }
+                </script>
+                <% } else { %>
+                    <div class="empty-state">
+                        No properties yet — add your first with the button above.
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
+    </div>
+
+    <%# --- zero-dependency image lightbox (inlined; res.render context) ---
+        Any <img class="lb"> becomes clickable: opens full-size in a dark overlay
+        scaled to fit the viewport. Click anywhere or press Esc to close. Photos
+        only. The per-photo download <a> is separate and keeps working. %>
+    <style>
+      img.lb { cursor: zoom-in; }
+      #lb-overlay {
+        position: fixed; inset: 0; z-index: 9999;
+        display: none; align-items: center; justify-content: center;
+        background: rgba(0,0,0,0.9); cursor: zoom-out;
+      }
+      #lb-overlay.open { display: flex; }
+      #lb-overlay img {
+        max-width: 92vw; max-height: 92vh;
+        object-fit: contain; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        border-radius: 4px;
+      }
+      #lb-close {
+        position: fixed; top: 18px; right: 24px; z-index: 10000;
+        color: #fff; font-size: 34px; line-height: 1; cursor: pointer;
+        background: none; border: none; opacity: 0.85;
+      }
+    </style>
+    <div id="lb-overlay" role="dialog" aria-modal="true" aria-label="Image viewer">
+      <button id="lb-close" type="button" aria-label="Close">&times;</button>
+      <img id="lb-img" src="" alt="">
+    </div>
+    <script>
+      (function () {
+        var overlay = document.getElementById('lb-overlay');
+        var lbImg = document.getElementById('lb-img');
+        if (!overlay || !lbImg) return;
+        function open(src, alt) { lbImg.src = src; lbImg.alt = alt || ''; overlay.classList.add('open'); }
+        function close() { overlay.classList.remove('open'); lbImg.src = ''; }
+        document.addEventListener('click', function (e) {
+          var img = e.target.closest && e.target.closest('img.lb');
+          if (img) { e.preventDefault(); open(img.getAttribute('src'), img.getAttribute('alt')); }
+        });
+        overlay.addEventListener('click', close); // click anywhere on overlay (incl. image) closes
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+        });
+      })();
+    </script>
+</body>
+</html>

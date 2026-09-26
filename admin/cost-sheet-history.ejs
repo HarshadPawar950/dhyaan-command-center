@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-dark: #B8941F; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08); --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; max-width: 1180px; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 24px 32px; border-radius: 16px; margin-bottom: 22px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; }
+    .page-hero h1 { color: var(--offwhite); font-size: 26px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--beige); }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 20px; }
+    .filter-grid { display: grid; grid-template-columns: 1.4fr 1.4fr 1fr 1fr auto; gap: 12px; align-items: end; }
+    label { font-size: 11px; font-weight: 600; color: var(--navy); text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 5px; }
+    input, select { font-family: 'Inter', sans-serif; font-size: 13px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--offwhite); color: var(--text); width: 100%; }
+    input:focus, select:focus { outline: none; border-color: var(--gold); background: #fff; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 10px 12px; border-bottom: 2px solid var(--border); }
+    td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:hover td { background: var(--beige); }
+    td.amount { text-align: right; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    th.amount { text-align: right; }
+    .lead-cell .nm { font-weight: 600; color: var(--navy); }
+    .lead-cell .ph { color: var(--muted); font-size: 12px; }
+    .muted { color: var(--muted); }
+    a.rowlink { color: var(--gold-dark); font-weight: 600; text-decoration: none; margin-right: 10px; }
+    a.rowlink:hover { text-decoration: underline; }
+    .empty-state { text-align: center; color: var(--muted); padding: 36px 0; font-size: 14px; }
+    .pager { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 13px; color: var(--muted); }
+    .pager .links a { margin-left: 8px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <div>
+          <h1>Cost Sheet History</h1>
+          <p><%= total %> sheet<%= total === 1 ? '' : 's' %> generated &middot; every figure frozen at generation time</p>
+        </div>
+        <a href="/admin/cost-sheet" class="ds-btn ds-btn-gold"><span style="font-size:18px;line-height:1;">+</span> New Cost Sheet</a>
+      </div>
+
+      <!-- filters -->
+      <div class="panel">
+        <form action="/admin/cost-sheet/history" method="GET">
+          <div class="filter-grid">
+            <div>
+              <label>Project</label>
+              <select name="project_id">
+                <option value="">All projects</option>
+                <% projects.forEach(function(p) { %>
+                  <option value="<%= p.project_id %>" <%= filters.project_id === p.project_id ? 'selected' : '' %>><%= p.title %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div>
+              <label>Lead name / phone</label>
+              <input type="text" name="lead_q" value="<%= filters.lead_q %>" placeholder="e.g. Ravi or 98123…" />
+            </div>
+            <div>
+              <label>From</label>
+              <input type="date" name="from" value="<%= filters.from %>" />
+            </div>
+            <div>
+              <label>To</label>
+              <input type="date" name="to" value="<%= filters.to %>" />
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="submit" class="btn btn-gold">Filter</button>
+              <a href="/admin/cost-sheet/history" class="btn btn-ghost">Clear</a>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- table -->
+      <div class="panel">
+        <% if (sheets.length === 0) { %>
+          <div class="empty-state">No cost sheets match — clear the filters or generate the first one.</div>
+        <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Generated By</th>
+              <th>Builder / Project / Unit</th>
+              <th>Lead</th>
+              <th class="amount">Total All-In</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% sheets.forEach(function(s) { %>
+              <tr>
+                <td class="muted" style="white-space:nowrap;">
+                  <%= s.created_at ? new Date(s.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '' %>
+                </td>
+                <td><%= s.generated_by_name || '—' %></td>
+                <td>
+                  <span class="lead-cell">
+                    <span class="nm"><%= s.property_title || '—' %> · <%= s.unit_config || 'unit' %></span><br/>
+                    <span class="ph"><%= s.builder_name || '' %></span>
+                  </span>
+                </td>
+                <td class="lead-cell">
+                  <% if (s.lead_name) { %>
+                    <span class="nm"><%= s.lead_name %></span><br/>
+                    <span class="ph"><%= s.lead_phone || '' %></span>
+                  <% } else { %>
+                    <span class="muted">—</span>
+                  <% } %>
+                </td>
+                <td class="amount">₹ <%= Number(s.total_all_in || 0).toLocaleString('en-IN') %></td>
+                <td style="white-space:nowrap;">
+                  <a class="rowlink" href="/admin/cost-sheet/view/<%= s.cost_sheet_id %>">View</a>
+                  <a class="rowlink" href="/admin/cost-sheet/view/<%= s.cost_sheet_id %>/pdf">PDF</a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+
+        <%
+          const qs = (p) => {
+            const parts = ['page=' + p];
+            if (filters.project_id) parts.push('project_id=' + encodeURIComponent(filters.project_id));
+            if (filters.lead_q) parts.push('lead_q=' + encodeURIComponent(filters.lead_q));
+            if (filters.from) parts.push('from=' + encodeURIComponent(filters.from));
+            if (filters.to) parts.push('to=' + encodeURIComponent(filters.to));
+            return '/admin/cost-sheet/history?' + parts.join('&');
+          };
+        %>
+        <div class="pager">
+          <span>Page <%= page %> of <%= totalPages %></span>
+          <span class="links">
+            <% if (page > 1) { %><a class="rowlink" href="<%= qs(page - 1) %>">&larr; Newer</a><% } %>
+            <% if (page < totalPages) { %><a class="rowlink" href="<%= qs(page + 1) %>">Older &rarr;</a><% } %>
+          </span>
+        </div>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

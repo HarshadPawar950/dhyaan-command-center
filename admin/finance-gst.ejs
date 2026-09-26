@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --gold:#D4AF37; --gold-dark:#B8941F; --navy:#0A1628; --navy-2:#142238; --offwhite:#FAFAF7; --beige:#F4EFE6; --text:#1a1a1a; --muted:#6b6b6b; --border:rgba(10,22,40,0.08); --shadow:0 4px 24px rgba(10,22,40,0.06); --green:#16a34a; --red:#dc2626; --blue:#2563eb; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; background:var(--offwhite); color:var(--text); min-height:100vh; display:flex; }
+    h1,h2,h3 { font-family:'Playfair Display',serif; font-weight:600; color:var(--navy); }
+    .main-content { flex:1; margin-left:260px; min-height:100vh; display:flex; flex-direction:column; }
+    .page-body { padding:28px 40px; flex:1; }
+    .page-hero { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%); color:var(--offwhite); padding:26px 32px; border-radius:16px; margin-bottom:22px; position:relative; overflow:hidden; box-shadow:var(--shadow); }
+    .page-hero::before { content:""; position:absolute; top:-50%; right:-10%; width:300px; height:300px; background:radial-gradient(circle,rgba(212,175,55,0.18) 0%,transparent 70%); }
+    .page-hero h1 { color:var(--offwhite); font-size:28px; margin-bottom:4px; }
+    .page-hero p { color:rgba(250,250,247,0.7); font-size:14px; }
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:22px; }
+    .kpi-card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px; box-shadow:var(--shadow); border-left:4px solid var(--gold); }
+    .kpi-card .label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px; }
+    .kpi-card .value { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:var(--navy); line-height:1; }
+    .kpi-card.net .value { color:var(--blue); }
+    .panel { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+    .panel h3 { padding:16px 20px 0; font-size:15px; }
+    .sac { color:var(--muted); font-size:12px; padding:2px 20px 12px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); padding:11px 16px; border-bottom:2px solid var(--border); background:var(--beige); }
+    th.r, td.r { text-align:right; }
+    td { padding:11px 16px; border-bottom:1px solid var(--border); }
+    tr:last-child td { border-bottom:none; }
+    .mono { font-variant-numeric:tabular-nums; }
+    .pos { color:var(--red); font-weight:600; } .neg { color:var(--green); font-weight:600; }
+    tfoot td { font-weight:700; background:var(--beige); color:var(--navy); }
+    .empty { text-align:center; color:var(--muted); padding:40px; }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <div class="main-content">
+    <%- topbarHtml %>
+    <div class="page-body">
+      <% function inr(n){ var x=Number(n||0); return (x<0?'-₹':'₹') + Math.abs(x).toLocaleString('en-IN',{maximumFractionDigits:2}); } %>
+
+      <div class="page-hero">
+        <h1>GST Summary</h1>
+        <p>Output GST on brokerage (SAC 997222) vs input-eligible expense GST — net position by month. Report only, no filing.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="label">Output GST (commissions)</div><div class="value"><%= inr(tot.output) %></div></div>
+        <div class="kpi-card"><div class="label">Input GST (eligible expenses)</div><div class="value"><%= inr(tot.input) %></div></div>
+        <div class="kpi-card net"><div class="label">Net GST Payable</div><div class="value"><%= inr(tot.net) %></div></div>
+      </div>
+
+      <div class="panel">
+        <h3>Monthly GST Position</h3>
+        <div class="sac">Output = Σ commission_receivables.gst_on_invoice · Input = Σ approved expenses flagged input-GST-eligible · Net = Output − Input</div>
+        <table>
+          <thead><tr><th>Month</th><th class="r">Output GST</th><th class="r">Input GST</th><th class="r">Net Payable</th></tr></thead>
+          <tbody>
+            <% if (rows && rows.length) { %>
+              <% rows.forEach(function(r){ %>
+                <tr>
+                  <td class="mono"><%= r.ym %></td>
+                  <td class="r mono"><%= inr(r.output_gst) %></td>
+                  <td class="r mono"><%= inr(r.input_gst) %></td>
+                  <td class="r mono <%= Number(r.net_gst)>=0?'pos':'neg' %>"><%= inr(r.net_gst) %></td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="4" class="empty">No GST activity yet.</td></tr>
+            <% } %>
+          </tbody>
+          <% if (rows && rows.length) { %>
+          <tfoot><tr><td>Total</td><td class="r mono"><%= inr(tot.output) %></td><td class="r mono"><%= inr(tot.input) %></td><td class="r mono"><%= inr(tot.net) %></td></tr></tfoot>
+          <% } %>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

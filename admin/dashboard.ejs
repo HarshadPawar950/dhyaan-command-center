@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Design-system primitives loaded BEFORE the inline block so this page's
+         approved look always wins the cascade. -->
+    <link rel="stylesheet" href="/css/design-system.css" />
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-soft: #E8C766;
+            --gold-dark: #B8941F;
+            --navy: #0A1628;
+            --navy-2: #142238;
+            --offwhite: #FAFAF7;
+            --beige: #F4EFE6;
+            --text: #1a1a1a;
+            --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --shadow-hover: 0 8px 32px rgba(10, 22, 40, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        h1, h2, h3, .display {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-body {
+            padding: 34px 44px;
+            flex: 1;
+        }
+
+        /* ---------- HERO ---------- */
+        .hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite);
+            padding: 38px 40px;
+            border-radius: 18px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+        }
+        .hero::before {
+            content: "";
+            position: absolute; top: -50%; right: 30%;
+            width: 360px; height: 360px;
+            background: radial-gradient(circle, rgba(212,175,55,0.16) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-copy { position: relative; z-index: 2; }
+        .hero-art {
+            position: absolute; top: 0; right: 0; bottom: 0;
+            width: 44%;
+            background: url('/img/building-strip.png') center right / cover no-repeat;
+            opacity: 0.55;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 60%);
+            mask-image: linear-gradient(to right, transparent 0%, #000 60%);
+            pointer-events: none;
+        }
+        .hero h1 {
+            color: var(--offwhite);
+            font-size: 32px;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        .hero .hero-sub {
+            color: rgba(250, 250, 247, 0.7);
+            font-size: 15px;
+        }
+        .hero .hero-date {
+            color: var(--gold);
+            font-size: 14.5px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-top: 6px;
+        }
+        .hero-gold-line {
+            display: inline-block;
+            width: 48px; height: 3px;
+            background: var(--gold);
+            margin-top: 16px;
+            border-radius: 2px;
+        }
+
+        /* ---------- KPI GRID ---------- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 1240px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 780px)  { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        .kpi-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 22px 22px 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .kpi-card .kpi-accent {
+            position: absolute;
+            top: 0; left: 0;
+            height: 3px; width: 100%;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%);
+        }
+        .kpi-card .kpi-icon {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(212,175,55,0.28);
+        }
+        .kpi-card .kpi-icon svg { width: 21px; height: 21px; color: var(--navy); }
+        .kpi-card .kpi-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+        }
+        .kpi-card .kpi-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 38px;
+            color: var(--navy);
+            font-weight: 700;
+            line-height: 1.05;
+        }
+        .kpi-card .kpi-foot {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+        .kpi-card .kpi-spark {
+            margin-top: 14px;
+            height: 22px;
+        }
+        .kpi-card .kpi-spark .spark-svg { width: 100%; height: 22px; display: block; }
+        .kpi-card.sla-hot .kpi-icon { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
+        .kpi-card.sla-hot .kpi-icon svg { color: #fff; }
+        .kpi-card.sla-hot .kpi-accent { background: #dc2626; }
+        .kpi-card.sla-hot .kpi-value { color: #dc2626; }
+
+        /* ---------- HOT PIPELINE STRIP ---------- */
+        .pipeline-strip {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            border-radius: 16px;
+            padding: 24px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        .pipeline-strip::after {
+            content: "";
+            position: absolute; top: 0; right: 0; bottom: 0;
+            width: 46%;
+            background: url('/img/building-strip.png') center right / cover no-repeat;
+            opacity: 0.13;
+            pointer-events: none;
+        }
+        .pipeline-strip > * { position: relative; z-index: 1; }
+        .pipeline-strip .ps-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.85;
+        }
+        .pipeline-strip .ps-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+        .pipeline-strip .ps-meta { text-align: right; font-size: 13px; }
+        .pipeline-strip .ps-meta strong {
+            font-size: 26px;
+            font-family: 'Playfair Display', serif;
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* ---------- TWO COLUMN ---------- */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 1100px) { .two-col { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-head {
+            padding: 22px 26px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-head h2 { font-size: 19px; }
+        .panel-head .panel-tag {
+            font-size: 11px;
+            color: var(--gold-dark);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .panel-foot {
+            padding: 16px 26px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+        .panel-foot a {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gold-dark);
+            text-decoration: none;
+            letter-spacing: 0.2px;
+        }
+        .panel-foot a:hover { text-decoration: underline; }
+
+        /* ---------- TOP PERFORMERS ---------- */
+        .perf-list { padding: 6px 0; }
+        .perf-row {
+            display: grid;
+            grid-template-columns: 40px 1fr auto auto;
+            gap: 14px;
+            align-items: center;
+            padding: 15px 26px;
+            border-bottom: 1px solid var(--border);
+        }
+        .perf-row:last-child { border-bottom: none; }
+        .perf-rank {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            font-size: 15px;
+            box-shadow: 0 3px 10px rgba(212,175,55,0.25);
+        }
+        .perf-name { font-weight: 600; color: var(--navy); font-size: 14px; }
+        .perf-desig { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .perf-stat { text-align: center; min-width: 66px; }
+        .perf-stat .num {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--navy);
+            line-height: 1;
+        }
+        .perf-stat .lbl {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .empty-state {
+            padding: 32px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        /* ---------- ACTIVITY FEED ---------- */
+        .feed-list { padding: 6px 0; }
+        .feed-item {
+            display: grid;
+            grid-template-columns: 10px 1fr;
+            gap: 14px;
+            align-items: start;
+            padding: 15px 26px;
+            border-bottom: 1px solid var(--border);
+        }
+        .feed-item:last-child { border-bottom: none; }
+        .feed-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--gold);
+            margin-top: 6px;
+            box-shadow: 0 0 0 4px rgba(212,175,55,0.15);
+        }
+        .feed-action {
+            font-size: 13px;
+            color: var(--navy);
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .feed-desc {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 2px;
+            line-height: 1.5;
+        }
+        .feed-time {
+            font-size: 11px;
+            color: var(--gold-dark);
+            font-weight: 600;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ---------- PAGE FOOTER ---------- */
+        .page-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 22px 44px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 12.5px;
+            letter-spacing: 0.2px;
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+            <!-- HERO -->
+            <div class="hero">
+                <div class="hero-art"></div>
+                <div class="hero-copy">
+                    <h1>Welcome back, <%= user.name %></h1>
+                    <p class="hero-sub">Here's what's happening at Dhyaan today —</p>
+                    <p class="hero-date"><%= new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+                    <div class="hero-gold-line"></div>
+                </div>
+            </div>
+
+            <%
+                // Decorative-only sparklines (not data — pure visual polish per mockup).
+                const _sparks = [
+                    '0,18 14,12 28,15 42,7 56,13 70,6 84,10 100,4',
+                    '0,10 14,14 28,8 42,16 56,9 70,13 84,6 100,11',
+                    '0,16 14,10 28,13 42,9 56,14 70,7 84,12 100,5',
+                    '0,8 14,12 28,6 42,13 56,8 70,15 84,10 100,14',
+                    '0,6 14,11 28,9 42,13 56,7 70,12 84,8 100,15'
+                ];
+                function sparkSvg(i, stroke) {
+                    return '<svg class="spark-svg" viewBox="0 0 100 24" preserveAspectRatio="none">'
+                        + '<polyline points="' + _sparks[i] + '" fill="none" stroke="' + (stroke || '#D4AF37')
+                        + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/></svg>';
+                }
+            %>
+
+            <!-- KPI GRID -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-accent"></div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="kpi-label">Active Employees</div>
+                    <div class="kpi-value"><%= stats.employees %></div>
+                    <div class="kpi-foot">on the team</div>
+                    <div class="kpi-spark"><%- sparkSvg(0) %></div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-accent"></div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <div class="kpi-label">Total Leads</div>
+                    <div class="kpi-value"><%= stats.leads %></div>
+                    <div class="kpi-foot">in the system</div>
+                    <div class="kpi-spark"><%- sparkSvg(1) %></div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-accent"></div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+                    </div>
+                    <div class="kpi-label">Properties</div>
+                    <div class="kpi-value"><%= stats.properties %></div>
+                    <div class="kpi-foot">projects loaded</div>
+                    <div class="kpi-spark"><%- sparkSvg(2) %></div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-accent"></div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <div class="kpi-label">Today's Activity</div>
+                    <div class="kpi-value"><%= stats.todayActivity %></div>
+                    <div class="kpi-foot">changes logged</div>
+                    <div class="kpi-spark"><%- sparkSvg(3) %></div>
+                </div>
+
+                <div class="kpi-card <%= (stats.slaOverdue > 0) ? 'sla-hot' : '' %>">
+                    <div class="kpi-accent"></div>
+                    <div class="kpi-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="kpi-label">SLA Overdue</div>
+                    <a href="/admin/leads" style="text-decoration:none;">
+                        <div class="kpi-value"><%= stats.slaOverdue %></div>
+                    </a>
+                    <div class="kpi-foot">no first touch in <%= slaHours %>h</div>
+                    <div class="kpi-spark"><%- sparkSvg(4, (stats.slaOverdue > 0) ? '#dc2626' : '#D4AF37') %></div>
+                </div>
+            </div>
+
+            <!-- HOT PIPELINE STRIP -->
+            <div class="pipeline-strip">
+                <div>
+                    <div class="ps-label">Hot Pipeline Value</div>
+                    <div class="ps-value">
+                        ₹ <%= Number(stats.hotPipelineValue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %>
+                    </div>
+                </div>
+                <div class="ps-meta">
+                    <div class="ps-label">Hot Leads</div>
+                    <strong><%= stats.hotLeadsCount %></strong>
+                </div>
+            </div>
+
+            <!-- TWO COLUMN -->
+            <div class="two-col">
+
+                <!-- TOP PERFORMERS -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Top Performers</h2>
+                        <span class="panel-tag">This Cycle</span>
+                    </div>
+                    <div class="perf-list">
+                        <% if (topPerformers && topPerformers.length > 0) { %>
+                            <% topPerformers.forEach(function(p, i) { %>
+                                <div class="perf-row">
+                                    <div class="perf-rank"><%= i + 1 %></div>
+                                    <div>
+                                        <div class="perf-name"><%= p.name || 'Unknown' %></div>
+                                        <div class="perf-desig"><%= p.designation || (p.employee_code || '') %></div>
+                                    </div>
+                                    <div class="perf-stat">
+                                        <div class="num"><%= p.total_leads || 0 %></div>
+                                        <div class="lbl">Leads</div>
+                                    </div>
+                                    <div class="perf-stat">
+                                        <div class="num"><%= p.closures || 0 %></div>
+                                        <div class="lbl">Closures</div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="empty-state">
+                                No performance data yet. Once leads are assigned and closed, the leaderboard fills in.
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="panel-foot">
+                        <a href="/admin/kpi">View All Performers →</a>
+                    </div>
+                </div>
+
+                <!-- RECENT ACTIVITY -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Recent Activity</h2>
+                        <span class="panel-tag">Last 10 events</span>
+                    </div>
+                    <div class="feed-list">
+                        <% if (recentChanges && recentChanges.length > 0) { %>
+                            <% recentChanges.forEach(function(c) { %>
+                                <div class="feed-item">
+                                    <div class="feed-dot"></div>
+                                    <div>
+                                        <div class="feed-action">
+                                            <%= (c.action || 'event').replace(/_/g, ' ') %> · <%= c.entity_type || '' %>
+                                        </div>
+                                        <% if (c.notes) { %>
+                                            <div class="feed-desc"><%= c.notes %></div>
+                                        <% } else if (c.changed_by_name) { %>
+                                            <div class="feed-desc">by <%= c.changed_by_name %></div>
+                                        <% } %>
+                                        <div class="feed-time">
+                                            <%= c.created_at ? new Date(c.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '' %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="empty-state">
+                                No activity logged yet. As soon as anyone logs in or makes a change, it shows up here.
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="panel-foot">
+                        <a href="/admin/history">View All Activity →</a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- PAGE FOOTER -->
+        <footer class="page-footer">
+            <span>&copy; 2026 Dhyaan Enterprises. All rights reserved.</span>
+            <span>Version 1.0</span>
+        </footer>
+    </div>
+
+</body>
+</html>

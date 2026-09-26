@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+
+    .page-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+      color: var(--offwhite); padding: 26px 32px; border-radius: 16px;
+      margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%;
+      width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--gold); text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+    .back-link:hover { color: var(--gold-dark); }
+
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; font-weight: 500; }
+    .flash.success { background: rgba(22,163,74,0.10); color: var(--green); border: 1px solid rgba(22,163,74,0.25); }
+    .flash.error { background: rgba(220,38,38,0.10); color: var(--red); border: 1px solid rgba(220,38,38,0.25); }
+
+    .group { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); margin-bottom: 20px; }
+    .group-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .group-head .icon { font-size: 22px; }
+    .group-head h2 { font-size: 18px; }
+    .group-head .count { margin-left: auto; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.red { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.navy { background: rgba(10,22,40,0.08); color: var(--navy); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 8px 10px; border-bottom: 2px solid var(--border); }
+    td { padding: 11px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .id-cell { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .label-cell { font-weight: 600; color: var(--navy); }
+    .date-cell { color: var(--muted); font-size: 12px; }
+
+    .btn-restore { background: var(--green); color: #fff; border: none; padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.15s ease; }
+    .btn-restore:hover { opacity: 0.85; }
+
+    .empty { text-align: center; color: var(--muted); padding: 18px; font-size: 13px; }
+    .all-clear { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 48px; text-align: center; box-shadow: var(--shadow); }
+    .all-clear .big { font-size: 40px; margin-bottom: 12px; }
+    .all-clear h2 { font-size: 20px; margin-bottom: 6px; }
+    .all-clear p { color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+
+    <div class="page-body">
+      <a href="/admin/super" class="back-link">&larr; Back to Command Center</a>
+
+      <div class="page-hero">
+        <h1>Trash &amp; Recovery</h1>
+        <p>Restore soft-deleted records. Nothing here is permanently gone &mdash; you can bring any of it back.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <% if (typeof messages !== 'undefined' && messages.success && messages.success.length) { %>
+        <div class="flash success"><%= messages.success %></div>
+      <% } %>
+      <% if (typeof messages !== 'undefined' && messages.error && messages.error.length) { %>
+        <div class="flash error"><%= messages.error %></div>
+      <% } %>
+
+      <% if (totalTrash === 0) { %>
+        <div class="all-clear">
+          <div class="big">&#10024;</div>
+          <h2>Trash is empty</h2>
+          <p>No soft-deleted records anywhere. Everything's live.</p>
+        </div>
+      <% } else { %>
+
+        <% groups.forEach(function(group) { %>
+          <% if (group.rows.length > 0) { %>
+            <div class="group">
+              <div class="group-head">
+                <span class="icon"><%- group.icon %></span>
+                <h2><%= group.title %></h2>
+                <span class="count badge red"><%= group.rows.length %> in trash</span>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>ID</th><th>Name / Label</th><th>Deleted On</th><th style="text-align:right;">Action</th></tr>
+                </thead>
+                <tbody>
+                  <% group.rows.forEach(function(row) { %>
+                    <tr>
+                      <td class="id-cell">#<%= row.id %></td>
+                      <td class="label-cell"><%= row.label || '—' %></td>
+                      <td class="date-cell">
+                        <% if (row.deleted_at) { %>
+                          <%= new Date(row.deleted_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %>
+                        <% } else { %>—<% } %>
+                      </td>
+                      <td style="text-align:right;">
+                        <form action="/admin/super/trash/restore" method="POST" style="display:inline;">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <input type="hidden" name="type" value="<%= group.type %>">
+                          <input type="hidden" name="id" value="<%= row.id %>">
+                          <button type="submit" class="btn-restore">&#8635; Restore</button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        <% }); %>
+
+      <% } %>
+
+    </div>
+  </div>
+</body>
+</html>

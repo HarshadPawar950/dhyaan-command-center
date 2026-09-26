@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restore Archive — Dhyaan Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --navy: #0A1628;
+            --bg: #F4F1EA;
+            --card: #FFFFFF;
+            --border: #E4E0D6;
+            --muted: #8A8578;
+            --text: #1A1A1A;
+            --danger: #B43A3A;
+            --green: #2E7D52;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; min-width: 0; }
+        .page-body { padding: 32px 40px; flex: 1; }
+        a { text-decoration: none; color: inherit; }
+
+        .back-link { color: var(--gold); font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 20px; }
+
+        .hero {
+            background: var(--navy); color: #fff; border-radius: 14px;
+            padding: 28px 32px; margin-bottom: 28px;
+        }
+        .hero h1 { font-family: 'Playfair Display', serif; font-size: 30px; margin-bottom: 8px; }
+        .hero p { color: #C9D2DE; font-size: 14px; max-width: 640px; }
+        .hero .bar { width: 54px; height: 3px; background: var(--gold); margin-top: 14px; border-radius: 2px; }
+
+        .flash {
+            background: #EAF6EF; border: 1px solid #BFE3CE; color: var(--green);
+            padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; margin-bottom: 22px;
+        }
+
+        .section { margin-bottom: 34px; }
+        .section-head {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+        }
+        .section-head h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--navy); }
+        .count-pill {
+            background: var(--navy); color: var(--gold); font-size: 12px; font-weight: 700;
+            padding: 3px 11px; border-radius: 20px;
+        }
+
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left; padding: 14px 22px; font-size: 11px; letter-spacing: 0.05em;
+            text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 700;
+        }
+        td { padding: 16px 22px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        .label-strong { font-weight: 600; color: var(--navy); }
+        .sub { color: var(--muted); font-size: 13px; }
+        .when { color: var(--muted); font-size: 13px; }
+
+        .restore-btn {
+            background: var(--gold); color: var(--navy); border: none; cursor: pointer;
+            padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px;
+            font-family: 'Inter', sans-serif; transition: opacity .15s;
+        }
+        .restore-btn:hover { opacity: 0.85; }
+
+        .empty {
+            padding: 26px 22px; text-align: center; color: var(--muted); font-size: 14px;
+        }
+        .all-clear {
+            background: var(--card); border: 1px dashed var(--border); border-radius: 12px;
+            padding: 50px 24px; text-align: center; color: var(--muted);
+        }
+        .all-clear .big { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--navy); margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+    <%- sidebarHtml %>
+    <div class="main-content">
+        <%- topbarHtml %>
+        <div class="page-body">
+            <a href="/admin/super-dashboard" class="back-link">← Back to Command Center</a>
+
+            <div class="hero">
+                <h1>Restore Archive</h1>
+                <p>Soft-deleted records live here, never destroyed. Restore any item to bring it back to active use. Every restore is logged to the audit trail.</p>
+                <div class="bar"></div>
+            </div>
+
+            <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+            <% if (total === 0) { %>
+                <div class="all-clear">
+                    <div class="big">Archive is empty</div>
+                    <div>No soft-deleted records right now. Everything is active.</div>
+                </div>
+            <% } %>
+
+            <!-- ARCHIVED LEADS -->
+            <% if (leads && leads.length > 0) { %>
+            <div class="section">
+                <div class="section-head">
+                    <h2>Archived Leads</h2>
+                    <span class="count-pill"><%= leads.length %></span>
+                </div>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr><th>Lead</th><th>Phone</th><th>Status</th><th>Deleted</th><th style="text-align:right;">Action</th></tr>
+                        </thead>
+                        <tbody>
+                        <% leads.forEach(function(l) { %>
+                            <tr>
+                                <td class="label-strong"><%= l.label || 'Unnamed lead' %></td>
+                                <td class="sub"><%= l.phone || '—' %></td>
+                                <td class="sub"><%= l.status || '—' %></td>
+                                <td class="when"><%= l.deleted_at ? new Date(l.deleted_at).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—' %></td>
+                                <td style="text-align:right;">
+                                    <form method="POST" action="/admin/super/restore/lead/<%= l.id %>" style="display:inline;">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <button type="submit" class="restore-btn">↺ Restore</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- ARCHIVED PROPERTIES -->
+            <% if (properties && properties.length > 0) { %>
+            <div class="section">
+                <div class="section-head">
+                    <h2>Archived Properties</h2>
+                    <span class="count-pill"><%= properties.length %></span>
+                </div>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr><th>Property</th><th>Status</th><th>Deleted</th><th style="text-align:right;">Action</th></tr>
+                        </thead>
+                        <tbody>
+                        <% properties.forEach(function(p) { %>
+                            <tr>
+                                <td class="label-strong"><%= p.label || 'Untitled property' %></td>
+                                <td class="sub"><%= p.status || '—' %></td>
+                                <td class="when"><%= p.deleted_at ? new Date(p.deleted_at).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—' %></td>
+                                <td style="text-align:right;">
+                                    <form method="POST" action="/admin/super/restore/property/<%= p.id %>" style="display:inline;">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <button type="submit" class="restore-btn">↺ Restore</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <% } %>
+
+            <!-- ARCHIVED UNITS -->
+            <% if (units && units.length > 0) { %>
+            <div class="section">
+                <div class="section-head">
+                    <h2>Archived Units</h2>
+                    <span class="count-pill"><%= units.length %></span>
+                </div>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr><th>Unit</th><th>Property</th><th>Price (Lakhs)</th><th>Deleted</th><th style="text-align:right;">Action</th></tr>
+                        </thead>
+                        <tbody>
+                        <% units.forEach(function(u) { %>
+                            <tr>
+                                <td class="label-strong"><%= u.label || 'Unit' %></td>
+                                <td class="sub"><%= u.property_title || '—' %></td>
+                                <td class="sub"><%= u.price_lakhs != null ? u.price_lakhs : '—' %></td>
+                                <td class="when"><%= u.deleted_at ? new Date(u.deleted_at).toLocaleString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—' %></td>
+                                <td style="text-align:right;">
+                                    <form method="POST" action="/admin/super/restore/unit/<%= u.id %>" style="display:inline;">
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <button type="submit" class="restore-btn">↺ Restore</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <% } %>
+
+        </div>
+    </div>
+</body>
+</html>
+
+

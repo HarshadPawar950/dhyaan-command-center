@@ -1,0 +1,537 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-soft: #E8C766;
+            --gold-dark: #B8941F;
+            --navy: #0A1628;
+            --navy-2: #142238;
+            --offwhite: #FAFAF7;
+            --beige: #F4EFE6;
+            --text: #1a1a1a;
+            --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --green: #16a34a;
+            --red: #dc2626;
+            --amber: #d97706;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 28px 40px; flex: 1; }
+
+        .breadcrumb {
+            font-size: 13px; color: var(--muted); margin-bottom: 16px;
+        }
+        .breadcrumb a {
+            color: var(--gold-dark); text-decoration: none; font-weight: 600;
+        }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        /* ---------- PROFILE HEADER ---------- */
+        .profile-header {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite);
+            padding: 32px 36px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .profile-header::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .profile-avatar {
+            width: 88px; height: 88px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 38px;
+            flex-shrink: 0; position: relative; z-index: 1;
+        }
+        .profile-meta { position: relative; z-index: 1; flex: 1; }
+        .profile-name {
+            color: var(--offwhite); font-size: 30px; margin-bottom: 4px; letter-spacing: -0.5px;
+        }
+        .profile-code {
+            color: var(--gold); font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;
+        }
+        .profile-badges {
+            display: flex; gap: 10px; flex-wrap: wrap;
+        }
+        .profile-badges .badge {
+            display: inline-block; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: 700;
+            padding: 5px 10px; border-radius: 5px;
+        }
+        .badge-role-employee    { background: rgba(255,255,255,0.16); color: var(--offwhite); }
+        .badge-role-admin       { background: rgba(212,175,55,0.25); color: var(--gold); }
+        .badge-role-super_admin { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%); color: var(--navy); }
+        .badge-status-active   { background: rgba(22,163,74,0.22); color: #5bd57f; }
+        .badge-status-inactive { background: rgba(220,38,38,0.20); color: #ff6b6b; }
+        .badge-status-on_leave { background: rgba(217,119,6,0.22); color: #f5a847; }
+
+        /* ---------- INFO + ACTION ROW ---------- */
+        .info-action-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 1000px) {
+            .info-action-row { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .panel-head {
+            padding: 16px 22px; border-bottom: 1px solid var(--border);
+        }
+        .panel-head h2 { font-size: 17px; }
+        .panel-body { padding: 22px; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 24px;
+        }
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; }
+        }
+        .info-row .info-label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600; margin-bottom: 4px;
+        }
+        .info-row .info-value {
+            font-size: 14px; color: var(--navy); font-weight: 500;
+        }
+        .info-row .info-value-muted { color: var(--muted); }
+
+        /* ---------- BREAKDOWN ---------- */
+        .breakdown-list {
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .breakdown-row {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .breakdown-label {
+            font-size: 13px; color: var(--navy); text-transform: capitalize;
+        }
+        .breakdown-bar {
+            flex: 1; height: 6px; background: var(--beige);
+            border-radius: 3px; margin: 0 14px; overflow: hidden;
+        }
+        .breakdown-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%);
+            border-radius: 3px;
+        }
+        .breakdown-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; font-weight: 700; color: var(--navy); min-width: 30px; text-align: right;
+        }
+
+        /* ---------- ACTION BUTTONS ---------- */
+        .action-stack {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; padding: 11px 18px; border-radius: 9px;
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            text-decoration: none; cursor: pointer; border: none;
+            transition: all 0.15s ease; width: 100%;
+        }
+        .btn-deactivate {
+            background: rgba(220,38,38,0.08); color: var(--red); border: 1px solid rgba(220,38,38,0.18);
+        }
+        .btn-deactivate:hover { background: var(--red); color: #fff; border-color: var(--red); }
+        .btn-activate {
+            background: rgba(22,163,74,0.08); color: var(--green); border: 1px solid rgba(22,163,74,0.18);
+        }
+        .btn-activate:hover { background: var(--green); color: #fff; border-color: var(--green); }
+        .btn-self-note {
+            padding: 11px 14px; border-radius: 9px;
+            background: var(--beige); color: var(--muted);
+            font-size: 12px; text-align: center;
+        }
+
+        /* ---------- LEADS TABLE ---------- */
+        .leads-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .leads-table { width: 100%; border-collapse: collapse; }
+        .leads-table thead th {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600;
+            text-align: left; padding: 13px 22px;
+            background: var(--beige); border-bottom: 1px solid var(--border);
+        }
+        .leads-table tbody td {
+            padding: 14px 22px; border-bottom: 1px solid var(--border);
+            font-size: 13px; vertical-align: middle;
+        }
+        .leads-table tbody tr:last-child td { border-bottom: none; }
+        .leads-table tbody tr { transition: background 0.15s ease; }
+        .leads-table tbody tr:hover { background: rgba(212,175,55,0.05); }
+        .lead-name { font-weight: 600; color: var(--navy); }
+        .lead-ext  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .lead-status {
+            display: inline-block; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+        }
+        .lead-status-cold  { background: rgba(10,22,40,0.06);     color: var(--navy); }
+        .lead-status-warm  { background: rgba(217,119,6,0.12);    color: var(--amber); }
+        .lead-status-hot   { background: rgba(220,38,38,0.10);    color: var(--red); }
+        .lead-status-closed,
+        .lead-status-converted,
+        .lead-status-won,
+        .lead-status-booked { background: rgba(22,163,74,0.12);   color: var(--green); }
+
+        .empty-state {
+            padding: 50px 24px; text-align: center; color: var(--muted); font-size: 14px;
+        }
+
+        /* ---------- HISTORY ---------- */
+        .history-list { padding: 6px 0; }
+        .history-item {
+            display: grid; grid-template-columns: 8px 1fr; gap: 14px;
+            align-items: start; padding: 12px 22px; border-bottom: 1px solid var(--border);
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--gold); margin-top: 6px;
+        }
+        .history-action {
+            font-size: 13px; color: var(--navy); font-weight: 600; text-transform: capitalize;
+        }
+        .history-desc { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+        .history-time {
+            font-size: 10px; color: var(--muted); margin-top: 4px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+            <div class="breadcrumb">
+                <a href="/admin/employees">&larr; All Employees</a>
+            </div>
+
+            <!-- PROFILE HEADER -->
+            <% const initial = (employee.name || '?').charAt(0).toUpperCase(); %>
+            <div class="profile-header">
+                <div class="profile-avatar"><%= initial %></div>
+                <div class="profile-meta">
+                    <div class="profile-code"><%= employee.external_id || '—' %></div>
+                    <h1 class="profile-name"><%= employee.name %></h1>
+                    <div class="profile-badges">
+                        <span class="badge badge-role-<%= employee.access_role %>">
+                            <%= (employee.access_role || 'employee').replace('_', ' ') %>
+                        </span>
+                        <span class="badge badge-status-<%= employee.status %>">
+                            <%= (employee.status || 'active').replace('_', ' ') %>
+                        </span>
+                        <% if (employee.job_title) { %>
+                            <span class="badge" style="background: rgba(255,255,255,0.10); color: var(--offwhite);">
+                                <%= employee.job_title %>
+                            </span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INFO + ACTION -->
+            <div class="info-action-row">
+
+                <!-- INFO PANEL -->
+                <div class="panel">
+                    <div class="panel-head"><h2>Contact &amp; Details</h2></div>
+                    <div class="panel-body">
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-label">Email</div>
+                                <div class="info-value <%= !employee.email ? 'info-value-muted' : '' %>">
+                                    <%= employee.email || '—' %>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Phone</div>
+                                <div class="info-value <%= !employee.phone ? 'info-value-muted' : '' %>">
+                                    <%= employee.phone || '—' %>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Job Title</div>
+                                <div class="info-value <%= !employee.job_title ? 'info-value-muted' : '' %>">
+                                    <%= employee.job_title || '—' %>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Access Role</div>
+                                <div class="info-value">
+                                    <%= (employee.access_role || 'employee').replace('_', ' ') %>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Hired</div>
+                                <div class="info-value">
+                                    <% if (employee.hired_at) { %>
+                                        <%= new Date(employee.hired_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                                    <% } else { %>
+                                        <span class="info-value-muted">&mdash;</span>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Total Leads</div>
+                                <div class="info-value"><%= leads.length %></div>
+                            </div>
+                            <% if (typeof manager !== 'undefined' && manager) { %>
+                            <div class="info-row">
+                                <div class="info-label">Reports To</div>
+                                <div class="info-value"><%= manager.external_id ? manager.external_id + ' · ' : '' %><%= manager.name %></div>
+                            </div>
+                            <% } %>
+                            <% if (typeof directReports !== 'undefined' && directReports.length) { %>
+                            <div class="info-row">
+                                <div class="info-label">
+                                    Manages
+                                    <span style="display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; font-size:10px; font-weight:700; letter-spacing:0.3px; background:rgba(212,175,55,0.16); color:var(--gold-dark);">team · <%= directReports.length %></span>
+                                </div>
+                                <div class="info-value"><%= directReports.map(function(d){ return d.name; }).join(', ') %></div>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="panel">
+                    <div class="panel-head"><h2>Actions</h2></div>
+                    <div class="panel-body">
+                        <div class="action-stack">
+                            <a href="/admin/employees/<%= employee.employee_id %>/edit" class="btn" style="background:var(--gold);color:var(--navy);text-decoration:none;margin-bottom:10px;">&#9999;&#65039; Edit Details</a>
+                            <%
+                                const isSelf = user && (user.employee_id === employee.employee_id || user.id === employee.employee_id);
+                                const cannotToggle = user && user.access_role === 'admin' && employee.access_role !== 'employee';
+                            %>
+                            <% if (isSelf) { %>
+                                <div class="btn-self-note">
+                                    <span>&#128274; You can't deactivate your own account &mdash; this prevents accidental lockout.</span>
+                                </div>
+                            <% } else if (cannotToggle) { %>
+                                <div class="btn-self-note">
+                                    <span>&#128274; Only the super admin can change another admin's status.</span>
+                                </div>
+                            <% } else if (employee.status === 'active') { %>
+                                <form method="POST" action="/admin/employees/<%= employee.employee_id %>/toggle"
+                                      onsubmit="return confirm('Mark <%= employee.name %> as INACTIVE? They will no longer be able to log in.');">
+                                    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                    <% } %>
+                                    <button type="submit" class="btn btn-deactivate">
+                                        Deactivate Account
+                                    </button>
+                                </form>
+                            <% } else { %>
+                                <form method="POST" action="/admin/employees/<%= employee.employee_id %>/toggle"
+                                      onsubmit="return confirm('Mark <%= employee.name %> as ACTIVE?');">
+                                    <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                    <% } %>
+                                    <button type="submit" class="btn btn-activate">
+                                        Activate Account
+                                    </button>
+                                </form>
+                            <% } %>
+
+                            <% if (user && (user.access_role === 'super_admin' || user.role === 'super_admin') && !isSelf) { %>
+                            <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border);">
+                                <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#b91c1c; font-weight:700; margin-bottom:8px;">Danger Zone</div>
+                                <form method="POST" action="/admin/employees/<%= employee.employee_id %>/delete"
+                                      onsubmit="return confirm('PERMANENTLY DELETE <%= employee.name %>? This erases the employee record and CANNOT be undone. Only a zero-reference account can be deleted — otherwise use Deactivate.');">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                                    <button type="submit" class="btn" style="background:#b91c1c;color:#fff;width:100%;">&#128465;&#65039; Delete Permanently</button>
+                                </form>
+                                <div style="font-size:11px;color:var(--muted);margin-top:6px;">Auto-blocked if the employee has any leads, commissions, attendance, payroll or other records.</div>
+                            </div>
+                            <% } %>
+                        </div>
+
+                        <% if (breakdown && Object.keys(breakdown).length > 0) { %>
+                            <div style="margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border);">
+                                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); font-weight: 600; margin-bottom: 14px;">
+                                    Lead Status Breakdown
+                                </div>
+                                <div class="breakdown-list">
+                                    <%
+                                        const total = leads.length || 1;
+                                        const sorted = Object.entries(breakdown).sort((a,b) => b[1] - a[1]);
+                                    %>
+                                    <% sorted.forEach(function(pair) { %>
+                                        <% const pct = Math.round((pair[1] / total) * 100); %>
+                                        <div class="breakdown-row">
+                                            <span class="breakdown-label"><%= pair[0] %></span>
+                                            <div class="breakdown-bar">
+                                                <div class="breakdown-bar-fill" style="width: <%= pct %>%"></div>
+                                            </div>
+                                            <span class="breakdown-num"><%= pair[1] %></span>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ASSIGNED LEADS -->
+            <div class="leads-card">
+                <div class="panel-head" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Assigned Leads</h2>
+                    <span style="font-size: 12px; color: var(--gold-dark); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                        <%= leads.length %> total
+                    </span>
+                </div>
+                <% if (leads && leads.length > 0) { %>
+                <table class="leads-table">
+                    <thead>
+                        <tr>
+                            <th>Lead</th>
+                            <th>Phone</th>
+                            <th>Location</th>
+                            <th>Budget</th>
+                            <th>Status</th>
+                            <th>Assigned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% leads.forEach(function(l) { %>
+                            <tr>
+                                <td>
+                                    <div class="lead-name"><%= l.name %></div>
+                                    <% if (l.external_id) { %>
+                                        <div class="lead-ext"><%= l.external_id %></div>
+                                    <% } %>
+                                </td>
+                                <td><%= l.phone || '—' %></td>
+                                <td><%= l.location || '—' %></td>
+                                <td><%= l.budget || '—' %></td>
+                                <td>
+                                    <span class="lead-status lead-status-<%= (l.status || 'cold').toLowerCase() %>">
+                                        <%= l.status || 'cold' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <% if (l.assigned_at) { %>
+                                        <%= new Date(l.assigned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                    <% } else { %>
+                                        &mdash;
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+                <% } else { %>
+                    <div class="empty-state">
+                        No leads assigned yet. Head to Lead Assignment to give them some leads.
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- HISTORY -->
+            <% if (history && history.length > 0) { %>
+            <div class="panel">
+                <div class="panel-head" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Activity History</h2>
+                    <span style="font-size: 12px; color: var(--gold-dark); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                        Last <%= history.length %> events
+                    </span>
+                </div>
+                <div class="history-list">
+                    <% history.forEach(function(h) { %>
+                        <div class="history-item">
+                            <div class="history-dot"></div>
+                            <div>
+                                <div class="history-action">
+                                    <%= (h.action || 'event').replace(/_/g, ' ') %>
+                                    <% if (h.field_name) { %> &middot; <%= h.field_name %><% } %>
+                                </div>
+                                <% if (h.notes) { %>
+                                    <div class="history-desc"><%= h.notes %></div>
+                                <% } else if (h.old_value || h.new_value) { %>
+                                    <div class="history-desc">
+                                        <%= h.old_value || '&hellip;' %> &rarr; <%= h.new_value || '&hellip;' %>
+                                    </div>
+                                <% } %>
+                                <div class="history-time">
+                                    <%= h.created_at ? new Date(h.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '' %>
+                                    <% if (h.changed_by_name) { %> &middot; by <%= h.changed_by_name %><% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+

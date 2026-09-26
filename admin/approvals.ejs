@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> — Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+
+    /* HERO */
+    .page-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+      color: var(--offwhite); padding: 26px 32px; border-radius: 16px;
+      margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .page-hero::before {
+      content: ""; position: absolute; top: -50%; right: -10%;
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+    /* STATS */
+    .stat-pills { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .stat-pill { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; }
+    .stat-pill .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .stat-pill .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .stat-pill .num { font-size: 24px; font-weight: 700; color: var(--navy); font-family: 'Playfair Display', serif; }
+    .dot-pending .dot { background: var(--amber); }
+    .dot-approved .dot { background: var(--green); }
+    .dot-rejected .dot { background: var(--red); }
+
+    /* FLASH */
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; font-weight: 500; }
+    .flash.success { background: rgba(22,163,74,0.1); color: var(--green); border: 1px solid rgba(22,163,74,0.25); }
+    .flash.error { background: rgba(220,38,38,0.1); color: var(--red); border: 1px solid rgba(220,38,38,0.25); }
+
+    /* SECTION */
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin: 26px 0 14px; }
+    .section-title h2 { font-size: 20px; }
+    .section-title .count { font-size: 12px; color: var(--gold-dark); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* TICKET CARDS */
+    .ticket { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--amber); border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
+    .ticket-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .ticket-action { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--navy); font-weight: 600; }
+    .ticket-target { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .badge-delete { background: rgba(220,38,38,0.1); color: var(--red); }
+    .badge-edit { background: rgba(37,99,235,0.1); color: var(--blue); }
+    .badge-other { background: rgba(212,175,55,0.15); color: var(--gold-dark); }
+    .ticket-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 20px; margin: 14px 0; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .meta-item .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .meta-item .v { font-size: 14px; color: var(--text); font-weight: 500; }
+    .ticket-reason { font-size: 14px; color: var(--text); background: var(--beige); padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; }
+    .ticket-reason .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 3px; }
+    .ticket-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .note-input { flex: 1; min-width: 180px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 13px; }
+    .btn { border: none; border-radius: 8px; padding: 10px 18px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+    .btn:hover { opacity: .88; }
+    .btn-approve { background: var(--gold); color: var(--navy); }
+    .btn-reject { background: #fff; color: var(--red); border: 1px solid var(--red); }
+    .decide-form { display: flex; gap: 10px; align-items: center; flex: 1; flex-wrap: wrap; }
+
+    /* HISTORY */
+    .hist-row { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow); }
+    .hist-left { display: flex; align-items: center; gap: 12px; }
+    .hist-status { width: 8px; height: 8px; border-radius: 50%; }
+    .hist-approved { background: var(--green); }
+    .hist-rejected { background: var(--red); }
+    .hist-action { font-size: 14px; font-weight: 600; color: var(--navy); }
+    .hist-sub { font-size: 12px; color: var(--muted); }
+    .hist-right { font-size: 12px; color: var(--muted); text-align: right; }
+
+    .empty { background: #fff; border: 1px dashed var(--border); border-radius: 14px; padding: 40px; text-align: center; color: var(--muted); }
+    .empty .big { font-size: 40px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+
+    <div class="page-body">
+
+      <!-- HERO -->
+      <div class="page-hero">
+        <h1>Approval Center</h1>
+        <p>Every critical change waits here for your decision. Nothing is applied without your sign-off.</p>
+        <div class="gold-line"></div>
+      </div>
+
+      <!-- FLASH -->
+      <% if (flash) { %>
+        <div class="flash <%= flashType === 'error' ? 'error' : 'success' %>"><%= flash %></div>
+      <% } %>
+
+      <!-- STATS -->
+      <div class="stat-pills">
+        <div class="stat-pill dot-pending">
+          <div class="dot"></div>
+          <div><div class="label">Pending</div><div class="num"><%= stats.pending %></div></div>
+        </div>
+        <div class="stat-pill dot-approved">
+          <div class="dot"></div>
+          <div><div class="label">Approved</div><div class="num"><%= stats.approved %></div></div>
+        </div>
+        <div class="stat-pill dot-rejected">
+          <div class="dot"></div>
+          <div><div class="label">Rejected</div><div class="num"><%= stats.rejected %></div></div>
+        </div>
+      </div>
+
+      <!-- PENDING -->
+      <div class="section-title">
+        <h2>Pending Requests</h2>
+        <span class="count"><%= pending.length %> awaiting decision</span>
+      </div>
+
+      <% if (pending.length === 0) { %>
+        <div class="empty">
+          <div class="big">✓</div>
+          <div>All clear, Captain — no requests are waiting for approval.</div>
+        </div>
+      <% } else { %>
+        <% pending.forEach(function(t) {
+             var badgeClass = t.action_type.indexOf('delete') !== -1 ? 'badge-delete'
+                            : t.action_type.indexOf('edit') !== -1 ? 'badge-edit' : 'badge-other';
+             var actionLabel = t.action_type.replace(/_/g, ' ');
+        %>
+          <div class="ticket">
+            <div class="ticket-top">
+              <div>
+                <div class="ticket-action"><%= actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1) %></div>
+                <div class="ticket-target"><%= t.target_label || (t.target_table + ' · ' + t.target_id) %></div>
+              </div>
+              <span class="badge <%= badgeClass %>"><%= t.target_table %></span>
+            </div>
+
+            <div class="ticket-meta">
+              <div class="meta-item"><div class="k">Requested by</div><div class="v"><%= t.requested_by_name || '—' %></div></div>
+              <div class="meta-item"><div class="k">When</div><div class="v"><%= new Date(t.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></div></div>
+              <div class="meta-item"><div class="k">Target table</div><div class="v"><%= t.target_table %></div></div>
+            </div>
+
+            <% if (t.reason) { %>
+              <div class="ticket-reason"><span class="k">Reason given</span><%= t.reason %></div>
+            <% } %>
+
+            <form class="decide-form" method="POST" action="/admin/approvals/<%= t.approval_id %>/decide">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="text" name="note" class="note-input" placeholder="Optional note for the record..." />
+              <button type="submit" name="decision" value="approved" class="btn btn-approve">Approve</button>
+              <button type="submit" name="decision" value="rejected" class="btn btn-reject">Reject</button>
+            </form>
+          </div>
+        <% }); %>
+      <% } %>
+
+      <!-- HISTORY -->
+      <div class="section-title">
+        <h2>Decision History</h2>
+        <span class="count">Last <%= history.length %> decisions</span>
+      </div>
+
+      <% if (history.length === 0) { %>
+        <div class="empty"><div>No decisions recorded yet.</div></div>
+      <% } else { %>
+        <% history.forEach(function(h) {
+             var actionLabel = h.action_type.replace(/_/g, ' ');
+        %>
+          <div class="hist-row">
+            <div class="hist-left">
+              <div class="hist-status <%= h.status === 'approved' ? 'hist-approved' : 'hist-rejected' %>"></div>
+              <div>
+                <div class="hist-action"><%= actionLabel.charAt(0).toUpperCase() + actionLabel.slice(1) %> — <%= h.target_label || h.target_table %></div>
+                <div class="hist-sub">Requested by <%= h.requested_by_name || '—' %><% if (h.decision_note) { %> · Note: <%= h.decision_note %><% } %></div>
+              </div>
+            </div>
+            <div class="hist-right">
+              <div><strong style="color: <%= h.status === 'approved' ? 'var(--green)' : 'var(--red)' %>"><%= h.status.toUpperCase() %></strong></div>
+              <div>by <%= h.decided_by_name || '—' %></div>
+              <div><%= h.decided_at ? new Date(h.decided_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '' %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } %>
+
+    </div>
+  </div>
+</body>
+</html>

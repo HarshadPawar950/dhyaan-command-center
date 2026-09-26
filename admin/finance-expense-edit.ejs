@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --gold:#D4AF37; --gold-dark:#B8941F; --navy:#0A1628; --navy-2:#142238; --offwhite:#FAFAF7; --beige:#F4EFE6; --text:#1a1a1a; --muted:#6b6b6b; --border:rgba(10,22,40,0.08); --shadow:0 4px 24px rgba(10,22,40,0.06); --red:#dc2626; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; background:var(--offwhite); color:var(--text); min-height:100vh; display:flex; }
+    h1,h2,h3 { font-family:'Playfair Display',serif; font-weight:600; color:var(--navy); }
+    .main-content { flex:1; margin-left:260px; min-height:100vh; display:flex; flex-direction:column; }
+    .page-body { padding:28px 40px; flex:1; max-width:900px; }
+    .page-hero { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%); color:var(--offwhite); padding:24px 30px; border-radius:16px; margin-bottom:22px; box-shadow:var(--shadow); }
+    .page-hero h1 { color:var(--offwhite); font-size:26px; margin-bottom:4px; }
+    .page-hero p { color:rgba(250,250,247,0.7); font-size:14px; }
+    .err { background:rgba(220,38,38,0.1); border:1px solid rgba(220,38,38,0.3); color:var(--red); padding:12px 18px; border-radius:10px; margin-bottom:18px; font-size:13px; font-weight:500; }
+    .form-card { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:26px 30px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    .field { display:flex; flex-direction:column; gap:6px; margin-bottom:6px; }
+    .field.full { grid-column:1 / -1; }
+    .field label { font-size:12px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:700; }
+    .field label .req { color:var(--red); }
+    .field input, .field select, .field textarea { font-family:'Inter',sans-serif; font-size:14px; padding:10px 12px; border:1px solid var(--border); border-radius:9px; background:var(--offwhite); }
+    .field textarea { min-height:70px; resize:vertical; }
+    .check { flex-direction:row; align-items:center; gap:8px; }
+    .check input { width:16px; height:16px; }
+    .actions { display:flex; gap:10px; margin-top:20px; }
+    .btn { font-family:'Inter',sans-serif; font-size:14px; font-weight:600; padding:11px 22px; border-radius:9px; border:none; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-gold { background:var(--gold); color:var(--navy); } .btn-gold:hover { background:var(--gold-dark); color:#fff; }
+    .btn-ghost { background:rgba(10,22,40,0.06); color:var(--muted); }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <div class="main-content">
+    <%- topbarHtml %>
+    <div class="page-body">
+      <% var d = expense.expense_date ? new Date(expense.expense_date).toISOString().slice(0,10) : ''; %>
+      <div class="page-hero">
+        <h1>Edit Expense</h1>
+        <p><%= expense.external_id || '' %> — changes post immediately.</p>
+      </div>
+
+      <% if (err) { %><div class="err"><%= err %></div><% } %>
+
+      <div class="form-card">
+        <form action="/admin/finance/expenses/edit/<%= expense.expense_id %>" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="grid">
+            <div class="field"><label>Expense Date <span class="req">*</span></label><input type="date" name="expense_date" required value="<%= d %>" /></div>
+            <div class="field"><label>Category <span class="req">*</span></label>
+              <select name="category_id" required><option value="">— select —</option>
+                <% categories.forEach(function(c){ %><option value="<%= c.category_id %>" <%= String(expense.category_id)===String(c.category_id)?'selected':'' %>><%= c.name %></option><% }); %>
+              </select>
+            </div>
+            <div class="field"><label>Amount (₹) <span class="req">*</span></label><input type="number" name="amount" min="0.01" step="0.01" required value="<%= expense.amount %>" /></div>
+            <div class="field"><label>Paid To</label><input type="text" name="paid_to" maxlength="200" value="<%= expense.paid_to || '' %>" /></div>
+            <div class="field"><label>Payment Mode</label>
+              <select name="payment_mode"><option value="">—</option>
+                <% modes.forEach(function(m){ %><option value="<%= m %>" <%= expense.payment_mode===m?'selected':'' %>><%= m.toUpperCase() %></option><% }); %>
+              </select>
+            </div>
+            <div class="field"><label>Receipt Reference</label><input type="text" name="receipt_reference" maxlength="200" value="<%= expense.receipt_reference || '' %>" /></div>
+            <div class="field"><label>Project (attribution)</label>
+              <select name="project_id"><option value="">— none —</option>
+                <% projects.forEach(function(p){ %><option value="<%= p.project_id %>" <%= String(expense.project_id)===String(p.project_id)?'selected':'' %>><%= p.name %></option><% }); %>
+              </select>
+            </div>
+            <div class="field"><label>Campaign (attribution)</label>
+              <select name="campaign_id"><option value="">— none —</option>
+                <% campaigns.forEach(function(c){ %><option value="<%= c.campaign_id %>" <%= String(expense.campaign_id)===String(c.campaign_id)?'selected':'' %>><%= c.name %></option><% }); %>
+              </select>
+            </div>
+            <div class="field check"><input type="checkbox" name="is_input_gst_eligible" id="gstchk" <%= expense.is_input_gst_eligible?'checked':'' %> /><label for="gstchk" style="text-transform:none;letter-spacing:0;font-weight:600;">Input GST eligible</label></div>
+            <div class="field"><label>Input GST Amount (₹)</label><input type="number" name="gst_input_amount" min="0" step="0.01" value="<%= expense.gst_input_amount != null ? expense.gst_input_amount : '' %>" /></div>
+            <div class="field full"><label>Notes</label><textarea name="notes" maxlength="1000"><%= expense.notes || '' %></textarea></div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn btn-gold">Update Expense</button>
+            <a href="/admin/finance/expenses" class="btn btn-ghost">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

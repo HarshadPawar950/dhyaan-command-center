@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .hero-actions { position: absolute; top: 28px; right: 32px; z-index: 2; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 26px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .kpi-card.paid { border-left: 4px solid var(--green); }
+    .kpi-card.paid .value { color: var(--green); }
+    .kpi-card.comm { border-left: 4px solid var(--gold); }
+
+    .section-title { font-size: 18px; margin: 8px 0 14px; display: flex; align-items: center; gap: 10px; }
+    .section-title .dot { width: 7px; height: 7px; background: var(--gold); border-radius: 50%; }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.num, td.num { text-align: right; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .ref { font-family: monospace; font-size: 12px; color: var(--muted); }
+    .lead-name { font-weight: 600; color: var(--navy); }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.paid { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.pending { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.partial { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.overdue { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.stage-pending { background: rgba(107,107,107,0.14); color: var(--muted); }
+    .badge.stage-builder_confirmed { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.stage-allotted { background: rgba(22,163,74,0.14); color: var(--green); }
+    .stage-cell { white-space: nowrap; }
+    .stage-cell form { display: inline; }
+    .stage-advance { margin-top: 6px; }
+    .btn-navy { background: var(--navy); color: var(--offwhite); }
+    .btn-navy:hover { background: var(--navy-2); }
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; font-weight: 500; }
+    .flash.success { background: rgba(22,163,74,0.10); color: var(--green); border: 1px solid rgba(22,163,74,0.25); }
+    .flash.error { background: rgba(220,38,38,0.10); color: var(--red); border: 1px solid rgba(220,38,38,0.25); }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+    .comm-form { display: inline-flex; gap: 6px; align-items: center; }
+    .comm-form input { width: 90px; font-size: 12px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--offwhite); }
+    .comm-form input:focus { outline: none; border-color: var(--gold); background: #fff; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1>Bookings &amp; Commission</h1>
+        <p>Record bookings, track payment status, and log commission earned.</p>
+        <span class="gold-line"></span>
+        <div class="hero-actions">
+          <a href="/admin/receipts" class="btn btn-navy" style="margin-right:8px;">&#128179; Receipts</a>
+          <a href="/admin/bookings/new" class="btn btn-gold">+ Record Booking</a>
+        </div>
+      </div>
+
+      <% if (typeof messages !== 'undefined' && messages.success && messages.success.length) { %>
+        <div class="flash success">&#10003; <%= messages.success %></div>
+      <% } %>
+      <% if (typeof messages !== 'undefined' && messages.error && messages.error.length) { %>
+        <div class="flash error"><%= messages.error %></div>
+      <% } %>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="label">Total Bookings</div>
+          <div class="value"><%= kpis.total %></div>
+          <div class="sub">&#8377;<%= Math.round(kpis.totalValue).toLocaleString('en-IN') %> total value</div>
+        </div>
+        <div class="kpi-card paid">
+          <div class="label">Paid</div>
+          <div class="value"><%= kpis.paid %></div>
+          <div class="sub">&#8377;<%= Math.round(kpis.paidValue).toLocaleString('en-IN') %> collected</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Pending / Partial</div>
+          <div class="value"><%= kpis.pending + kpis.partial %></div>
+          <div class="sub"><%= kpis.pending %> pending, <%= kpis.partial %> partial</div>
+        </div>
+        <div class="kpi-card comm">
+          <div class="label">Total Commission</div>
+          <div class="value">&#8377;<%= Math.round(kpis.totalCommission).toLocaleString('en-IN') %></div>
+          <div class="sub"><%= kpis.commEntries %> entr<%= kpis.commEntries === 1 ? 'y' : 'ies' %></div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Employee Share</div>
+          <div class="value">&#8377;<%= Math.round(kpis.employeeTotal).toLocaleString('en-IN') %></div>
+          <div class="sub">payable to staff</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Company Share</div>
+          <div class="value">&#8377;<%= Math.round(kpis.companyTotal).toLocaleString('en-IN') %></div>
+          <div class="sub">Dhyaan retained</div>
+        </div>
+      </div>
+
+      <!-- BOOKINGS TABLE -->
+      <h2 class="section-title"><span class="dot"></span> All Bookings</h2>
+      <div class="panel">
+        <% if (bookings.length === 0) { %>
+          <div class="empty">No bookings yet. Click <strong>+ Record Booking</strong> to log the first one.</div>
+        <% } else { %>
+          <table>
+            <thead>
+              <tr>
+                <th>Booking</th><th>Lead</th><th>Property</th>
+                <th class="num">Amount</th><th>Status</th><th>Stage</th><th>Log Commission</th><th>Issue Receipt</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% bookings.forEach(function(b){ %>
+                <tr>
+                  <td>
+                    <span class="ref"><%= b.external_id || '—' %></span><br>
+                    <span style="font-size:11px;color:var(--muted);"><%= new Date(b.paid_at).toLocaleDateString('en-IN', { dateStyle: 'medium' }) %></span>
+                  </td>
+                  <td class="lead-name"><%= b.lead_name || '—' %></td>
+                  <td><%= b.property_title || '—' %></td>
+                  <td class="num">&#8377;<%= Math.round(Number(b.amount)).toLocaleString('en-IN') %></td>
+                  <td><span class="badge <%= b.status %>"><%= b.status %></span></td>
+                  <td class="stage-cell">
+                    <% var stage = b.booking_stage || 'pending';
+                       var nextStage = stage === 'pending' ? 'builder_confirmed' : (stage === 'builder_confirmed' ? 'allotted' : null); %>
+                    <span class="badge stage-<%= stage %>"><%= stage.replace(/_/g, ' ') %></span>
+                    <% if (nextStage) { %>
+                      <div class="stage-advance">
+                        <form action="/admin/bookings/<%= b.payment_id %>/stage" method="POST"
+                              onsubmit="return confirm('Advance this booking to <%= nextStage.replace(/_/g, ' ') %>? This is forward-only.');">
+                          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                          <input type="hidden" name="to" value="<%= nextStage %>">
+                          <button type="submit" class="btn btn-navy btn-sm">&#8594; <%= nextStage.replace(/_/g, ' ') %></button>
+                        </form>
+                      </div>
+                    <% } %>
+                  </td>
+                  <td>
+                    <form class="comm-form" action="/admin/bookings/<%= b.payment_id %>/commission" method="POST">
+                      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                      <input type="number" name="commission_amount" min="0" step="1" placeholder="₹ comm" required>
+                      <input type="number" name="employee_share" min="0" step="1" placeholder="₹ emp">
+                      <button type="submit" class="btn btn-gold btn-sm">Log</button>
+                    </form>
+                  </td>
+                  <td>
+                    <form class="comm-form" action="/admin/bookings/<%= b.payment_id %>/receipt" method="POST">
+                      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                      <input type="number" name="amount" min="1" step="1" value="<%= Math.round(Number(b.amount)) %>" required>
+                      <input type="text" name="method" placeholder="mode" style="width:64px;">
+                      <button type="submit" class="btn btn-navy btn-sm">Receipt</button>
+                    </form>
+                    <% var _isSuper = user && (user.access_role === 'super_admin' || user.role === 'super_admin'); %>
+                    <form action="/admin/bookings/<%= b.payment_id %>/delete" method="POST" style="margin-top:6px;"
+                          onsubmit="return confirm('<%= _isSuper ? "Delete this booking? (immediate, recoverable)" : "Request deletion of this booking? A Super Admin must approve." %>');">
+                      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                      <button type="submit" class="btn btn-sm" style="background:#fff;color:#dc2626;border:1px solid #dc2626;">
+                        <%= _isSuper ? '🗑️ Delete' : '🗑️ Request delete' %>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px;font-style:italic;">Commission auto-credits the lead's assigned employee. Bookings on campaign-attributed leads feed the Marketing ROAS.</p>
+
+    </div>
+  </div>
+</body>
+</html>

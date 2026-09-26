@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Admin</title>
+    <!-- RENDER-SOURCE: views/admin/projects-list.ejs (PROJECTS list) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --shadow-hover: 0 12px 40px rgba(10, 22, 40, 0.14);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh; display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600; color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 26px 40px; flex: 1; }
+
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 26px 32px;
+            border-radius: 16px; margin-bottom: 22px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+        }
+        .page-hero::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+        .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+        .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+        /* STATS */
+        .stat-pills {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 22px;
+        }
+        .stat-pill {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+        }
+        .stat-pill .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .stat-pill.dot-projects .dot { background: var(--gold); }
+        .stat-pill.dot-units .dot    { background: var(--blue); }
+        .stat-pill.dot-builders .dot { background: var(--green); }
+        .stat-pill.dot-areas .dot    { background: var(--amber); }
+        .stat-pill .label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .stat-pill .num {
+            font-family: 'Playfair Display', serif; font-size: 22px;
+            font-weight: 700; color: var(--navy); line-height: 1;
+        }
+
+        /* FILTER BAR */
+        .filter-bar {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 18px;
+            box-shadow: var(--shadow); margin-bottom: 18px;
+        }
+        .filter-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr auto;
+            gap: 10px; align-items: end;
+        }
+        @media (max-width: 1100px) {
+            .filter-form { grid-template-columns: 1fr 1fr 1fr; }
+        }
+        @media (max-width: 700px) {
+            .filter-form { grid-template-columns: 1fr; }
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .filter-group input, .filter-group select {
+            font-family: inherit; font-size: 13px;
+            padding: 9px 12px; border: 1px solid var(--border);
+            border-radius: 8px; background: var(--offwhite);
+            color: var(--text); outline: none;
+            transition: border-color 0.15s ease;
+        }
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: var(--gold); background: #fff;
+        }
+        .ms-drop { position: relative; width: 100%; }
+        .ms-drop > summary {
+            list-style: none; cursor: pointer;
+            font-size: 13px; padding: 9px 12px;
+            border: 1px solid var(--border); border-radius: 8px;
+            background: var(--offwhite); color: var(--text);
+            display: block; width: 100%; box-sizing: border-box;
+        }
+        .ms-drop > summary::-webkit-details-marker { display: none; }
+        .ms-drop[open] > summary { border-color: var(--gold); background: #fff; }
+        .ms-menu {
+            position: absolute; z-index: 20; top: calc(100% + 4px); left: 0;
+            min-width: 180px; background: #fff;
+            border: 1px solid var(--border); border-radius: 8px;
+            box-shadow: var(--shadow-hover); padding: 6px; display: grid; gap: 2px;
+        }
+        .ms-opt {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; padding: 6px 8px; border-radius: 6px; cursor: pointer;
+        }
+        .ms-opt:hover { background: var(--beige); }
+        .ms-opt input { width: auto; }
+        .filter-actions { display: flex; gap: 8px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; padding: 9px 18px; border-radius: 8px;
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            text-decoration: none; cursor: pointer; border: none;
+            transition: all 0.15s ease;
+        }
+        .btn-primary { background: var(--navy); color: var(--offwhite); }
+        .btn-primary:hover { background: var(--navy-2); }
+        .btn-clear { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+        .btn-clear:hover { background: var(--beige); color: var(--navy); }
+
+        .showing-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; padding: 0 4px;
+        }
+        .showing-bar .count {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px; font-weight: 600; color: var(--navy);
+        }
+        .showing-bar .count-meta {
+            font-size: 11px; color: var(--gold-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* PROPERTY CARDS GRID */
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 18px;
+        }
+        .prop-card {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            text-decoration: none; color: inherit;
+            display: flex; flex-direction: column;
+        }
+        .prop-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        .prop-card .gold-strip {
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%);
+        }
+        .prop-card .card-head {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .prop-card .ext-code {
+            font-size: 10px; color: var(--gold-dark);
+            font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.4px; margin-bottom: 5px;
+        }
+        .prop-card .prop-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 19px; font-weight: 600; color: var(--navy);
+            line-height: 1.25; margin-bottom: 6px;
+        }
+        .prop-card .builder-line {
+            font-size: 12px; color: var(--muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .builder-line .dot-tiny {
+            width: 4px; height: 4px; border-radius: 50%; background: var(--gold);
+        }
+
+        .prop-card .card-body {
+            padding: 14px 20px;
+            display: flex; flex-direction: column; gap: 10px;
+            flex: 1;
+        }
+        .meta-row {
+            display: flex; justify-content: space-between; gap: 8px;
+            font-size: 12px;
+        }
+        .meta-row .meta-label {
+            color: var(--muted); text-transform: uppercase;
+            font-weight: 600; letter-spacing: 0.6px; font-size: 10px;
+        }
+        .meta-row .meta-value {
+            color: var(--navy); font-weight: 500; text-align: right;
+            max-width: 60%;
+        }
+        .meta-value-empty { color: var(--muted); font-style: italic; }
+
+        .price-block {
+            background: linear-gradient(135deg, rgba(212,175,55,0.10) 0%, rgba(232,199,102,0.06) 100%);
+            border: 1px solid rgba(212,175,55,0.20);
+            border-radius: 10px; padding: 10px 12px;
+        }
+        .price-label {
+            font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--gold-dark);
+            font-weight: 600; margin-bottom: 3px;
+        }
+        .price-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; font-weight: 700; color: var(--navy);
+        }
+
+        .prop-card .card-foot {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--beige);
+        }
+        .badges-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .badge {
+            display: inline-block; font-size: 9px;
+            text-transform: uppercase; letter-spacing: 0.9px;
+            font-weight: 700; padding: 3px 7px; border-radius: 4px;
+        }
+        .badge-status-pre_launch       { background: rgba(217,119,6,0.14);  color: var(--amber); }
+        .badge-status-under_construction { background: rgba(37,99,235,0.10); color: var(--blue); }
+        .badge-status-near_possession   { background: rgba(217,119,6,0.14);  color: var(--amber); }
+        .badge-status-ready_to_move,
+        .badge-status-ready_possession,
+        .badge-status-ready             { background: rgba(22,163,74,0.14);  color: var(--green); }
+        .badge-tier {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+        }
+        .badge-type {
+            background: rgba(10,22,40,0.06); color: var(--navy);
+        }
+        .units-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 9px; border-radius: 999px;
+            background: #fff; border: 1px solid var(--border);
+            font-size: 11px; font-weight: 600; color: var(--navy);
+        }
+        .units-pill .pill-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 13px; color: var(--gold-dark);
+        }
+
+        .empty-state {
+            padding: 60px 24px; text-align: center;
+            color: var(--muted); font-size: 14px;
+            background: #fff; border-radius: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .active-filters {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+        }
+        .chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 10px;
+            background: rgba(212,175,55,0.16); color: var(--gold-dark);
+            border-radius: 5px; font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.8px;
+        }
+        .chip a { color: var(--gold-dark); text-decoration: none; font-size: 14px; line-height: 1; }
+        .chip a:hover { color: var(--red); }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+        <% if (typeof flash !== 'undefined' && flash) { %>
+            <div style="margin-bottom: 18px; padding: 13px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; <%= flash.type === 'success' ? 'background: rgba(34,153,84,0.12); color: #1e8449; border: 1px solid rgba(34,153,84,0.35);' : 'background: rgba(192,57,43,0.10); color: #c0392b; border: 1px solid rgba(192,57,43,0.30);' %>">
+                <%= flash.text %>
+            </div>
+        <% } %>
+
+        <div class="page-hero" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1>Projects</h1>
+                    <p>Every project & property in your inventory — search, filter, drill in.</p>
+                    <div class="gold-line"></div>
+                </div>
+                <a href="/projects/new" class="ds-btn ds-btn-gold" style="position: relative; z-index: 2;">
+                    <span style="font-size: 18px; line-height: 1;">+</span> Add Property
+                </a>
+            </div>
+
+            <!-- STATS -->
+            <div class="stat-pills">
+                <div class="stat-pill dot-projects">
+                    <div class="dot"></div>
+                    <div><div class="label">Projects</div><div class="num"><%= stats.total_projects %></div></div>
+                </div>
+                <div class="stat-pill dot-units">
+                    <div class="dot"></div>
+                    <div><div class="label">Properties</div><div class="num"><%= stats.total_units %></div></div>
+                </div>
+                <div class="stat-pill dot-builders">
+                    <div class="dot"></div>
+                    <div><div class="label">Builders</div><div class="num"><%= stats.total_builders %></div></div>
+                </div>
+                <div class="stat-pill dot-areas">
+                    <div class="dot"></div>
+                    <div><div class="label">Areas</div><div class="num"><%= stats.total_areas %></div></div>
+                </div>
+            </div>
+
+            <!-- FILTER BAR -->
+            <div class="filter-bar">
+                <form method="GET" action="/admin/projects" class="filter-form">
+                    <div class="filter-group">
+                        <label>Search</label>
+                        <input type="text" name="q" placeholder="Title, builder, location, code..." value="<%= filters.q %>" />
+                    </div>
+                    <div class="filter-group">
+                        <label>Builder</label>
+                        <select name="builder">
+                            <option value="">All</option>
+                            <% builders.forEach(function(b) { %>
+                                <option value="<%= b %>" <%= filters.builder === b ? 'selected' : '' %>><%= b %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Area</label>
+                        <select name="area">
+                            <option value="">All</option>
+                            <% areas.forEach(function(a) { %>
+                                <option value="<%= a %>" <%= filters.area === a ? 'selected' : '' %>><%= a %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Tier</label>
+                        <select name="tier">
+                            <option value="">All</option>
+                            <% tiers.forEach(function(t) { %>
+                                <option value="<%= t %>" <%= filters.tier === t ? 'selected' : '' %>><%= t %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <details class="ms-drop">
+                            <summary><%= filters.status.length ? filters.status.length + ' selected' : 'All' %></summary>
+                            <div class="ms-menu">
+                                <% statusOptions.forEach(function(o) { %>
+                                    <label class="ms-opt">
+                                        <input type="checkbox" name="status" value="<%= o.value %>" <%= filters.status.includes(o.value) ? 'checked' : '' %> />
+                                        <%= o.label %>
+                                    </label>
+                                <% }); %>
+                            </div>
+                        </details>
+                    </div>
+                    <div class="filter-group">
+                        <label>Budget</label>
+                        <details class="ms-drop">
+                            <summary><%= filters.price.length ? filters.price.length + ' selected' : 'All' %></summary>
+                            <div class="ms-menu">
+                                <% priceBuckets.forEach(function(b) { %>
+                                    <label class="ms-opt">
+                                        <input type="checkbox" name="price" value="<%= b.key %>" <%= filters.price.includes(b.key) ? 'checked' : '' %> />
+                                        <%= b.label %>
+                                    </label>
+                                <% }); %>
+                            </div>
+                        </details>
+                    </div>
+                    <div class="filter-group">
+                        <label>Category</label>
+                        <select name="category">
+                            <option value="">All</option>
+                            <option value="residential" <%= filters.category==='residential'?'selected':'' %>>Residential</option>
+                            <option value="commercial" <%= filters.category==='commercial'?'selected':'' %>>Commercial</option>
+                            <option value="mixed" <%= filters.category==='mixed'?'selected':'' %>>Mixed-use</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                        <a href="/admin/projects" class="btn btn-clear">Clear</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ACTIVE FILTERS CHIPS -->
+            <%
+                const activeFilters = [];
+                if (filters.q)       activeFilters.push({ k: 'q',       v: 'Search: ' + filters.q });
+                if (filters.builder) activeFilters.push({ k: 'builder', v: 'Builder: ' + filters.builder });
+                if (filters.area)    activeFilters.push({ k: 'area',    v: 'Area: ' + filters.area });
+                if (filters.tier)    activeFilters.push({ k: 'tier',    v: 'Tier: ' + filters.tier });
+                if (filters.category) activeFilters.push({ k: 'category', v: 'Category: ' + (filters.category==='mixed'?'Mixed-use':filters.category.charAt(0).toUpperCase()+filters.category.slice(1)) });
+
+                function buildQS(skip, skipKey) {
+                    const parts = [];
+                    if (filters.q       && skip !== 'q')       parts.push('q=' + encodeURIComponent(filters.q));
+                    if (filters.builder && skip !== 'builder') parts.push('builder=' + encodeURIComponent(filters.builder));
+                    if (filters.area    && skip !== 'area')    parts.push('area=' + encodeURIComponent(filters.area));
+                    if (filters.tier    && skip !== 'tier')    parts.push('tier=' + encodeURIComponent(filters.tier));
+                    if (filters.category && skip !== 'category') parts.push('category=' + encodeURIComponent(filters.category));
+                    filters.status.forEach(function(sk) {
+                        if (skip === 'status' && skipKey === sk) return;
+                        parts.push('status=' + encodeURIComponent(sk));
+                    });
+                    filters.price.forEach(function(pk) {
+                        if (skip === 'price' && skipKey === pk) return;
+                        parts.push('price=' + encodeURIComponent(pk));
+                    });
+                    return parts.length ? '/admin/projects?' + parts.join('&') : '/admin/projects';
+                }
+                const priceLabel = {};
+                priceBuckets.forEach(function(b) { priceLabel[b.key] = b.label; });
+                const statusLabel = {};
+                statusOptions.forEach(function(o) { statusLabel[o.value] = o.label; });
+            %>
+            <% if (activeFilters.length > 0 || filters.status.length > 0 || filters.price.length > 0) { %>
+                <div class="active-filters">
+                    <% activeFilters.forEach(function(af) { %>
+                        <span class="chip"><%= af.v %> <a href="<%= buildQS(af.k) %>">✕</a></span>
+                    <% }); %>
+                    <% filters.status.forEach(function(sk) { %>
+                        <span class="chip">Status: <%= statusLabel[sk] %> <a href="<%= buildQS('status', sk) %>">✕</a></span>
+                    <% }); %>
+                    <% filters.price.forEach(function(pk) { %>
+                        <span class="chip">Budget: <%= priceLabel[pk] %> <a href="<%= buildQS('price', pk) %>">✕</a></span>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <!-- SHOWING BAR -->
+            <div class="showing-bar">
+                <span class="count">Inventory</span>
+                <span class="count-meta"><%= showing %> projects shown</span>
+            </div>
+
+            <!-- PROPERTIES GRID -->
+            <% if (properties && properties.length > 0) { %>
+                <div class="properties-grid">
+                    <% properties.forEach(function(p) { %>
+                        <a class="prop-card" href="/admin/projects/<%= p.project_id %>">
+                            <div class="gold-strip"></div>
+                            <div class="card-head">
+                                <% if (p.external_id) { %>
+                                    <div class="ext-code"><%= p.external_id %></div>
+                                <% } %>
+                                <div class="prop-title"><%= p.title %></div>
+                                <% if (p.builder) { %>
+                                    <div class="builder-line">
+                                        <span class="dot-tiny"></span>
+                                        by <%= p.builder %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="meta-row">
+                                    <span class="meta-label">Location</span>
+                                    <span class="meta-value <%= !p.location ? 'meta-value-empty' : '' %>">
+                                        <%= p.location || '—' %>
+                                    </span>
+                                </div>
+                                <% if (p.configurations) { %>
+                                <div class="meta-row">
+                                    <span class="meta-label">Configs</span>
+                                    <span class="meta-value"><%= p.configurations %></span>
+                                </div>
+                                <% } %>
+                                <% if (p.possession) { %>
+                                <div class="meta-row">
+                                    <span class="meta-label">Possession</span>
+                                    <span class="meta-value"><%= p.possession %></span>
+                                </div>
+                                <% } %>
+
+                                <% if (p.price_range || (p.min_price_lakhs && p.max_price_lakhs)) { %>
+                                    <div class="price-block">
+                                        <div class="price-label">Price Range</div>
+                                        <div class="price-text">
+                                            <% if (p.price_range) { %>
+                                                <%= p.price_range %>
+                                            <% } else { %>
+                                                ₹<%= Number(p.min_price_lakhs).toLocaleString('en-IN') %> – ₹<%= Number(p.max_price_lakhs).toLocaleString('en-IN') %> L
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="card-foot">
+                                <div class="badges-row">
+                                    <% if (p.has_residential) { %><span class="badge" style="background:#0A1628;color:#D4AF37;">🏠 Res</span><% } %>
+                                    <% if (p.has_commercial) { %><span class="badge" style="background:#0A1628;color:#D4AF37;">🏢 Comm</span><% } %>
+                                    <% if (p.tier) { %>
+                                        <span class="badge badge-tier"><%= p.tier %></span>
+                                    <% } %>
+                                    <%# 053 / BUG-1: render the REAL status tags (status_of_property text[]),
+                                        not the vestigial construction_status enum (which stuck at its default). %>
+                                    <% (Array.isArray(p.status_of_property) ? p.status_of_property : []).forEach(function(sk){ %>
+                                        <span class="badge badge-status-<%= sk %>"><%= (statusOptions.find(function(o){ return o.value === sk; }) || {}).label || sk.replace(/_/g, ' ') %></span>
+                                    <% }); %>
+                                    <% if (p.type) { %>
+                                        <span class="badge badge-type"><%= p.type %></span>
+                                    <% } %>
+                                </div>
+                                <span class="units-pill">
+                                    <span class="pill-num"><%= p.unit_count %></span>
+                                    unit<%= p.unit_count === 1 ? '' : 's' %>
+                                </span>
+                            </div>
+                        </a>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="empty-state">
+                    No projects match your filters. Try clearing some.
+                </div>
+            <% } %>
+
+        </div>
+    </div>
+
+</body>
+</html>

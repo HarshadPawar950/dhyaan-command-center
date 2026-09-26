@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> — Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 350px; height: 350px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); pointer-events: none; }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .conv-strip { display: grid; grid-template-columns: repeat(2, minmax(160px, 1fr)) 2fr; gap: 14px; margin-bottom: 22px; }
+    @media (max-width: 768px) { .conv-strip { grid-template-columns: 1fr; } }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .btn-gold { background: var(--gold); color: var(--navy); font-weight: 700; font-size: 14px; padding: 11px 20px; border: none; border-radius: 10px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: background 0.15s; }
+    .btn-gold:hover { background: var(--gold-dark); }
+
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; font-weight: 500; }
+    .flash.success { background: rgba(22,163,74,0.1); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
+    .flash.error { background: rgba(220,38,38,0.1); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
+
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { background: var(--beige); color: var(--navy); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 14px 18px; text-align: left; }
+    tbody td { padding: 14px 18px; border-top: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+    tbody tr:hover { background: rgba(212,175,55,0.04); }
+    .lead-name { font-weight: 600; color: var(--navy); }
+    .muted { color: var(--muted); font-size: 13px; }
+
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: capitalize; }
+    .badge.scheduled { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.confirmed { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.completed { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.no_show   { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.cancelled { background: rgba(107,107,107,0.12); color: var(--muted); }
+
+    .row-actions { display: flex; gap: 8px; }
+    .icon-btn { display: inline-flex; align-items: center; justify-content: center; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border); background: #fff; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .icon-btn.view { color: var(--navy); }
+    .icon-btn.del  { color: var(--red); border-color: rgba(220,38,38,0.3); }
+    .icon-btn:hover { background: var(--beige); }
+
+    .empty { padding: 50px; text-align: center; color: var(--muted); }
+    .empty .big { font-size: 36px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1>Site Visits</h1>
+        <p>Schedule and track every property visit — from booking to outcome.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <% if (flash) { %>
+        <div class="flash <%= flash.type %>"><%= flash.text %></div>
+      <% } %>
+
+      <div class="toolbar">
+        <h3 style="font-size:18px;"><%= visits.length %> Visit<%= visits.length === 1 ? '' : 's' %></h3>
+        <div style="display:flex;gap:10px;">
+          <a href="/admin/site-visits/calendar" class="icon-btn view">📅 Calendar</a>
+          <a href="/admin/site-visits/new" class="btn-gold">+ Schedule Visit</a>
+        </div>
+      </div>
+
+      <!-- CONVERSION STRIP (this month) — two honest lines bracketing reality -->
+      <% if (typeof convStats !== 'undefined') { %>
+      <div class="conv-strip">
+        <div style="background:#fff;border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);border-top:3px solid var(--gold);">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;">Conducted Visits</div>
+          <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--navy);"><%= convStats.conducted %></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">completed + booked, this month</div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);border-top:3px solid #16a34a;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;">Booked (module)</div>
+          <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:#16a34a;"><%= convStats.booked %> <span style="font-size:16px;color:var(--muted);">&middot; <%= bookedPct %>%</span></div>
+          <div style="font-size:11px;color:#2563eb;margin-top:2px;">visited &rarr; booked (system): <%= convStats.sys_booked %> &middot; <%= sysPct %>%</div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:12px 18px;box-shadow:var(--shadow);">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600;margin-bottom:6px;">By Executive (booked / conducted)</div>
+          <% if (perExec && perExec.length) { %>
+            <% perExec.forEach(function(x) { %>
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;border-bottom:1px solid var(--border);">
+                <span style="color:var(--navy);font-weight:600;"><%= x.exec_name %></span>
+                <span style="color:var(--muted);"><%= x.booked %>/<%= x.conducted %> &middot; <%= x.conducted > 0 ? Math.round(x.booked/x.conducted*100) : 0 %>%</span>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div style="color:var(--muted);font-style:italic;font-size:12px;">No conducted visits this month.</div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="card">
+        <% if (visits.length === 0) { %>
+          <div class="empty">
+            <div class="big">📅</div>
+            <div>No site visits scheduled yet.</div>
+          </div>
+        <% } else { %>
+          <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Property</th>
+                <th>Executive</th>
+                <th>Scheduled</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% visits.forEach(function(v) { %>
+                <tr>
+                  <td>
+                    <div class="lead-name"><%= v.lead_name %></div>
+                    <div class="muted"><%= v.lead_phone || '' %></div>
+                  </td>
+                  <td><%= v.property_title %></td>
+                  <td><%= v.exec_name || '—' %></td>
+                  <td>
+                    <%
+                      var d = new Date(v.scheduled_at);
+                      var opts = { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' };
+                    %>
+                    <%= d.toLocaleString('en-IN', opts) %>
+                  </td>
+                  <td><span class="badge <%= v.status %>"><%= v.status.replace('_',' ') %></span></td>
+                  <td>
+                    <div class="row-actions">
+                      <a href="/admin/site-visits/<%= v.visit_id %>" class="icon-btn view">View</a>
+                      <form method="POST" action="/admin/site-visits/<%= v.visit_id %>/delete" onsubmit="return confirm('Request deletion of this visit? It needs Super Admin approval.');" style="margin:0;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button type="submit" class="icon-btn del">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+          </div>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

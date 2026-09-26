@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .month-form { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; }
+    .month-form label { font-size: 12px; color: rgba(250,250,247,0.8); text-transform: uppercase; letter-spacing: 1px; }
+    .month-form input[type=month] { font-family: 'Inter', sans-serif; font-size: 14px; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.4); background: rgba(255,255,255,0.95); color: var(--navy); }
+    .month-form button { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px; padding: 9px 16px; border-radius: 8px; border: none; background: var(--gold); color: var(--navy); cursor: pointer; }
+    .month-form button:hover { background: var(--gold-soft); }
+    .month-form a.tgt { font-size: 13px; font-weight: 600; color: var(--navy); background: var(--offwhite); padding: 9px 14px; border-radius: 8px; text-decoration: none; }
+    .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); border-left: 4px solid var(--gold); }
+    .stat .l { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 6px; }
+    .stat .v { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--navy); }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); padding: 12px 12px; border-bottom: 2px solid var(--border); background: var(--beige); white-space: nowrap; }
+    th.num, td.num { text-align: right; }
+    td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .cname { font-weight: 600; color: var(--navy); }
+    .team-chip { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: .2px; background: rgba(212,175,55,0.16); color: var(--gold-dark); vertical-align: middle; }
+    .crole { font-size: 11px; color: var(--muted); }
+    .rank { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--beige); color: var(--navy); font-size: 12px; font-weight: 700; }
+    .rank.gold { background: var(--gold); color: var(--navy); }
+    .rank.silver { background: #C0C0C0; color: var(--navy); }
+    .rank.bronze { background: #CD7F32; color: #fff; }
+    .cell-main { font-weight: 600; color: var(--navy); }
+    .cell-sub { font-size: 11px; color: var(--muted); }
+    .pill { display: inline-block; min-width: 44px; text-align: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
+    .pill.none { background: var(--beige); color: var(--muted); }
+    .pill.low { background: rgba(220,38,38,0.12); color: var(--red); }
+    .pill.mid { background: rgba(217,119,6,0.14); color: var(--amber); }
+    .pill.high { background: rgba(22,163,74,0.14); color: var(--green); }
+    .overall { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+    .note { font-size: 12px; color: var(--muted); margin-top: 12px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <%
+        function inr(n){ n = Number(n) || 0; return n.toLocaleString('en-IN', { maximumFractionDigits: 0 }); }
+        function inrShort(n){
+          n = Number(n) || 0;
+          if (n >= 10000000) return (n / 10000000).toFixed(2).replace(/\.00$/, '') + ' Cr';
+          if (n >= 100000)   return (n / 100000).toFixed(2).replace(/\.00$/, '') + ' L';
+          return n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        }
+        // Attainment pill: null -> "no target"; else colour by band.
+        function pill(v){
+          if (v === null || v === undefined) return '<span class="pill none">&mdash;</span>';
+          const cls = v >= 100 ? 'high' : (v >= 50 ? 'mid' : 'low');
+          return '<span class="pill ' + cls + '">' + v + '%</span>';
+        }
+        function actCell(done, target, isMoney){
+          const d = isMoney ? ('&#8377;' + inrShort(done)) : done;
+          const t = (target === null || target === undefined) ? '&mdash;' : (isMoney ? ('&#8377;' + inrShort(target)) : target);
+          return '<div class="cell-main">' + d + '</div><div class="cell-sub">of ' + t + '</div>';
+        }
+      %>
+
+      <div class="page-hero">
+        <div>
+          <h1>KPI &amp; Targets</h1>
+          <p>Per-executive performance vs monthly target &mdash; <%= execCount %> active team members.</p>
+          <span class="gold-line"></span>
+        </div>
+        <form class="month-form" method="get" action="/admin/kpi">
+          <label for="month">Month</label>
+          <input type="month" id="month" name="month" value="<%= month %>" max="2100-12" />
+          <button type="submit">View</button>
+          <a class="tgt" href="/admin/kpi/targets?month=<%= month %>">Edit Targets &rarr;</a>
+        </form>
+      </div>
+
+      <!-- team totals -->
+      <div class="strip">
+        <div class="stat"><div class="l">Leads Assigned</div><div class="v"><%= totals.leads %></div></div>
+        <div class="stat"><div class="l">Calls Done</div><div class="v"><%= totals.calls %></div></div>
+        <div class="stat"><div class="l">Site Visits</div><div class="v"><%= totals.visits %></div></div>
+        <div class="stat"><div class="l">Bookings</div><div class="v"><%= totals.bookings %></div></div>
+        <div class="stat"><div class="l">Commission Earned</div><div class="v">&#8377;<%= inrShort(totals.commission) %></div></div>
+      </div>
+
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:46px;">#</th>
+              <th>Executive</th>
+              <th class="num">Leads</th>
+              <th class="num">Calls</th>
+              <th class="num">Calls %</th>
+              <th class="num">Visits</th>
+              <th class="num">Visits %</th>
+              <th class="num">Bookings</th>
+              <th class="num">Bkg %</th>
+              <th class="num">Commission</th>
+              <th class="num">Rev %</th>
+              <th class="num">Overall</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (execs && execs.length) { %>
+              <% execs.forEach(function(e, i){
+                   const rankCls = e.overall === null ? '' : (i === 0 ? 'gold' : (i === 1 ? 'silver' : (i === 2 ? 'bronze' : '')));
+              %>
+                <tr>
+                  <td><span class="rank <%= rankCls %>"><%= i + 1 %></span></td>
+                  <td>
+                    <div class="cname"><%= e.name %><% if (e.report_count > 0) { %> <span class="team-chip" title="Manages <%= e.report_count %> direct report<%= e.report_count === 1 ? '' : 's' %>">team (<%= e.report_count %>)</span><% } %></div>
+                    <% if (e.role) { %><div class="crole"><%= e.role %></div><% } %>
+                  </td>
+                  <td class="num"><%= e.leads_assigned %></td>
+                  <td class="num"><%- actCell(e.calls_done, e.target_calls, false) %></td>
+                  <td class="num"><%- pill(e.att.calls) %></td>
+                  <td class="num"><%- actCell(e.visits_done, e.target_visits, false) %></td>
+                  <td class="num"><%- pill(e.att.visits) %></td>
+                  <td class="num"><%- actCell(e.bookings_done, e.target_bookings, false) %></td>
+                  <td class="num"><%- pill(e.att.bookings) %></td>
+                  <td class="num"><%- actCell(e.commission_earned, e.target_revenue, true) %></td>
+                  <td class="num"><%- pill(e.att.revenue) %></td>
+                  <td class="num"><span class="overall"><%= e.overall === null ? '—' : e.overall + '%' %></span></td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="12" class="empty">No active employees found.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="note">Read-only. Actuals aggregate live data for the selected month; targets from the Targets editor. Attainment = actual &divide; target; &mdash; means no target set.</p>
+
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!-- =====================================================================
+     receipt-pdf.ejs — the PRINT template Puppeteer renders to A4 for a
+     token receipt. Standalone (no sidebar/topbar). Reads ONLY the frozen
+     snapshot, so a printed receipt is reproducible forever.
+     ===================================================================== -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.12); --green: #16a34a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: #fff; }
+    .sheet-head { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 34px 42px; position: relative; }
+    .sheet-head .brand { font-family: 'Playfair Display', serif; font-size: 30px; color: var(--gold); letter-spacing: 0.5px; }
+    .sheet-head .tagline { font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(250,250,247,0.75); margin-top: 5px; }
+    .sheet-head .doc-title { margin-top: 20px; font-size: 15px; font-weight: 600; letter-spacing: 1px; }
+    .sheet-head .rno { position: absolute; top: 34px; right: 42px; text-align: right; }
+    .sheet-head .rno .k { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: rgba(250,250,247,0.7); }
+    .sheet-head .rno .v { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--gold); font-weight: 700; }
+    .sheet-meta { padding: 22px 42px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; font-size: 13px; }
+    .sheet-meta .k { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sheet-meta .v { font-weight: 600; color: var(--navy); font-size: 13px; margin-top: 2px; }
+    .amount-box { margin: 26px 42px; background: var(--beige); border: 1px solid var(--border); border-left: 5px solid var(--gold); border-radius: 10px; padding: 22px 26px; }
+    .amount-box .k { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .amount-box .amt { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; color: var(--navy); margin-top: 4px; }
+    .amount-box .words { font-size: 13px; color: var(--text); font-style: italic; margin-top: 8px; }
+    .pay-row { padding: 0 42px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; font-size: 13px; }
+    .pay-row .k { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pay-row .v { font-weight: 600; color: var(--navy); margin-top: 2px; }
+    .disclaimer { padding: 26px 42px 0; font-size: 10px; color: var(--muted); line-height: 1.5; }
+    .sign { padding: 40px 42px 0; display: flex; justify-content: flex-end; }
+    .sign .line { width: 220px; border-top: 1px solid var(--navy); padding-top: 6px; text-align: center; font-size: 11px; color: var(--muted); }
+    .sheet-foot { padding: 22px 42px 24px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; border-top: 1px solid var(--border); margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <%
+    const s = snapshot;
+    const inr = (n) => '₹ ' + Number(n || 0).toLocaleString('en-IN');
+    const bk = s.booking || {};
+    const lead = s.lead || {};
+    const prop = s.property || {};
+    const issued = s.issued_at ? new Date(s.issued_at) : new Date(createdAt);
+    const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  %>
+
+  <div class="sheet-head">
+    <div class="brand">Dhyaan Enterprises</div>
+    <div class="tagline">Spaces Today &middot; Legacies Forever</div>
+    <div class="doc-title">TOKEN / PAYMENT RECEIPT</div>
+    <div class="rno">
+      <div class="k">Receipt No.</div>
+      <div class="v"><%= s.receipt_no %></div>
+    </div>
+  </div>
+
+  <div class="sheet-meta">
+    <div><div class="k">Received From</div><div class="v"><%= lead.name || '—' %><%= lead.phone ? ' · ' + lead.phone : '' %></div></div>
+    <div><div class="k">Date</div><div class="v"><%= fmtDate(issued) %></div></div>
+    <div><div class="k">Property</div><div class="v"><%= prop.title || '—' %></div></div>
+    <div><div class="k">Developer</div><div class="v"><%= prop.builder_name || '—' %></div></div>
+    <div><div class="k">Booking Reference</div><div class="v"><%= bk.external_id || '—' %></div></div>
+    <div><div class="k">Booking Value</div><div class="v"><%= bk.total_amount ? inr(bk.total_amount) : '—' %></div></div>
+  </div>
+
+  <div class="amount-box">
+    <div class="k">Amount Received</div>
+    <div class="amt"><%= inr(s.amount) %></div>
+    <div class="words"><%= s.amount_words || '' %></div>
+  </div>
+
+  <div class="pay-row">
+    <div><div class="k">Payment Mode</div><div class="v"><%= s.method || '—' %></div></div>
+    <div><div class="k">Booking Stage</div><div class="v"><%= (bk.booking_stage || 'pending').replace(/_/g, ' ') %></div></div>
+  </div>
+
+  <div class="disclaimer">
+    This receipt acknowledges the token / part-payment amount stated above towards the referenced booking. It is
+    not an allotment letter or agreement to sell. Statutory charges, final agreement value and allotment are subject
+    to the developer's terms and applicable law. E&amp;OE.
+  </div>
+
+  <div class="sign">
+    <div class="line">For Dhyaan Enterprises</div>
+  </div>
+
+  <div class="sheet-foot">
+    <span>Dhyaan Enterprises &middot; Vashi, Navi Mumbai &middot; dhyaanenterprisesoffice@gmail.com</span>
+    <span>Issued by <%= s.generated_by_name || 'Admin' %> &middot; <%= fmtDate(issued) %></span>
+  </div>
+</body>
+</html>

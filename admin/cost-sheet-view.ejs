@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-dark: #B8941F; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08); --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --red: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; max-width: 860px; }
+    .toolbar { display: flex; gap: 12px; margin-bottom: 18px; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; padding: 11px 22px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--beige); }
+
+    /* ---- the sheet itself (same markup the PDF will print) ---- */
+    .sheet { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    .sheet-head { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 28px 36px; }
+    .sheet-head .brand { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--gold); letter-spacing: 0.5px; }
+    .sheet-head .tagline { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: rgba(250,250,247,0.75); margin-top: 4px; }
+    .sheet-head .doc-title { margin-top: 18px; font-size: 15px; font-weight: 600; color: var(--offwhite); }
+    .sheet-meta { padding: 20px 36px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: 13px; }
+    .sheet-meta .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .sheet-meta .v { font-weight: 600; color: var(--navy); }
+    .sheet-meta .rera-missing { color: var(--red); }
+    table.breakdown { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table.breakdown td { padding: 12px 36px; border-bottom: 1px solid var(--border); }
+    table.breakdown td.amount { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
+    table.breakdown tr.section td { background: var(--beige); font-weight: 700; color: var(--navy); }
+    table.breakdown tr.subtle td { color: var(--muted); font-size: 13px; }
+    table.breakdown tr.total td { background: var(--navy); color: var(--gold); font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; padding: 16px 36px; border-bottom: none; }
+    .rate-tag { color: var(--muted); font-size: 12px; margin-left: 6px; }
+    .sheet-foot { padding: 18px 36px; font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+    .snapshot-note { margin-top: 14px; font-size: 11px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <%
+        const s = snapshot;
+        const inr = (n) => '₹ ' + Number(n || 0).toLocaleString('en-IN');
+        const pct = (r) => (Number(r) * 100).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '%';
+        const c = s.computed, ru = s.rates_used, inp = s.inputs, cx = s.context;
+      %>
+
+      <div class="toolbar">
+        <a href="/admin/cost-sheet" class="btn btn-ghost">&larr; New Cost Sheet</a>
+        <a href="/admin/cost-sheet/view/<%= sheetId %>/pdf" class="btn btn-gold">Download PDF</a>
+      </div>
+
+      <% if (typeof flash !== 'undefined' && flash) { %>
+        <div style="background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.3); color: var(--red); padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500;"><%= flash %></div>
+      <% } %>
+
+      <div class="sheet">
+        <div class="sheet-head">
+          <div class="brand">Dhyaan Enterprises</div>
+          <div class="tagline">Spaces Today &middot; Legacies Forever</div>
+          <div class="doc-title">COST SHEET — <%= cx.property_title %> &middot; <%= cx.unit_config || 'Unit' %></div>
+        </div>
+
+        <div class="sheet-meta">
+          <div><div class="k">Developer</div><div class="v"><%= cx.builder_name %></div></div>
+          <div><div class="k">Project Status</div><div class="v"><%= (cx.construction_status || '').replace(/_/g, ' ') %></div></div>
+          <div>
+            <div class="k">MahaRERA Registration</div>
+            <div class="v <%= cx.rera_number ? '' : 'rera-missing' %>"><%= cx.rera_number || 'RERA: ____' %></div>
+          </div>
+          <div><div class="k">Carpet Area</div><div class="v"><%= inp.carpet_sqft ? Number(inp.carpet_sqft).toLocaleString('en-IN') + ' sq ft' : (cx.carpet_on_record || '—') %></div></div>
+          <% if (cx.lead_name) { %>
+          <div><div class="k">Prepared For</div><div class="v"><%= cx.lead_name %><%= cx.lead_phone ? ' · ' + cx.lead_phone : '' %></div></div>
+          <% } %>
+        </div>
+
+        <table class="breakdown">
+          <tr>
+            <td>Base Price</td>
+            <td class="amount"><%= inr(inp.base_price) %></td>
+          </tr>
+          <tr class="subtle">
+            <td>Floor Rise
+              <span class="rate-tag"><%= inp.floor_number %> floor(s) × <%= inr(inp.floor_rise_per_sqft) %>/sqft × <%= Number(inp.carpet_sqft).toLocaleString('en-IN') %> sqft</span>
+            </td>
+            <td class="amount"><%= inr(c.floor_rise_total) %></td>
+          </tr>
+          <tr class="subtle">
+            <td>Preferred Location Charge (PLC)</td>
+            <td class="amount"><%= inr(inp.plc_amount) %></td>
+          </tr>
+          <tr class="section">
+            <td>Agreement Value</td>
+            <td class="amount"><%= inr(c.agreement_value) %></td>
+          </tr>
+          <tr>
+            <td>GST
+              <span class="rate-tag">
+                <% if (inp.gst_applies) { %>
+                  <%= pct(ru.gst_rate) %><%= inp.gst_affordable ? ' — affordable housing' : '' %>
+                <% } else { %>
+                  not applicable — <%= (cx.construction_status || '').replace(/_/g, ' ') %>
+                <% } %>
+              </span>
+            </td>
+            <td class="amount"><%= inr(c.gst) %></td>
+          </tr>
+          <tr>
+            <td>Stamp Duty
+              <span class="rate-tag"><%= pct(ru.stamp_duty_rate) %> — Navi Mumbai incl. metro cess<%= inp.women_buyer ? ' (woman buyer concession)' : '' %></span>
+            </td>
+            <td class="amount"><%= inr(c.stamp_duty) %></td>
+          </tr>
+          <tr>
+            <td>Registration
+              <span class="rate-tag"><%= pct(ru.registration_rate) %>, capped at <%= inr(ru.registration_cap) %></span>
+            </td>
+            <td class="amount"><%= inr(c.registration) %></td>
+          </tr>
+          <% if (c.other_charges > 0) { %>
+          <tr>
+            <td>Other Charges
+              <span class="rate-tag">society / infrastructure / parking — outside stamp-duty base</span>
+            </td>
+            <td class="amount"><%= inr(c.other_charges) %></td>
+          </tr>
+          <% } %>
+          <tr class="total">
+            <td>TOTAL ALL-IN COST</td>
+            <td class="amount"><%= inr(c.total_all_in) %></td>
+          </tr>
+        </table>
+
+        <div class="sheet-foot">
+          <span>Dhyaan Enterprises &middot; Vashi, Navi Mumbai &middot; dhyaanenterprisesoffice@gmail.com</span>
+          <span>Generated by <%= cx.generated_by_name %> &middot; <%= new Date(createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) %></span>
+        </div>
+      </div>
+
+      <div class="snapshot-note">
+        Sheet #<%= sheetId %> &middot; All figures frozen at generation time (snapshot v<%= s.version %>) —
+        this page and the PDF always show what the client was quoted, even if rates change later.
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

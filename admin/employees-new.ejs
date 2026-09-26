@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--gold); text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; font-weight: 500; }
+    .flash.error { background: rgba(220,38,38,0.10); color: var(--red); border: 1px solid rgba(220,38,38,0.25); }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 28px; box-shadow: var(--shadow); max-width: 720px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 13px; font-weight: 600; color: var(--navy); }
+    label .req { color: var(--red); }
+    input, select { font-family: 'Inter', sans-serif; font-size: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--offwhite); color: var(--text); }
+    input:focus, select:focus { outline: none; border-color: var(--gold); background: #fff; }
+    .hint { font-size: 12px; color: var(--muted); }
+    .actions { margin-top: 24px; display: flex; gap: 12px; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; padding: 11px 22px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-primary { background: var(--gold); color: var(--navy); }
+    .btn-primary:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+      <a href="/admin/employees" class="back-link">&larr; Back to Employees</a>
+      <div class="page-hero">
+        <h1>Add Employee</h1>
+        <p>Onboard a new team member to the Dhyaan portal.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <% if (typeof messages !== 'undefined' && messages.error && messages.error.length) { %>
+        <div class="flash error"><%= messages.error %></div>
+      <% } %>
+
+      <div class="card">
+        <form action="/admin/employees-new" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-grid">
+            <div class="field">
+              <label>Full Name <span class="req">*</span></label>
+              <input type="text" name="name" required placeholder="e.g. Rahul Sharma">
+            </div>
+            <div class="field">
+              <label>Employee Code</label>
+              <input type="text" name="external_id" placeholder="e.g. E010">
+            </div>
+            <div class="field">
+              <label>Email <span class="req">*</span></label>
+              <input type="email" name="email" required placeholder="name@dhyaan.in">
+            </div>
+            <div class="field">
+              <label>Phone</label>
+              <input type="text" name="phone" placeholder="+91 ...">
+            </div>
+            <div class="field">
+              <label>Job Title</label>
+              <input type="text" name="role" placeholder="e.g. Pre Sales Executive">
+              <span class="hint">Display title only (not permissions).</span>
+            </div>
+            <div class="field">
+              <label>Permission Level</label>
+              <% if (user && user.access_role === 'super_admin') { %>
+                <select name="access_role">
+                  <option value="employee" selected>Employee</option>
+                  <option value="admin">Admin</option>
+                  <option value="super_admin">Super Admin</option>
+                </select>
+                <span class="hint">Controls portal access.</span>
+              <% } else { %>
+                <select name="access_role" disabled>
+                  <option value="employee" selected>Employee</option>
+                </select>
+                <input type="hidden" name="access_role" value="employee">
+                <span class="hint">Only the boss can grant admin access.</span>
+              <% } %>
+            </div>
+            <div class="field full">
+              <label>Temporary Password <span class="req">*</span></label>
+              <input type="text" name="password" required placeholder="Set a starter password (min 6 chars)">
+              <span class="hint">Employee should change this after first login. Min 6 characters.</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Create Employee</button>
+            <a href="/admin/employees" class="btn btn-ghost">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

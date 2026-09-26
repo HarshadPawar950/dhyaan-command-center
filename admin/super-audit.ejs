@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--gold); text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+
+    .filter-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); margin-bottom: 18px; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end; }
+    .fld { display: flex; flex-direction: column; gap: 5px; }
+    .fld label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); }
+    .fld input, .fld select { font-family: 'Inter', sans-serif; font-size: 13px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--offwhite); color: var(--text); }
+    .fld input:focus, .fld select:focus { outline: none; border-color: var(--gold); background: #fff; }
+    .filter-actions { display: flex; gap: 8px; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 8px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-clear { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+    .result-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    .when { white-space: nowrap; color: var(--muted); font-size: 12px; }
+    .who { font-weight: 600; color: var(--navy); }
+    .who small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; }
+    .change { font-size: 12px; color: var(--muted); }
+    .change b { color: var(--text); }
+    .notes { color: var(--text); }
+
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge.create { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.update { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.restore { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.delete, .badge.soft_delete { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.change_role, .badge.reset_password, .badge.status_change { background: rgba(10,22,40,0.08); color: var(--navy); }
+    .badge.def { background: rgba(10,22,40,0.06); color: var(--muted); }
+    .badge.role { background: rgba(212,175,55,0.15); color: var(--gold-dark); margin-left: 4px; }
+
+    .pager { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; }
+    .pager a, .pager span { padding: 7px 13px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .pager a { background: #fff; border: 1px solid var(--border); color: var(--navy); }
+    .pager a:hover { border-color: var(--gold); }
+    .pager .cur { background: var(--navy); color: #fff; }
+    .pager .disabled { color: var(--muted); border: 1px solid var(--border); opacity: 0.5; }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+      <a href="/admin/super" class="back-link">&larr; Back to Command Center</a>
+      <div class="page-hero">
+        <h1>Audit Log</h1>
+        <p>Every action across the portal &mdash; who did what, when. Fully searchable.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filter-card">
+        <form action="/admin/super/audit" method="GET">
+          <div class="filter-grid">
+            <div class="fld">
+              <label>Entity</label>
+              <select name="entity">
+                <option value="">All</option>
+                <% entityOpts.forEach(function(o){ %>
+                  <option value="<%= o %>" <%= filters.entity === o ? 'selected' : '' %>><%= o %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="fld">
+              <label>Action</label>
+              <select name="action">
+                <option value="">All</option>
+                <% actionOpts.forEach(function(o){ %>
+                  <option value="<%= o %>" <%= filters.action === o ? 'selected' : '' %>><%= o %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="fld">
+              <label>User</label>
+              <select name="user">
+                <option value="">All</option>
+                <% userOpts.forEach(function(o){ %>
+                  <option value="<%= o %>" <%= filters.user === o ? 'selected' : '' %>><%= o %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="fld">
+              <label>From</label>
+              <input type="date" name="from" value="<%= filters.from %>">
+            </div>
+            <div class="fld">
+              <label>To</label>
+              <input type="date" name="to" value="<%= filters.to %>">
+            </div>
+            <div class="fld">
+              <label>Search notes</label>
+              <input type="text" name="q" value="<%= filters.q %>" placeholder="keyword...">
+            </div>
+            <div class="fld">
+              <label>&nbsp;</label>
+              <div class="filter-actions">
+                <button type="submit" class="btn btn-gold">Filter</button>
+                <a href="/admin/super/audit" class="btn btn-clear">Clear</a>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="result-bar">
+        <span><strong><%= totalRows %></strong> ent<%= totalRows === 1 ? 'ry' : 'ries' %> found</span>
+        <span>Page <%= page %> of <%= totalPages %></span>
+      </div>
+
+      <div class="panel">
+        <% if (rows.length === 0) { %>
+          <div class="empty">No log entries match these filters.</div>
+        <% } else { %>
+          <table>
+            <thead>
+              <tr><th>When</th><th>Who</th><th>Action</th><th>Entity</th><th>What changed</th></tr>
+            </thead>
+            <tbody>
+              <% rows.forEach(function(r){ %>
+                <tr>
+                  <td class="when">
+                    <%= new Date(r.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %>
+                  </td>
+                  <td>
+                    <span class="who"><%= r.changed_by_name || '—' %>
+                      <% if (r.changed_by_role) { %><span class="badge role"><%= r.changed_by_role %></span><% } %>
+                      <% if (r.changed_by_name) { %><small><%= r.ip_address || '' %></small><% } %>
+                    </span>
+                  </td>
+                  <td>
+                    <% var a = (r.action || 'def').toLowerCase(); %>
+                    <span class="badge <%= ['create','update','restore','delete','soft_delete','change_role','reset_password','status_change'].indexOf(a) >= 0 ? a : 'def' %>"><%= r.action || '—' %></span>
+                  </td>
+                  <td>
+                    <%= r.entity_type || '—' %>
+                    <% if (r.entity_id) { %><br><small style="color:var(--muted);">#<%= r.entity_id %></small><% } %>
+                  </td>
+                  <td>
+                    <% if (r.notes) { %>
+                      <span class="notes"><%= r.notes %></span>
+                    <% } else if (r.field_name) { %>
+                      <span class="change"><b><%= r.field_name %></b>: <%= r.old_value || '—' %> &rarr; <%= r.new_value || '—' %></span>
+                    <% } else { %>
+                      <span class="change">—</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+
+      <!-- PAGINATION (preserves filters) -->
+      <% 
+        function qs(p) {
+          var parts = [];
+          if (filters.entity) parts.push('entity=' + encodeURIComponent(filters.entity));
+          if (filters.action) parts.push('action=' + encodeURIComponent(filters.action));
+          if (filters.user) parts.push('user=' + encodeURIComponent(filters.user));
+          if (filters.q) parts.push('q=' + encodeURIComponent(filters.q));
+          if (filters.from) parts.push('from=' + encodeURIComponent(filters.from));
+          if (filters.to) parts.push('to=' + encodeURIComponent(filters.to));
+          parts.push('page=' + p);
+          return '/admin/super/audit?' + parts.join('&');
+        }
+      %>
+      <% if (totalPages > 1) { %>
+        <div class="pager">
+          <% if (page > 1) { %><a href="<%= qs(page-1) %>">&larr; Prev</a><% } else { %><span class="disabled">&larr; Prev</span><% } %>
+          <span class="cur">Page <%= page %> / <%= totalPages %></span>
+          <% if (page < totalPages) { %><a href="<%= qs(page+1) %>">Next &rarr;</a><% } else { %><span class="disabled">Next &rarr;</span><% } %>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</body>
+</html>

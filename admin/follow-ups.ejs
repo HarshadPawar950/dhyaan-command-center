@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-dark: #B8941F; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08); --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .hero-actions { position: absolute; top: 28px; right: 32px; z-index: 2; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 7px; }
+    .btn-done { background: rgba(22,163,74,0.12); color: var(--green); }
+    .btn-done:hover { background: var(--green); color: #fff; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card.overdue { border-left: 4px solid var(--red); } .kpi-card.overdue .value { color: var(--red); }
+    .kpi-card.today { border-left: 4px solid var(--amber); } .kpi-card.today .value { color: var(--amber); }
+    .kpi-card.pending { border-left: 4px solid var(--blue); }
+    .kpi-card.completed { border-left: 4px solid var(--green); } .kpi-card.completed .value { color: var(--green); }
+    .flash { background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.3); color: var(--green); padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.ctr, td.ctr { text-align: center; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr.overdue-row { background: rgba(220,38,38,0.04); }
+    .cname { font-weight: 600; color: var(--navy); }
+    .cmeta { font-size: 11px; color: var(--muted); }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.pending { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.completed { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.rescheduled { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.overdue { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.cold { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.warm { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.hot { background: rgba(220,38,38,0.12); color: var(--red); }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+    .inline-form { display: inline; }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <div class="main-content">
+    <%- topbarHtml %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1>Follow-Up Engine</h1>
+        <p>Every lead needs a next action. Overdue follow-ups are flagged in red.</p>
+        <div class="hero-actions">
+          <a href="/admin/follow-ups/new" class="btn btn-gold">+ Log Follow-Up</a>
+        </div>
+      </div>
+
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+      <div class="kpi-grid">
+        <div class="kpi-card overdue"><div class="label">Overdue</div><div class="value"><%= summary.overdue %></div></div>
+        <div class="kpi-card today"><div class="label">Due Today</div><div class="value"><%= summary.due_today %></div></div>
+        <div class="kpi-card pending"><div class="label">Pending</div><div class="value"><%= summary.pending %></div></div>
+        <div class="kpi-card completed"><div class="label">Completed</div><div class="value"><%= summary.completed %></div></div>
+      </div>
+
+      <div class="panel">
+        <table>
+          <thead><tr>
+            <th>Lead</th><th>Action Taken</th><th>Next Action</th><th>Next Date</th>
+            <th class="ctr">Status</th><th class="ctr">Logged By</th><th class="ctr">Actions</th>
+          </tr></thead>
+          <tbody>
+            <% if (followups && followups.length) { %>
+              <% for (var i = 0; i < followups.length; i++) { var f = followups[i]; %>
+                <tr class="<%= f.is_overdue ? 'overdue-row' : '' %>">
+                  <td>
+                    <div class="cname"><%= f.lead_name || '-' %></div>
+                    <div class="cmeta"><span class="badge <%= f.lead_status %>"><%= f.lead_status || '' %></span></div>
+                  </td>
+                  <td><%= f.action_taken || '-' %></td>
+                  <td><%= f.next_action || '-' %></td>
+                  <td>
+                    <%= f.next_followup_date ? new Date(f.next_followup_date).toLocaleDateString('en-IN') : '-' %>
+                    <% if (f.is_overdue) { %><br><span class="badge overdue">OVERDUE</span><% } %>
+                  </td>
+                  <td class="ctr"><span class="badge <%= f.outcome %>"><%= f.outcome %></span></td>
+                  <td class="ctr"><%= f.employee_name || '-' %></td>
+                  <td class="ctr">
+                    <% if (f.outcome === 'pending') { %>
+                      <form class="inline-form" action="/admin/follow-ups/complete/<%= f.follow_up_id %>" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button type="submit" class="btn btn-sm btn-done">Mark Done</button>
+                      </form>
+                    <% } else { %>
+                      &mdash;
+                    <% } %>
+                  </td>
+                </tr>
+              <% } %>
+            <% } else { %>
+              <tr><td colspan="7" class="empty">No follow-ups logged yet. Click "+ Log Follow-Up" to start.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

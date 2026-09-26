@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!-- =====================================================================
+     cost-sheet-pdf.ejs — the PRINT template Puppeteer renders to A4.
+     Standalone (no sidebar/topbar). Reads ONLY the frozen snapshot —
+     same numbers the client was quoted, regardless of later rate changes.
+     ===================================================================== -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.12); --red: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: #fff; }
+    .sheet-head { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 34px 42px; }
+    .sheet-head .brand { font-family: 'Playfair Display', serif; font-size: 30px; color: var(--gold); letter-spacing: 0.5px; }
+    .sheet-head .tagline { font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(250,250,247,0.75); margin-top: 5px; }
+    .sheet-head .doc-title { margin-top: 20px; font-size: 15px; font-weight: 600; }
+    .sheet-meta { padding: 22px 42px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; font-size: 13px; }
+    .sheet-meta .k { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sheet-meta .v { font-weight: 600; color: var(--navy); font-size: 13px; }
+    .sheet-meta .rera-missing { color: var(--red); }
+    table.breakdown { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    table.breakdown td { padding: 12px 42px; border-bottom: 1px solid var(--border); }
+    table.breakdown td.amount { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
+    table.breakdown tr.section td { background: var(--beige); font-weight: 700; color: var(--navy); }
+    table.breakdown tr.subtle td { color: var(--muted); font-size: 12.5px; }
+    table.breakdown tr.total td { background: var(--navy); color: var(--gold); font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; padding: 16px 42px; border-bottom: none; }
+    .rate-tag { color: var(--muted); font-size: 11px; margin-left: 6px; }
+    tr.total .rate-tag { display: none; }
+    .disclaimer { padding: 16px 42px 0; font-size: 10px; color: var(--muted); line-height: 1.5; }
+    .sheet-foot { padding: 14px 42px 24px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; border-top: 1px solid var(--border); margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <%
+    const s = snapshot;
+    const inr = (n) => '₹ ' + Number(n || 0).toLocaleString('en-IN');
+    const pct = (r) => (Number(r) * 100).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + '%';
+    const c = s.computed, ru = s.rates_used, inp = s.inputs, cx = s.context;
+  %>
+
+  <div class="sheet-head">
+    <div class="brand">Dhyaan Enterprises</div>
+    <div class="tagline">Spaces Today &middot; Legacies Forever</div>
+    <div class="doc-title">COST SHEET — <%= cx.property_title %> &middot; <%= cx.unit_config || 'Unit' %></div>
+  </div>
+
+  <div class="sheet-meta">
+    <div><div class="k">Developer</div><div class="v"><%= cx.builder_name %></div></div>
+    <div><div class="k">Project Status</div><div class="v"><%= (cx.construction_status || '').replace(/_/g, ' ') %></div></div>
+    <div>
+      <div class="k">MahaRERA Registration</div>
+      <div class="v <%= cx.rera_number ? '' : 'rera-missing' %>"><%= cx.rera_number || 'RERA: ____' %></div>
+    </div>
+    <div><div class="k">Carpet Area</div><div class="v"><%= inp.carpet_sqft ? Number(inp.carpet_sqft).toLocaleString('en-IN') + ' sq ft' : (cx.carpet_on_record || '—') %></div></div>
+    <% if (cx.lead_name) { %>
+    <div><div class="k">Prepared For</div><div class="v"><%= cx.lead_name %><%= cx.lead_phone ? ' · ' + cx.lead_phone : '' %></div></div>
+    <% } %>
+  </div>
+
+  <table class="breakdown">
+    <tr>
+      <td>Base Price</td>
+      <td class="amount"><%= inr(inp.base_price) %></td>
+    </tr>
+    <tr class="subtle">
+      <td>Floor Rise
+        <span class="rate-tag"><%= inp.floor_number %> floor(s) × <%= inr(inp.floor_rise_per_sqft) %>/sqft × <%= Number(inp.carpet_sqft).toLocaleString('en-IN') %> sqft</span>
+      </td>
+      <td class="amount"><%= inr(c.floor_rise_total) %></td>
+    </tr>
+    <tr class="subtle">
+      <td>Preferred Location Charge (PLC)</td>
+      <td class="amount"><%= inr(inp.plc_amount) %></td>
+    </tr>
+    <tr class="section">
+      <td>Agreement Value</td>
+      <td class="amount"><%= inr(c.agreement_value) %></td>
+    </tr>
+    <tr>
+      <td>GST
+        <span class="rate-tag">
+          <% if (inp.gst_applies) { %>
+            <%= pct(ru.gst_rate) %><%= inp.gst_affordable ? ' — affordable housing' : '' %>
+          <% } else { %>
+            not applicable — <%= (cx.construction_status || '').replace(/_/g, ' ') %>
+          <% } %>
+        </span>
+      </td>
+      <td class="amount"><%= inr(c.gst) %></td>
+    </tr>
+    <tr>
+      <td>Stamp Duty
+        <span class="rate-tag"><%= pct(ru.stamp_duty_rate) %> — Navi Mumbai incl. metro cess<%= inp.women_buyer ? ' (woman buyer concession)' : '' %></span>
+      </td>
+      <td class="amount"><%= inr(c.stamp_duty) %></td>
+    </tr>
+    <tr>
+      <td>Registration
+        <span class="rate-tag"><%= pct(ru.registration_rate) %>, capped at <%= inr(ru.registration_cap) %></span>
+      </td>
+      <td class="amount"><%= inr(c.registration) %></td>
+    </tr>
+    <% if (c.other_charges > 0) { %>
+    <tr>
+      <td>Other Charges
+        <span class="rate-tag">society / infrastructure / parking</span>
+      </td>
+      <td class="amount"><%= inr(c.other_charges) %></td>
+    </tr>
+    <% } %>
+    <tr class="total">
+      <td>TOTAL ALL-IN COST</td>
+      <td class="amount"><%= inr(c.total_all_in) %></td>
+    </tr>
+  </table>
+
+  <div class="disclaimer">
+    Figures are indicative and prepared in good faith for discussion; statutory charges are as notified by the
+    Government of Maharashtra and subject to change at the time of registration. E&amp;OE.
+  </div>
+
+  <div class="sheet-foot">
+    <span>Dhyaan Enterprises &middot; Vashi, Navi Mumbai &middot; dhyaanenterprisesoffice@gmail.com</span>
+    <span>Prepared by <%= cx.generated_by_name %> &middot; <%= new Date(createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) %></span>
+  </div>
+</body>
+</html>

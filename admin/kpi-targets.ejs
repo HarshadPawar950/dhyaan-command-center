@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .month-form { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; }
+    .month-form label { font-size: 12px; color: rgba(250,250,247,0.8); text-transform: uppercase; letter-spacing: 1px; }
+    .month-form input[type=month] { font-family: 'Inter', sans-serif; font-size: 14px; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.4); background: rgba(255,255,255,0.95); color: var(--navy); }
+    .month-form button { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px; padding: 9px 16px; border-radius: 8px; border: none; background: var(--gold); color: var(--navy); cursor: pointer; }
+    .month-form a.back { font-size: 13px; font-weight: 600; color: var(--navy); background: var(--offwhite); padding: 9px 14px; border-radius: 8px; text-decoration: none; }
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; font-weight: 500; }
+    .flash.success { background: rgba(22,163,74,0.12); color: var(--green); border: 1px solid rgba(22,163,74,0.3); }
+    .flash.error { background: rgba(220,38,38,0.10); color: var(--red); border: 1px solid rgba(220,38,38,0.3); }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .toolbar .save { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; padding: 11px 22px; border-radius: 10px; border: none; background: var(--navy); color: var(--gold); cursor: pointer; box-shadow: var(--shadow); }
+    .toolbar .save:hover { background: var(--navy-2); }
+    .toolbar .hint { font-size: 12px; color: var(--muted); }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); padding: 12px 14px; border-bottom: 2px solid var(--border); background: var(--beige); white-space: nowrap; }
+    th.num, td.num { text-align: right; }
+    td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .cname { font-weight: 600; color: var(--navy); }
+    .crole { font-size: 11px; color: var(--muted); }
+    input.tin { width: 96px; font-family: 'Inter', sans-serif; font-size: 13px; text-align: right; padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; background: var(--offwhite); }
+    input.tin:focus { outline: none; border-color: var(--gold); background: #fff; }
+    input.tin.rev { width: 130px; }
+    .badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 2px 7px; border-radius: 999px; background: rgba(212,175,55,0.16); color: var(--gold-dark); margin-left: 8px; }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+    .note { font-size: 12px; color: var(--muted); margin-top: 12px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <div>
+          <h1>Targets Editor</h1>
+          <p>Set monthly targets per executive &mdash; calls, visits, bookings, revenue.</p>
+          <span class="gold-line"></span>
+        </div>
+        <form class="month-form" method="get" action="/admin/kpi/targets">
+          <label for="month">Month</label>
+          <input type="month" id="month" name="month" value="<%= month %>" max="2100-12" />
+          <button type="submit">Load</button>
+          <a class="back" href="/admin/kpi?month=<%= month %>">&larr; Leaderboard</a>
+        </form>
+      </div>
+
+      <% if (messages && messages.success && messages.success.length) { %>
+        <div class="flash success"><%= Array.isArray(messages.success) ? messages.success.join(' ') : messages.success %></div>
+      <% } %>
+      <% if (messages && messages.error && messages.error.length) { %>
+        <div class="flash error"><%= Array.isArray(messages.error) ? messages.error.join(' ') : messages.error %></div>
+      <% } %>
+
+      <form method="post" action="/admin/kpi/targets">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <input type="hidden" name="month" value="<%= month %>" />
+
+        <div class="toolbar">
+          <div class="hint">Editing <strong><%= month %></strong> &middot; <%= rows ? rows.length : 0 %> active executives &middot; blank/zero rows are skipped unless a target already exists.</div>
+          <button type="submit" class="save">Save All Targets</button>
+        </div>
+
+        <div class="panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Executive</th>
+                <th class="num">Target Calls</th>
+                <th class="num">Target Visits</th>
+                <th class="num">Target Bookings</th>
+                <th class="num">Target Revenue (&#8377;)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (rows && rows.length) { %>
+                <% rows.forEach(function(r){ %>
+                  <tr>
+                    <td>
+                      <span class="cname"><%= r.name %></span><% if (r.has_target) { %><span class="badge">set</span><% } %>
+                      <% if (r.role) { %><div class="crole"><%= r.role %></div><% } %>
+                    </td>
+                    <td class="num"><input class="tin" type="number" min="0" step="1" name="t_calls_<%= r.employee_id %>" value="<%= r.target_calls %>" /></td>
+                    <td class="num"><input class="tin" type="number" min="0" step="1" name="t_visits_<%= r.employee_id %>" value="<%= r.target_visits %>" /></td>
+                    <td class="num"><input class="tin" type="number" min="0" step="1" name="t_bookings_<%= r.employee_id %>" value="<%= r.target_bookings %>" /></td>
+                    <td class="num"><input class="tin rev" type="number" min="0" step="1000" name="t_revenue_<%= r.employee_id %>" value="<%= r.target_revenue %>" /></td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr><td colspan="5" class="empty">No active employees found.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="toolbar" style="margin-top:16px;">
+          <p class="note">Changes are logged per cell (old &rarr; new) to the change history. One target row per executive per month.</p>
+          <button type="submit" class="save">Save All Targets</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</body>
+</html>

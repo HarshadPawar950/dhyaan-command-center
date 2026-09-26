@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh; display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600; color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 26px 40px; flex: 1; }
+
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 26px 32px;
+            border-radius: 16px; margin-bottom: 22px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+        }
+        .page-hero::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+        .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+        .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+        .stat-pills {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px; margin-bottom: 22px;
+        }
+        .stat-pill {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+        }
+        .stat-pill .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .stat-pill.dot-closed .dot   { background: var(--green); }
+        .stat-pill.dot-revenue .dot  { background: var(--gold); }
+        .stat-pill.dot-pipeline .dot { background: var(--amber); }
+        .stat-pill.dot-comm .dot     { background: var(--blue); }
+        .stat-pill .label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .stat-pill .num {
+            font-family: 'Playfair Display', serif; font-size: 22px;
+            font-weight: 700; color: var(--navy); line-height: 1;
+        }
+
+        .grid-2 {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 20px; margin-bottom: 22px;
+        }
+        @media (max-width: 1100px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: #fff; border-radius: 14px; border: 1px solid var(--border);
+            box-shadow: var(--shadow); overflow: hidden;
+        }
+        .panel-head {
+            padding: 16px 22px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-head h2 { font-size: 17px; }
+        .panel-head .tag {
+            font-size: 11px; color: var(--gold-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* REVENUE HERO */
+        .revenue-hero {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy); padding: 22px 24px;
+            border-radius: 14px; box-shadow: var(--shadow);
+        }
+        .revenue-hero .ph-label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+            font-weight: 700; opacity: 0.85; margin-bottom: 6px;
+        }
+        .revenue-hero .ph-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px; font-weight: 700;
+        }
+        .revenue-hero .ph-sub {
+            font-size: 12px; opacity: 0.75; margin-top: 4px;
+        }
+
+        /* LEADERBOARD */
+        .leader-list { padding: 6px 0; }
+        .leader-row {
+            display: grid; grid-template-columns: 28px 36px 1fr auto;
+            gap: 12px; align-items: center;
+            padding: 11px 22px; border-bottom: 1px solid var(--border);
+        }
+        .leader-row:last-child { border-bottom: none; }
+        .rank {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700; font-size: 14px;
+            color: var(--muted); text-align: center;
+        }
+        .rank-1 { color: var(--gold-dark); font-size: 18px; }
+        .rank-2 { color: #94a3b8; font-size: 16px; }
+        .rank-3 { color: #b87333; font-size: 15px; }
+        .leader-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13px;
+        }
+        .leader-name { font-weight: 600; color: var(--navy); font-size: 14px; }
+        .leader-code { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .leader-deals {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px; font-weight: 700; color: var(--gold-dark);
+        }
+        .leader-deals-label {
+            font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); margin-top: -2px;
+        }
+
+        /* FILTER + TABLE */
+        .filter-bar {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 18px;
+            box-shadow: var(--shadow); margin-bottom: 18px;
+        }
+        .filter-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 100px auto;
+            gap: 10px; align-items: end;
+        }
+        @media (max-width: 800px) {
+            .filter-form { grid-template-columns: 1fr; }
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .filter-group input, .filter-group select {
+            font-family: inherit; font-size: 13px;
+            padding: 9px 12px; border: 1px solid var(--border);
+            border-radius: 8px; background: var(--offwhite);
+            color: var(--text); outline: none;
+        }
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: var(--gold); background: #fff;
+        }
+        .filter-actions { display: flex; gap: 8px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 9px 18px; border-radius: 8px;
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            text-decoration: none; cursor: pointer; border: none;
+        }
+        .btn-primary { background: var(--navy); color: var(--offwhite); }
+        .btn-clear { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+        .sales-table { width: 100%; border-collapse: collapse; }
+        .sales-table thead th {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600;
+            text-align: left; padding: 12px 18px;
+            background: var(--beige); border-bottom: 1px solid var(--border);
+        }
+        .sales-table tbody td {
+            padding: 13px 18px; border-bottom: 1px solid var(--border);
+            font-size: 13px; vertical-align: middle;
+        }
+        .sales-table tbody tr { cursor: pointer; transition: background 0.12s ease; }
+        .sales-table tbody tr:hover { background: rgba(212,175,55,0.06); }
+        .sales-table tbody tr:last-child td { border-bottom: none; }
+
+        .name-main { font-weight: 600; color: var(--navy); }
+        .name-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .status-badge {
+            display: inline-block; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: 700;
+            padding: 4px 9px; border-radius: 4px;
+            background: rgba(22,163,74,0.12); color: var(--green);
+        }
+        .rep-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 999px;
+            background: var(--beige); font-size: 12px;
+            font-weight: 600; color: var(--navy);
+        }
+        .rep-pill .dot-small { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+        .amount-cell {
+            font-family: 'Playfair Display', serif; font-weight: 700;
+            color: var(--gold-dark);
+        }
+        .muted-cell { color: var(--muted); font-size: 12px; }
+        .empty-state {
+            padding: 60px 24px; text-align: center;
+            color: var(--muted); font-size: 14px;
+        }
+        .empty-state .big-emoji { font-size: 36px; margin-bottom: 8px; }
+
+        .schema-note {
+            margin-top: 14px; padding: 10px 14px;
+            background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.18);
+            border-radius: 8px;
+            font-size: 12px; color: var(--amber);
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+            <div class="page-hero">
+                <h1>Sales History</h1>
+                <p>Closed deals, revenue, and your team's sales leaderboard.</p>
+                <div class="gold-line"></div>
+            </div>
+
+            <!-- STATS -->
+            <div class="stat-pills">
+                <div class="stat-pill dot-closed">
+                    <div class="dot"></div>
+                    <div><div class="label">Closed Deals</div><div class="num"><%= stats.total_closed %></div></div>
+                </div>
+                <div class="stat-pill dot-pipeline">
+                    <div class="dot"></div>
+                    <div><div class="label">Hot Open</div><div class="num"><%= stats.hot_open %></div></div>
+                </div>
+                <div class="stat-pill dot-revenue">
+                    <div class="dot"></div>
+                    <div>
+                        <div class="label">Revenue</div>
+                        <div class="num">
+                            <% if (revenue.total_revenue > 0) { %>
+                                ₹<%= Number(revenue.total_revenue).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %>
+                            <% } else { %>—<% } %>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-pill dot-comm">
+                    <div class="dot"></div>
+                    <div>
+                        <div class="label">Commission</div>
+                        <div class="num">
+                            <% if (revenue.total_commission > 0) { %>
+                                ₹<%= Number(revenue.total_commission).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %>
+                            <% } else { %>—<% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LEADERBOARD + REVENUE HERO -->
+            <div class="grid-2">
+
+                <!-- LEFT: LEADERBOARD -->
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Sales Leaderboard</h2>
+                        <span class="tag">Closed deals</span>
+                    </div>
+                    <div class="leader-list">
+                        <% if (leaderboard && leaderboard.length > 0) { %>
+                            <% leaderboard.forEach(function(e, idx) { %>
+                                <% const rk = idx + 1; %>
+                                <% const rkCls = rk === 1 ? 'rank-1' : rk === 2 ? 'rank-2' : rk === 3 ? 'rank-3' : ''; %>
+                                <div class="leader-row">
+                                    <div class="rank <%= rkCls %>"><%= rk === 1 ? '🥇' : rk === 2 ? '🥈' : rk === 3 ? '🥉' : '#' + rk %></div>
+                                    <div class="leader-avatar"><%= (e.name || '?').charAt(0).toUpperCase() %></div>
+                                    <div>
+                                        <div class="leader-name"><%= e.name %></div>
+                                        <div class="leader-code"><%= e.external_id %></div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div class="leader-deals"><%= e.closed_count %></div>
+                                        <div class="leader-deals-label">deals</div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <div class="big-emoji">🏆</div>
+                                <div>No closed deals yet. The leaderboard awaits its first hero!</div>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- RIGHT: REVENUE BREAKDOWN -->
+                <div>
+                    <div class="revenue-hero" style="margin-bottom: 16px;">
+                        <div class="ph-label">Total Revenue</div>
+                        <div class="ph-value">
+                            <% if (revenue.total_revenue > 0) { %>
+                                ₹<%= Number(revenue.total_revenue).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %>
+                            <% } else { %>
+                                No payments yet
+                            <% } %>
+                        </div>
+                        <div class="ph-sub">
+                            <% if (stats.payment_rows > 0) { %>
+                                Across <%= stats.payment_rows %> payment record<%= stats.payment_rows === 1 ? '' : 's' %>
+                            <% } else { %>
+                                payments table is empty
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <% if (!schemaInfo.paymentsAvailable) { %>
+                        <div class="schema-note">
+                            ⚠️ Revenue tracking is in setup. The <strong>payments</strong> table needs columns like
+                            <code>amount</code> and <code>lead_id</code> for full revenue reporting.
+                            Detected columns: <%= schemaInfo.paymentCols.length ? schemaInfo.paymentCols.join(', ') : '(table empty or missing)' %>.
+                        </div>
+                    <% } %>
+
+                    <div class="panel" style="margin-top: <%= !schemaInfo.paymentsAvailable ? '14px' : '0' %>;">
+                        <div class="panel-head">
+                            <h2>Pipeline Status</h2>
+                            <span class="tag">Open opportunities</span>
+                        </div>
+                        <div style="padding: 16px 22px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--muted); font-size: 13px;">🔥 Hot Leads (open)</span>
+                                <strong style="font-family: 'Playfair Display'; color: var(--red); font-size: 18px;"><%= stats.hot_open %></strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: var(--muted); font-size: 13px;">📊 Total Pipeline (warm + hot)</span>
+                                <strong style="font-family: 'Playfair Display'; color: var(--amber); font-size: 18px;"><%= stats.pipeline_open %></strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                                <span style="color: var(--muted); font-size: 13px;">✅ Conversion Rate</span>
+                                <strong style="font-family: 'Playfair Display'; color: var(--green); font-size: 18px;">
+                                    <% if (stats.total_closed + stats.pipeline_open > 0) { %>
+                                        <%= Math.round((stats.total_closed / (stats.total_closed + stats.pipeline_open)) * 100) %>%
+                                    <% } else { %>—<% } %>
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="filter-bar">
+                <form method="GET" action="/admin/sales" class="filter-form">
+                    <div class="filter-group">
+                        <label>Search</label>
+                        <input type="text" name="q" placeholder="Lead name, location, budget..." value="<%= filters.q %>" />
+                    </div>
+                    <div class="filter-group">
+                        <label>Sales Rep</label>
+                        <select name="employee">
+                            <option value="">All</option>
+                            <% employeesList.forEach(function(e) { %>
+                                <option value="<%= e.external_id %>" <%= filters.employee === e.external_id ? 'selected' : '' %>>
+                                    <%= e.name %> (<%= e.external_id %>)
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Days</label>
+                        <select name="days">
+                            <option value="30"   <%= filters.days === 30   ? 'selected' : '' %>>30</option>
+                            <option value="90"   <%= filters.days === 90   ? 'selected' : '' %>>90</option>
+                            <option value="180"  <%= filters.days === 180  ? 'selected' : '' %>>180</option>
+                            <option value="365"  <%= filters.days === 365  ? 'selected' : '' %>>365</option>
+                            <option value="3650" <%= filters.days === 3650 ? 'selected' : '' %>>All</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                        <a href="/admin/sales" class="btn btn-clear">Clear</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- CLOSED DEALS TABLE -->
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Closed Deals</h2>
+                    <span class="tag"><%= showing %> shown</span>
+                </div>
+                <% if (sales && sales.length > 0) { %>
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Lead</th>
+                            <th>Location</th>
+                            <th>Budget</th>
+                            <th>Sales Rep</th>
+                            <th>Status</th>
+                            <th>Revenue</th>
+                            <th>Closed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% sales.forEach(function(s) { %>
+                            <tr onclick="window.location.href='/admin/leads/<%= s.lead_id %>'">
+                                <td>
+                                    <div class="name-main"><%= s.name %></div>
+                                    <% if (s.external_id) { %>
+                                        <div class="name-sub"><%= s.external_id %></div>
+                                    <% } %>
+                                </td>
+                                <td class="muted-cell"><%= s.location || '—' %></td>
+                                <td class="muted-cell"><%= s.budget || '—' %></td>
+                                <td>
+                                    <% if (s.sales_rep_name) { %>
+                                        <span class="rep-pill">
+                                            <span class="dot-small"></span>
+                                            <%= s.sales_rep_name %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="muted-cell">—</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="status-badge"><%= s.status %></span>
+                                </td>
+                                <td class="amount-cell">
+                                    <% if (s.payment_total && Number(s.payment_total) > 0) { %>
+                                        ₹<%= Number(s.payment_total).toLocaleString('en-IN', { maximumFractionDigits: 0 }) %>
+                                    <% } else { %>
+                                        <span class="muted-cell">—</span>
+                                    <% } %>
+                                </td>
+                                <td class="muted-cell">
+                                    <% if (s.created_at) { %>
+                                        <%= new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                    <% } else { %>—<% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+                <% } else { %>
+                    <div class="empty-state">
+                        <div class="big-emoji">🎯</div>
+                        <div>No closed deals in this filter range.</div>
+                        <div style="margin-top: 8px; font-size: 12px;">When leads convert to "closed", "won", or "booked", they'll appear here.</div>
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

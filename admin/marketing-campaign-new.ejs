@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-dark: #B8941F; --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6; --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08); --shadow: 0 4px 24px rgba(10, 22, 40, 0.06); --red: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 26px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .back-link { display: inline-flex; gap: 6px; color: var(--gold); text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; font-weight: 500; background: rgba(220,38,38,0.10); color: var(--red); border: 1px solid rgba(220,38,38,0.25); }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 28px; box-shadow: var(--shadow); max-width: 760px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 13px; font-weight: 600; color: var(--navy); }
+    label .req { color: var(--red); }
+    input, select { font-family: 'Inter', sans-serif; font-size: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--offwhite); color: var(--text); }
+    input:focus, select:focus { outline: none; border-color: var(--gold); background: #fff; }
+    .hint { font-size: 12px; color: var(--muted); }
+    .actions { margin-top: 24px; display: flex; gap: 12px; }
+    .btn { font-size: 14px; font-weight: 600; padding: 11px 22px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; font-family: 'Inter', sans-serif; }
+    .btn-primary { background: var(--gold); color: var(--navy); }
+    .btn-primary:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; grid-column: 1/-1; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+      <a href="/admin/marketing" class="back-link">&larr; Back to Marketing</a>
+      <div class="page-hero">
+        <h1>New Campaign</h1>
+        <p>Set up a campaign to start tracking its spend, leads &amp; ROI.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <% if (typeof messages !== 'undefined' && messages.error && messages.error.length) { %>
+        <div class="flash"><%= messages.error %></div>
+      <% } %>
+
+      <div class="card">
+        <form action="/admin/marketing/campaign-new" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-grid">
+            <div class="field">
+              <label>Campaign Name <span class="req">*</span></label>
+              <input type="text" name="name" required placeholder="e.g. Kharghar 2BHK Launch - May">
+            </div>
+            <div class="field">
+              <label>Platform <span class="req">*</span></label>
+              <select name="platform" required>
+                <option value="Meta">Meta (Facebook/Instagram)</option>
+                <option value="Google">Google Ads</option>
+                <option value="Google LSA">Google LSA</option>
+                <option value="99acres">99acres</option>
+                <option value="MagicBricks">MagicBricks</option>
+                <option value="Housing">Housing.com</option>
+                <option value="Offline">Offline (Hoarding/Event/Print)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Linked Project</label>
+              <select name="project_id">
+                <option value="">— none / multiple —</option>
+                <% projects.forEach(function(p){ %>
+                  <option value="<%= p.project_id %>"><%= p.title %></option>
+                <% }); %>
+              </select>
+              <span class="hint">Optional. Link to one project if campaign promotes it.</span>
+            </div>
+            <div class="field">
+              <label>Micro-Market</label>
+              <input type="text" name="micro_market" placeholder="e.g. Kharghar, Panvel, Vashi">
+            </div>
+
+            <div class="group-label">Attribution (UTM tags)</div>
+            <div class="field">
+              <label>UTM Source</label>
+              <input type="text" name="utm_source" placeholder="e.g. facebook">
+            </div>
+            <div class="field">
+              <label>UTM Medium</label>
+              <input type="text" name="utm_medium" placeholder="e.g. cpc">
+            </div>
+            <div class="field full">
+              <label>UTM Campaign</label>
+              <input type="text" name="utm_campaign" placeholder="e.g. kharghar_2bhk_may">
+              <span class="hint">Leads carrying this UTM auto-attribute to this campaign.</span>
+            </div>
+
+            <div class="group-label">Schedule &amp; Budget</div>
+            <div class="field">
+              <label>Start Date</label>
+              <input type="date" name="start_date">
+            </div>
+            <div class="field">
+              <label>End Date</label>
+              <input type="date" name="end_date">
+            </div>
+            <div class="field full">
+              <label>Monthly Budget (&#8377;)</label>
+              <input type="number" name="monthly_budget" min="0" step="1000" placeholder="e.g. 50000">
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Create Campaign</button>
+            <a href="/admin/marketing" class="btn btn-ghost">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

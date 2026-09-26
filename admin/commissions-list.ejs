@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb; --orange: #ea580c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .flash { background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.3); color: var(--green); padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card.out { border-left: 4px solid var(--red); }
+    .kpi-card.fy { border-left: 4px solid var(--green); }
+    .kpi-card.age { border-left: 4px solid var(--amber); }
+    .kpi-card.cnt { border-left: 4px solid var(--gold); }
+    .statusline { display: flex; flex-wrap: wrap; gap: 5px 10px; }
+    .statusline .s { font-size: 11px; color: var(--muted); }
+    .statusline .s b { color: var(--navy); }
+    .rowlink { color: inherit; text-decoration: none; display: block; }
+    .rowlink:hover .cname { text-decoration: underline; color: var(--gold-dark); }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin-bottom: 20px; box-shadow: var(--shadow); }
+    .filter-bar .fld { display: flex; flex-direction: column; gap: 5px; }
+    .filter-bar label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+    .filter-bar select { font-family: 'Inter', sans-serif; font-size: 13px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--offwhite); color: var(--text); min-width: 160px; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost { background: rgba(10,22,40,0.05); color: var(--navy); }
+    .btn-ghost:hover { background: rgba(10,22,40,0.1); }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.num, td.num { text-align: right; }
+    th.ctr, td.ctr { text-align: center; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(212,175,55,0.04); }
+    .cname { font-weight: 600; color: var(--navy); }
+    .cmeta { font-size: 11px; color: var(--muted); }
+    .mono { font-variant-numeric: tabular-nums; }
+    .amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .amt.out-pos { color: var(--red); }
+    .amt.out-zero { color: var(--green); }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .st-accrued { background: rgba(10,22,40,0.06); color: var(--muted); }
+    .st-builder_confirmed { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .st-invoice_raised { background: rgba(212,175,55,0.18); color: var(--gold-dark); }
+    .st-partially_received { background: rgba(234,88,12,0.12); color: var(--orange); }
+    .st-fully_received { background: rgba(22,163,74,0.14); color: var(--green); }
+    .age { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .age.warn { color: var(--amber); }
+    .age.bad { color: var(--red); }
+    .empty { text-align: center; color: var(--muted); padding: 44px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <%
+        // ---- NULL/NaN-safe Indian-format money. Renders whole rupees. ----
+        function inr(v) {
+          var n = Number(v);
+          if (v === null || v === undefined || isNaN(n)) return '₹' + '0';
+          return '₹' + Math.round(n).toLocaleString('en-IN');
+        }
+        var STATUS_LABELS = {
+          accrued: 'Accrued', builder_confirmed: 'Builder Confirmed',
+          invoice_raised: 'Invoice Raised', partially_received: 'Partially Received',
+          fully_received: 'Fully Received'
+        };
+        function statusLabel(s) { return STATUS_LABELS[s] || (s || '—'); }
+      %>
+
+      <div class="page-hero">
+        <h1>Commission Receivables</h1>
+        <p>Money builders owe us on earned commissions &mdash; ageing, receipts &amp; outstanding.</p>
+      </div>
+
+      <% if (flash) { %>
+        <div class="flash"><%= flash %></div>
+      <% } %>
+
+      <div class="kpi-grid">
+        <div class="kpi-card out">
+          <div class="label">Total Outstanding</div>
+          <div class="value"><%= inr(summary.total_outstanding) %></div>
+        </div>
+        <div class="kpi-card fy">
+          <div class="label">Received &middot; <%= fyLabel %></div>
+          <div class="value"><%= inr(fyReceived) %></div>
+        </div>
+        <div class="kpi-card age">
+          <div class="label">Worst Ageing</div>
+          <div class="value"><%= isNaN(Number(summary.worst_ageing)) ? 0 : summary.worst_ageing %> <span style="font-size:13px;font-weight:500;color:var(--muted)">days</span></div>
+        </div>
+        <div class="kpi-card cnt">
+          <div class="label">Receivables (<%= summary.total_count %>)</div>
+          <div class="statusline">
+            <% statuses.forEach(function(s) { %>
+              <span class="s"><%= statusLabel(s) %>: <b><%= statusCounts[s] || 0 %></b></span>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+
+      <% if (ageingByBuilder && ageingByBuilder.length) { %>
+        <div class="panel" style="margin-bottom:20px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Ageing by Builder</th>
+                <th class="num">0&ndash;30</th>
+                <th class="num">31&ndash;60</th>
+                <th class="num">61&ndash;90</th>
+                <th class="num">90+</th>
+                <th class="num">Total Outstanding</th>
+                <th class="ctr">Worst</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% ageingByBuilder.forEach(function(a) { %>
+                <% var wa = Number(a.worst_age); var waClass = isNaN(wa) ? '' : (wa > 90 ? 'bad' : (wa > 60 ? 'warn' : '')); %>
+                <tr>
+                  <td class="cname"><%= a.builder_name || '—' %></td>
+                  <td class="num amt"><%= inr(a.b0_30) %></td>
+                  <td class="num amt"><%= inr(a.b31_60) %></td>
+                  <td class="num amt"><%= inr(a.b61_90) %></td>
+                  <td class="num amt out-pos"><%= inr(a.b90p) %></td>
+                  <td class="num amt"><%= inr(a.total_out) %></td>
+                  <td class="ctr age <%= waClass %>"><%= isNaN(wa) ? '—' : wa %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+
+      <form class="filter-bar" method="GET" action="/admin/commissions">
+        <div class="fld">
+          <label for="f-status">Status</label>
+          <select id="f-status" name="status">
+            <option value="">All statuses</option>
+            <% statuses.forEach(function(s) { %>
+              <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= statusLabel(s) %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="f-builder">Builder</label>
+          <select id="f-builder" name="builder_id">
+            <option value="">All builders</option>
+            <% builders.forEach(function(b) { %>
+              <option value="<%= b.builder_id %>" <%= filters.builder_id === b.builder_id ? 'selected' : '' %>><%= b.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="f-ageing">Ageing</label>
+          <select id="f-ageing" name="ageing">
+            <option value="">Any age</option>
+            <% ageingBuckets.forEach(function(bk) { %>
+              <option value="<%= bk %>" <%= filters.ageing === bk ? 'selected' : '' %>><%= bk %> days</option>
+            <% }); %>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-gold">Apply</button>
+        <a href="/admin/commissions" class="btn btn-ghost">Reset</a>
+      </form>
+
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Builder</th>
+              <th>Booking Ref</th>
+              <th>Status</th>
+              <th class="num">Expected</th>
+              <th class="num">Received</th>
+              <th class="num">Outstanding</th>
+              <th class="ctr">Ageing</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (receivables && receivables.length) { %>
+              <% receivables.forEach(function(r) { %>
+                <%
+                  var out = Number(r.outstanding);
+                  var outClass = (!isNaN(out) && out <= 0) ? 'out-zero' : 'out-pos';
+                  var age = Number(r.ageing_days);
+                  var ageClass = isNaN(age) ? '' : (age > 90 ? 'bad' : (age > 60 ? 'warn' : ''));
+                  var tds = Number(r.tds_deducted);
+                %>
+                <tr>
+                  <td>
+                    <a class="rowlink" href="/admin/commissions/<%= r.receivable_id %>">
+                      <div class="cname"><%= r.builder_name || '—' %></div>
+                      <% if (r.external_id) { %><div class="cmeta mono"><%= r.external_id %></div><% } %>
+                    </a>
+                  </td>
+                  <td class="mono"><a class="rowlink" href="/admin/commissions/<%= r.receivable_id %>"><%= r.booking_ref || '—' %></a></td>
+                  <td><span class="badge st-<%= r.status %>"><%= statusLabel(r.status) %></span></td>
+                  <td class="num amt"><%= inr(r.expected_amount) %></td>
+                  <td class="num amt">
+                    <%= inr(r.received) %>
+                    <% if (!isNaN(tds) && tds > 0) { %><div class="cmeta">+ TDS <%= inr(tds) %></div><% } %>
+                  </td>
+                  <td class="num amt <%= outClass %>"><%= inr(r.outstanding) %></td>
+                  <td class="ctr age <%= ageClass %>">
+                    <%= isNaN(age) ? '—' : age %><% if (!isNaN(age)) { %><div class="cmeta">days</div><% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="7" class="empty">No receivables match these filters.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

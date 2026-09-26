@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Properties (Inventory) — Dhyaan Admin</title>
+    <!-- RENDER-SOURCE: views/admin/properties-list.ejs (INVENTORY list) -->
+    <!-- Chrome aligned to projects-list.ejs (hero/stats/filter/empty/spacing/button). Records stay a TABLE (unit-level data). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --shadow-hover: 0 12px 40px rgba(10, 22, 40, 0.14);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh; display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600; color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 26px 40px; flex: 1; }
+
+        /* HERO (aligned to projects-list) */
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 26px 32px;
+            border-radius: 16px; margin-bottom: 22px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+        }
+        .page-hero::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .page-hero > * { position: relative; z-index: 1; }
+        .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+        .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+        .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+        /* STATS (aligned to projects-list) */
+        .stat-pills {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 22px;
+        }
+        .stat-pill {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+        }
+        .stat-pill .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--gold); }
+        .stat-pill.dot-total .dot   { background: var(--gold); }
+        .stat-pill.dot-proj .dot    { background: var(--blue); }
+        .stat-pill.dot-show .dot    { background: var(--amber); }
+        .stat-pill .label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .stat-pill .num {
+            font-family: 'Playfair Display', serif; font-size: 22px;
+            font-weight: 700; color: var(--navy); line-height: 1;
+        }
+
+        /* FILTER BAR (aligned to projects-list) */
+        .filter-bar {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 18px;
+            box-shadow: var(--shadow); margin-bottom: 18px;
+        }
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+            gap: 10px; align-items: end;
+        }
+        @media (max-width: 1100px) { .filter-form { grid-template-columns: 1fr 1fr 1fr; } }
+        @media (max-width: 700px)  { .filter-form { grid-template-columns: 1fr; } }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group.span2 { grid-column: span 2; }
+        .filter-group label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .filter-group input, .filter-group select {
+            font-family: inherit; font-size: 13px;
+            padding: 9px 12px; border: 1px solid var(--border);
+            border-radius: 8px; background: var(--offwhite);
+            color: var(--text); outline: none; width: 100%;
+            transition: border-color 0.15s ease;
+        }
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: var(--gold); background: #fff;
+        }
+        .budget-inputs { display: flex; gap: 6px; }
+        .filter-actions { display: flex; gap: 8px; align-items: end; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; padding: 9px 18px; border-radius: 8px;
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            text-decoration: none; cursor: pointer; border: none;
+            transition: all 0.15s ease;
+        }
+        .btn-primary { background: var(--navy); color: var(--offwhite); }
+        .btn-primary:hover { background: var(--navy-2); }
+        .btn-clear { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+        .btn-clear:hover { background: var(--beige); color: var(--navy); }
+
+        /* RECORDS TABLE (properties are unit-level — a table genuinely fits; kept by ruling) */
+        .inv-table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+        .inv-table thead th{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;text-align:left;padding:14px 18px;background:var(--beige);border-bottom:1px solid var(--border);}
+        .inv-table tbody td{padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;}
+        .inv-table tbody tr{cursor:pointer;}
+        .inv-table tbody tr:hover{background:rgba(212,175,55,0.06);}
+        .config-pill{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(37,99,235,0.10);color:var(--blue);font-size:11px;font-weight:700;text-transform:uppercase;}
+        .proj-link{color:var(--navy);font-weight:600;text-decoration:none;}
+        .proj-link:hover{color:var(--gold-dark);}
+        .price-strong{font-family:'Playfair Display',serif;font-weight:700;color:var(--navy);}
+        .lakhs-num{font-family:'Playfair Display',serif;color:var(--gold-dark);font-weight:700;}
+        .muted-cell{color:var(--muted);}
+
+        /* EMPTY STATE (aligned to projects-list) */
+        .empty-state {
+            padding: 60px 24px; text-align: center;
+            color: var(--muted); font-size: 14px;
+            background: #fff; border-radius: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width:900px){.inv-table{display:block;overflow-x:auto;white-space:nowrap;}}
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+        <% if (typeof flash !== 'undefined' && flash) { %>
+            <div style="margin-bottom:18px;padding:13px 18px;border-radius:10px;font-size:14px;font-weight:600;<%= flash.type==='success' ? 'background:rgba(34,153,84,0.12);color:#1e8449;border:1px solid rgba(34,153,84,0.35);' : 'background:rgba(192,57,43,0.10);color:#c0392b;border:1px solid rgba(192,57,43,0.30);' %>"><%= flash.text %></div>
+        <% } %>
+
+        <!-- HERO -->
+        <div class="page-hero">
+            <div>
+                <h1>Properties</h1>
+                <p>The saleable inventory — every property (unit) across all projects. Click a row for full details.</p>
+                <div class="gold-line"></div>
+            </div>
+            <a href="/properties/new" class="ds-btn ds-btn-gold" style="position:relative;z-index:2;"><span style="font-size:18px;line-height:1;">+</span> Add Property</a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stat-pills">
+            <div class="stat-pill dot-total"><div class="dot"></div><div><div class="label">Total Properties</div><div class="num"><%= stats.total_units %></div></div></div>
+            <div class="stat-pill dot-proj"><div class="dot"></div><div><div class="label">Across Projects</div><div class="num"><%= stats.in_projects %></div></div></div>
+            <div class="stat-pill dot-show"><div class="dot"></div><div><div class="label">Showing</div><div class="num"><%= showing %></div></div></div>
+        </div>
+
+        <%
+            function cap(s){ return s ? String(s).replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}) : null; }
+        %>
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+            <form method="GET" action="/admin/properties" class="filter-form">
+                <div class="filter-group span2">
+                    <label>Search</label>
+                    <input type="text" name="q" placeholder="Title, project, location…" value="<%= filters.q %>" />
+                </div>
+                <div class="filter-group">
+                    <label>Project</label>
+                    <select name="project"><option value="">All projects</option>
+                        <% projectOpts.forEach(function(p){ %><option value="<%= p.project_id %>" <%= filters.project===p.project_id?'selected':'' %>><%= p.title %></option><% }); %>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>BHK</label>
+                    <select name="config"><option value="">All</option>
+                        <% configs.forEach(function(c){ %><option value="<%= c %>" <%= filters.config===c?'selected':'' %>><%= c %></option><% }); %>
+                    </select>
+                </div>
+                <div class="filter-group span2">
+                    <label>Budget ₹ (min–max)</label>
+                    <div class="budget-inputs">
+                        <input type="number" name="budget_min" placeholder="min" value="<%= filters.budget_min %>" />
+                        <input type="number" name="budget_max" placeholder="max" value="<%= filters.budget_max %>" />
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Category</label>
+                    <select name="category"><option value="">All</option>
+                        <option value="residential" <%= filters.category==='residential'?'selected':'' %>>Residential</option>
+                        <option value="commercial" <%= filters.category==='commercial'?'selected':'' %>>Commercial</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Listing</label>
+                    <select name="listing"><option value="">All</option>
+                        <option value="sale" <%= filters.listing==='sale'?'selected':'' %>>For Sale</option>
+                        <option value="rent" <%= filters.listing==='rent'?'selected':'' %>>For Rent</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Possession</label>
+                    <select name="possession"><option value="">All</option>
+                        <% opts.POSSESSION.forEach(function(v){ %><option value="<%= v %>" <%= filters.possession===v?'selected':'' %>><%= cap(v) %></option><% }); %>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Furnishing</label>
+                    <select name="furnishing"><option value="">All</option>
+                        <% opts.FURNISHING.forEach(function(v){ %><option value="<%= v %>" <%= filters.furnishing===v?'selected':'' %>><%= cap(v) %></option><% }); %>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="/admin/properties" class="btn btn-clear">Clear</a>
+                </div>
+            </form>
+        </div>
+
+        <% if (units && units.length) { %>
+        <% function carpet(u){ if(u.sellable_area!=null&&!isNaN(Number(u.sellable_area)))return Number(u.sellable_area); if(u.carpet_area!=null&&!isNaN(Number(u.carpet_area)))return Number(u.carpet_area); if(u.carpet_sqft&&!isNaN(Number(u.carpet_sqft)))return Number(u.carpet_sqft); return null; } %>
+        <table class="inv-table">
+            <thead><tr><th></th><th>Property</th><th>Sellable Area</th><th>Price · ₹/sqft</th><th>Floor</th><th>Facing</th><th>Furnishing</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                <% units.forEach(function(u){ %>
+                    <tr onclick="location.href='/properties/<%= u.property_id %>'">
+                        <td style="width:64px;">
+                            <% if (u.thumb) { %><img src="<%= u.thumb %>" alt="" style="width:52px;height:40px;object-fit:cover;border-radius:6px;display:block;">
+                            <% } else { %><div style="width:52px;height:40px;border-radius:6px;background:linear-gradient(135deg,#142238,#0A1628);display:flex;align-items:center;justify-content:center;color:#D4AF37;font-size:15px;">🏠</div><% } %>
+                        </td>
+                        <td>
+                            <span class="config-pill"><%= u.config || '—' %></span>
+                            <% if (u.category) { %><span style="margin-left:6px;font-size:10px;font-weight:700;color:#B8941F;background:rgba(212,175,55,0.14);padding:2px 8px;border-radius:999px;"><%= u.category.charAt(0).toUpperCase()+u.category.slice(1) %></span><% } %>
+                            <% if (u.listing_sale) { %><span style="margin-left:4px;font-size:10px;font-weight:700;color:#0A1628;background:rgba(22,163,74,0.14);padding:2px 8px;border-radius:999px;">Sell</span><% } %>
+                            <% if (u.listing_rent) { %><span style="margin-left:4px;font-size:10px;font-weight:700;color:#0A1628;background:rgba(37,99,235,0.14);padding:2px 8px;border-radius:999px;">Rent</span><% } %>
+                            <% if (u.title) { %><span style="font-weight:600;color:#0A1628;margin-left:8px;"><%= u.title %></span><% } %>
+                            <div style="font-size:12px;color:#6b6b6b;margin-top:4px;">
+                                <% if (u.project_id) { %><a class="proj-link" href="/admin/projects/<%= u.project_id %>" onclick="event.stopPropagation();"><%= u.project_title %></a><% if (u.location) { %> · <%= u.location %><% } %>
+                                <% } else if (u.owner_name || u.owner_phone) { %>Owner: <%= u.owner_name || '—' %><% if (u.owner_phone) { %> · <%= u.owner_phone %><% } %>
+                                <% } else { %><span class="muted-cell">Standalone listing</span><% } %>
+                            </div>
+                        </td>
+                        <td><% var ca=carpet(u); %><% if(ca!=null){ %><%= ca %><span class="muted-cell" style="font-size:11px;"> <%= u.area_unit %></span><% }else{ %><span class="muted-cell">—</span><% } %></td>
+                        <td>
+                            <span class="price-strong"><% if(u.expected_price!=null){ %>₹<%= Number(u.expected_price).toLocaleString('en-IN') %><% }else if(u.price_lakhs!=null){ %>₹<%= Number(u.price_lakhs).toLocaleString('en-IN') %> L<% }else{ %><span class="muted-cell">—</span><% } %></span>
+                            <% if(u.price_per_sqft!=null){ %><div class="lakhs-num" style="font-size:12px;">₹<%= Number(u.price_per_sqft).toLocaleString('en-IN') %>/sqft</div><% } %>
+                            <% if(u.price_negotiable){ %><span class="muted-cell" style="font-size:11px;">Negotiable</span><% } %>
+                        </td>
+                        <td><% if(u.floor_number!=null){ %><%= u.floor_number %><% if(u.total_floors!=null){ %><span class="muted-cell" style="font-size:11px;"> / <%= u.total_floors %></span><% } %><% }else{ %><span class="muted-cell">—</span><% } %></td>
+                        <td class="muted-cell"><%= cap(u.facing) || '—' %></td>
+                        <td><% if(u.furnishing){ %><span style="display:inline-block;padding:3px 9px;border-radius:999px;background:rgba(212,175,55,0.14);color:#B8941F;font-size:11px;font-weight:700;"><%= cap(u.furnishing) %></span><% }else{ %><span class="muted-cell">—</span><% } %></td>
+                        <td><% if(u.possession_status){ %><span style="display:inline-block;padding:3px 9px;border-radius:999px;background:rgba(37,99,235,0.10);color:#2563eb;font-size:11px;font-weight:700;"><%= cap(u.possession_status) %></span><% }else{ %><span class="muted-cell">—</span><% } %></td>
+                        <td class="muted-cell" style="text-align:right;">view →</td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+        <% } else { %>
+            <div class="empty-state">No properties yet — add your first inside a project.
+                <div style="margin-top:14px;"><a href="/properties/new" style="color:var(--gold-dark);font-weight:600;">+ Add Property</a></div>
+            </div>
+        <% } %>
+
+        </div>
+    </div>
+</body>
+</html>

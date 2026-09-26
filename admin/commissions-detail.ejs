@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb; --orange: #ea580c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    a { color: var(--blue); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .crumb { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 24px 30px; border-radius: 16px; margin-bottom: 20px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 25px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.72); font-size: 13px; }
+    .flash { background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.3); color: var(--green); padding: 12px 18px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; font-weight: 500; }
+    .err { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.3); color: var(--red); padding: 12px 18px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; font-weight: 500; }
+    .grid2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 960px) { .grid2 { grid-template-columns: 1fr; } }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+    .panel h2 { font-size: 16px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .panel .body { padding: 18px 20px; }
+    .dl { display: grid; grid-template-columns: 150px 1fr; gap: 9px 14px; font-size: 13px; }
+    .dl dt { color: var(--muted); font-weight: 500; }
+    .dl dd { color: var(--navy); font-weight: 600; }
+    .amt { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .amt.big { font-size: 22px; font-family: 'Playfair Display', serif; }
+    .out-pos { color: var(--red); } .out-zero { color: var(--green); }
+    .badge { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .st-accrued { background: rgba(10,22,40,0.06); color: var(--muted); }
+    .st-builder_confirmed { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .st-invoice_raised { background: rgba(212,175,55,0.18); color: var(--gold-dark); }
+    .st-partially_received { background: rgba(234,88,12,0.12); color: var(--orange); }
+    .st-fully_received { background: rgba(22,163,74,0.14); color: var(--green); }
+    label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); margin-bottom: 5px; }
+    input, select, textarea { width: 100%; font-family: 'Inter', sans-serif; font-size: 13px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--offwhite); color: var(--text); margin-bottom: 13px; }
+    textarea { resize: vertical; min-height: 60px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); } .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-navy { background: var(--navy); color: var(--offwhite); } .btn-navy:hover { background: var(--navy-2); }
+    .hint { font-size: 11px; color: var(--muted); margin: -6px 0 12px; }
+    /* Helper text that follows an action button must sit BELOW it in normal flow,
+       never overlap. The -6px top margin above is only for hints under inputs
+       (which carry a 13px bottom margin); after a button it would pull up onto it.
+       The button is inline-flex (line above) so the block .hint already breaks to
+       its own line below — this just restores positive spacing instead of -6px. */
+    .btn + .hint { margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 9px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.num, td.num { text-align: right; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    .empty { text-align: center; color: var(--muted); padding: 26px; font-size: 13px; }
+    .tl { list-style: none; }
+    .tl li { padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 12.5px; }
+    .tl li:last-child { border-bottom: none; }
+    .tl .when { color: var(--muted); font-size: 11px; }
+    .tl .who { font-weight: 600; color: var(--navy); }
+    .mono { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <%
+        function inr(v) {
+          var n = Number(v);
+          if (v === null || v === undefined || isNaN(n)) return '₹0';
+          return '₹' + Math.round(n).toLocaleString('en-IN');
+        }
+        // date-only, TZ-safe: never let a pg Date drift a day.
+        function fmtDate(d) {
+          if (!d) return '—';
+          if (typeof d === 'string') return d.slice(0, 10);
+          try {
+            var y = d.getFullYear(), m = ('0' + (d.getMonth() + 1)).slice(-2), day = ('0' + d.getDate()).slice(-2);
+            return y + '-' + m + '-' + day;
+          } catch (e) { return '—'; }
+        }
+        function dateInput(d) { return d ? fmtDate(d) : ''; }
+        function statusLabel(s) { return (statusLabels && statusLabels[s]) || (s || '—'); }
+        var outNum = Number(r.outstanding);
+        var outClass = (!isNaN(outNum) && outNum <= 0) ? 'out-zero' : 'out-pos';
+        var today = fmtDate(new Date());
+      %>
+
+      <div class="crumb"><a href="/admin/commissions">← All receivables</a></div>
+
+      <div class="page-hero">
+        <h1><%= r.builder_name || '—' %> <span style="opacity:.6;font-size:16px;">· <%= r.external_id || 'Receivable' %></span></h1>
+        <p>Booking <span class="mono"><%= r.booking_ref || '—' %></span> &nbsp;·&nbsp; accrued <%= fmtDate(r.accrued_at) %> &nbsp;·&nbsp; <%= isNaN(Number(r.ageing_days)) ? '—' : r.ageing_days %> days old &nbsp;·&nbsp; <a href="/admin/receipts" style="color:var(--gold);text-decoration:underline;">Token receipts →</a></p>
+      </div>
+
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <% if (errmsg) { %><div class="err"><%= errmsg %></div><% } %>
+
+      <div class="grid2">
+        <div>
+          <!-- ---------- DETAIL ---------- -->
+          <div class="panel">
+            <h2>Receivable</h2>
+            <div class="body">
+              <dl class="dl">
+                <dt>Status</dt><dd><span class="badge st-<%= r.status %>"><%= statusLabel(r.status) %></span></dd>
+                <dt>Expected</dt><dd class="amt"><%= inr(r.expected_amount) %></dd>
+                <dt>Received</dt><dd class="amt"><%= inr(r.received) %></dd>
+                <dt>TDS (counts as received)</dt><dd class="amt"><%= inr(r.tds_deducted) %></dd>
+                <dt>Outstanding</dt><dd class="amt big <%= outClass %>"><%= inr(r.outstanding) %></dd>
+                <dt>GST on invoice (info)</dt><dd class="amt"><%= inr(r.gst_on_invoice) %></dd>
+                <dt>Invoice no.</dt><dd><%= r.invoice_number || '—' %></dd>
+                <dt>Invoice date</dt><dd><%= fmtDate(r.invoice_date) %></dd>
+                <dt>Booking ref</dt><dd class="mono"><%= r.booking_ref || '—' %></dd>
+                <dt>Commission id</dt><dd class="mono" style="font-size:11px;"><%= r.commission_id || '—' %></dd>
+              </dl>
+            </div>
+          </div>
+
+          <!-- ---------- RECEIPT HISTORY ---------- -->
+          <div class="panel">
+            <h2>Receipts</h2>
+            <table>
+              <thead><tr><th>Date</th><th class="num">Amount</th><th>Mode</th><th>Reference</th><th>Notes</th></tr></thead>
+              <tbody>
+                <% if (receipts && receipts.length) { %>
+                  <% receipts.forEach(function(rc) { %>
+                    <tr>
+                      <td class="mono"><%= fmtDate(rc.received_on) %></td>
+                      <td class="num amt"><%= inr(rc.amount) %></td>
+                      <td><%= rc.mode || '—' %></td>
+                      <td class="mono"><%= rc.reference || '—' %></td>
+                      <td><%= rc.notes || '—' %></td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr><td colspan="5" class="empty">No receipts recorded yet.</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ---------- TIMELINE ---------- -->
+          <div class="panel">
+            <h2>Timeline</h2>
+            <div class="body">
+              <% if (timeline && timeline.length) { %>
+                <ul class="tl">
+                  <% timeline.forEach(function(t) { %>
+                    <li>
+                      <div>
+                        <% if (t.action === 'status') { %>
+                          Status <span class="mono"><%= t.old_value || '—' %></span> → <span class="mono"><%= t.new_value || '—' %></span>
+                        <% } else if (t.action === 'receipt') { %>
+                          <%= t.notes || 'Receipt recorded' %>
+                        <% } else if (t.action === 'update') { %>
+                          <%= t.field_name %>: <span class="mono"><%= t.old_value || '—' %></span> → <span class="mono"><%= t.new_value || '—' %></span>
+                        <% } else { %>
+                          <%= t.action %><%= t.notes ? ' — ' + t.notes : '' %>
+                        <% } %>
+                      </div>
+                      <div class="when">
+                        <span class="who"><%= t.changed_by_name || 'system' %></span>
+                        <%= t.changed_by_role ? '(' + t.changed_by_role + ')' : '' %>
+                        · <%= fmtDate(t.created_at) %>
+                        <% if (t.action !== 'status' && t.notes && t.action !== 'receipt') { %> — <%= t.notes %><% } %>
+                      </div>
+                    </li>
+                  <% }); %>
+                </ul>
+              <% } else { %>
+                <div class="empty">No history yet.</div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- ACTIONS ---------- -->
+        <div>
+          <!-- Record receipt -->
+          <div class="panel">
+            <h2>Record receipt</h2>
+            <div class="body">
+              <form method="POST" action="/admin/commissions/<%= r.receivable_id %>/receipt">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <div class="row2">
+                  <div><label>Amount (₹)</label><input type="number" name="amount" min="1" step="0.01" required placeholder="50000" /></div>
+                  <div><label>Received on</label><input type="date" name="received_on" value="<%= today %>" /></div>
+                </div>
+                <div class="row2">
+                  <div><label>Mode</label>
+                    <select name="mode">
+                      <option value="">—</option>
+                      <option value="neft">NEFT</option><option value="rtgs">RTGS</option>
+                      <option value="cheque">Cheque</option><option value="upi">UPI</option><option value="cash">Cash</option>
+                    </select>
+                  </div>
+                  <div><label>Reference (UTR / cheque no.)</label><input type="text" name="reference" maxlength="80" /></div>
+                </div>
+                <label>Notes</label><textarea name="notes" maxlength="300"></textarea>
+                <button type="submit" class="btn btn-gold">Record receipt</button>
+                <div class="hint">Partially / Fully Received is set automatically from receipts + TDS vs expected.</div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Advance / correct status -->
+          <div class="panel">
+            <h2>Change status</h2>
+            <div class="body">
+              <% if (manualTargets && manualTargets.length) { %>
+                <form method="POST" action="/admin/commissions/<%= r.receivable_id %>/status">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <label>Move to</label>
+                  <select name="status" required>
+                    <% manualTargets.forEach(function(t) { %>
+                      <option value="<%= t.value %>"><%= t.label %><%= t.backward ? ' (backward)' : '' %></option>
+                    <% }); %>
+                  </select>
+                  <label>Reason (required for backward moves)</label>
+                  <textarea name="reason" maxlength="300" placeholder="Why is this moving back?"></textarea>
+                  <button type="submit" class="btn btn-navy">Update status</button>
+                  <div class="hint">To reach “Invoice Raised”, save the invoice number &amp; date first.</div>
+                </form>
+              <% } else { %>
+                <div class="empty">No manual status changes available.</div>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Invoice details -->
+          <div class="panel">
+            <h2>Invoice details</h2>
+            <div class="body">
+              <form method="POST" action="/admin/commissions/<%= r.receivable_id %>/invoice">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <label>Invoice number</label>
+                <input type="text" name="invoice_number" maxlength="80" value="<%= r.invoice_number || '' %>" />
+                <label>Invoice date</label>
+                <input type="date" name="invoice_date" value="<%= dateInput(r.invoice_date) %>" />
+                <button type="submit" class="btn btn-navy">Save invoice details</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

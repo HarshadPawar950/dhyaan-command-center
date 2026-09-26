@@ -1,0 +1,319 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-soft: #E8C766;
+            --gold-dark: #B8941F;
+            --navy: #0A1628;
+            --navy-2: #142238;
+            --offwhite: #FAFAF7;
+            --beige: #F4EFE6;
+            --text: #1a1a1a;
+            --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --shadow-hover: 0 8px 32px rgba(10, 22, 40, 0.12);
+            --green: #16a34a;
+            --red: #dc2626;
+            --amber: #d97706;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 32px 40px; flex: 1; }
+
+        /* ---------- HERO ---------- */
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite);
+            padding: 28px 32px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .page-hero::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+        .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+        .page-hero .gold-line {
+            display: inline-block; width: 36px; height: 3px;
+            background: var(--gold); margin-top: 12px; border-radius: 2px;
+        }
+
+        /* ---------- STAT PILLS ---------- */
+        .stat-pills {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .stat-pill {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .stat-pill .dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+        }
+        .stat-pill.dot-total .dot    { background: var(--gold); }
+        .stat-pill.dot-active .dot   { background: var(--green); }
+        .stat-pill.dot-inactive .dot { background: var(--red); }
+        .stat-pill.dot-leave .dot    { background: var(--amber); }
+        .stat-pill .label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .stat-pill .num {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px; font-weight: 700; color: var(--navy); line-height: 1;
+        }
+
+        /* ---------- TABLE ---------- */
+        .table-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .table-head {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .table-head h2 { font-size: 18px; }
+        .table-head .table-count {
+            font-size: 12px; color: var(--gold-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .emp-table { width: 100%; border-collapse: collapse; }
+        .emp-table thead th {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600;
+            text-align: left; padding: 14px 24px;
+            background: var(--beige); border-bottom: 1px solid var(--border);
+        }
+        .emp-table tbody td {
+            padding: 16px 24px; border-bottom: 1px solid var(--border);
+            font-size: 14px; vertical-align: middle;
+        }
+        .emp-table tbody tr {
+            cursor: pointer; transition: background 0.15s ease;
+        }
+        .emp-table tbody tr:hover { background: rgba(212,175,55,0.06); }
+        .emp-table tbody tr:last-child td { border-bottom: none; }
+
+        .emp-name-cell { display: flex; align-items: center; gap: 12px; }
+        .emp-avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+            color: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 15px;
+            flex-shrink: 0;
+        }
+        .emp-name { font-weight: 600; color: var(--navy); }
+        .emp-code { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.5px; }
+
+        .badge {
+            display: inline-block;
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+            font-weight: 700; padding: 4px 9px; border-radius: 5px;
+        }
+        .badge-role-employee    { background: rgba(10,22,40,0.06); color: var(--navy); }
+        .badge-role-admin       { background: rgba(212,175,55,0.16); color: var(--gold-dark); }
+        .badge-role-super_admin { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%); color: var(--navy); }
+
+        .badge-status-active   { background: rgba(22,163,74,0.12); color: var(--green); }
+        .badge-status-inactive { background: rgba(220,38,38,0.10); color: var(--red); }
+        .badge-status-on_leave { background: rgba(217,119,6,0.12); color: var(--amber); }
+
+        .lead-count-cell {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; font-weight: 700; color: var(--navy);
+        }
+        .lead-count-zero { color: var(--muted); font-weight: 500; }
+
+        .view-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; background: transparent;
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--navy); font-family: inherit; font-size: 12px;
+            font-weight: 600; text-decoration: none; cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .view-btn:hover {
+            background: var(--navy); color: var(--offwhite); border-color: var(--navy);
+        }
+        .empty-state {
+            padding: 60px 24px; text-align: center; color: var(--muted); font-size: 14px;
+        }
+        .muted-cell { color: var(--muted); font-size: 13px; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .emp-table thead th.col-hide,
+            .emp-table tbody td.col-hide { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+            <!-- HERO -->
+            <div class="page-hero">
+                <h1>All Employees</h1>
+        <a href="/admin/employees-new" class="ds-btn ds-btn-gold" style="position:absolute;top:28px;right:32px;z-index:2;"><span style="font-size:18px;line-height:1;">+</span> Add Employee</a>
+                <p>The whole Dhyaan team &mdash; admins, sales, support &mdash; at a glance.</p>
+                <div class="gold-line"></div>
+            </div>
+
+            <!-- STAT PILLS -->
+            <div class="stat-pills">
+                <div class="stat-pill dot-total">
+                    <div class="dot"></div>
+                    <div>
+                        <div class="label">Total</div>
+                        <div class="num"><%= stats.total %></div>
+                    </div>
+                </div>
+                <div class="stat-pill dot-active">
+                    <div class="dot"></div>
+                    <div>
+                        <div class="label">Active</div>
+                        <div class="num"><%= stats.active %></div>
+                    </div>
+                </div>
+                <div class="stat-pill dot-inactive">
+                    <div class="dot"></div>
+                    <div>
+                        <div class="label">Inactive</div>
+                        <div class="num"><%= stats.inactive %></div>
+                    </div>
+                </div>
+                <div class="stat-pill dot-leave">
+                    <div class="dot"></div>
+                    <div>
+                        <div class="label">On Leave</div>
+                        <div class="num"><%= stats.on_leave %></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-card">
+                <div class="table-head">
+                    <h2>Team Roster</h2>
+                    <span class="table-count"><%= employees.length %> people</span>
+                </div>
+
+                <% if (employees && employees.length > 0) { %>
+                <table class="emp-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th class="col-hide">Job Title</th>
+                            <th class="col-hide">Email</th>
+                            <th class="col-hide">Phone</th>
+                            <th>Leads</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% employees.forEach(function(e) { %>
+                            <% const initial = (e.name || '?').charAt(0).toUpperCase(); %>
+                            <% const rowHref = '/admin/employees/' + e.employee_id; %>
+                            <tr onclick="window.location.href='<%= rowHref %>'">
+                                <td>
+                                    <div class="emp-name-cell">
+                                        <div class="emp-avatar"><%= initial %></div>
+                                        <div>
+                                            <div class="emp-name"><%= e.name %></div>
+                                            <div class="emp-code"><%= e.external_id || '—' %></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-role-<%= e.access_role %>">
+                                        <%= (e.access_role || 'employee').replace('_', ' ') %>
+                                    </span>
+                                </td>
+                                <td class="col-hide muted-cell">
+                                    <%= e.job_title || '—' %>
+                                </td>
+                                <td class="col-hide muted-cell">
+                                    <%= e.email || '—' %>
+                                </td>
+                                <td class="col-hide muted-cell">
+                                    <%= e.phone || '—' %>
+                                </td>
+                                <td>
+                                    <span class="lead-count-cell <%= e.lead_count === 0 ? 'lead-count-zero' : '' %>">
+                                        <%= e.lead_count %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-status-<%= e.status %>">
+                                        <%= (e.status || 'active').replace('_', ' ') %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="<%= rowHref %>" class="view-btn" onclick="event.stopPropagation();">
+                                        View &rarr;
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+                <% } else { %>
+                    <div class="empty-state">No employees yet. Add team members from the database.</div>
+                <% } %>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+

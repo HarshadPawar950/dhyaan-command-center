@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --gold:#D4AF37; --gold-dark:#B8941F; --navy:#0A1628; --navy-2:#142238; --offwhite:#FAFAF7; --beige:#F4EFE6; --text:#1a1a1a; --muted:#6b6b6b; --border:rgba(10,22,40,0.08); --shadow:0 4px 24px rgba(10,22,40,0.06); --green:#16a34a; --red:#dc2626; --blue:#2563eb; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; background:var(--offwhite); color:var(--text); min-height:100vh; display:flex; }
+    h1,h2,h3 { font-family:'Playfair Display',serif; font-weight:600; color:var(--navy); }
+    .main-content { flex:1; margin-left:260px; min-height:100vh; display:flex; flex-direction:column; }
+    .page-body { padding:28px 40px; flex:1; }
+    .page-hero { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%); color:var(--offwhite); padding:26px 32px; border-radius:16px; margin-bottom:22px; position:relative; overflow:hidden; box-shadow:var(--shadow); }
+    .page-hero::before { content:""; position:absolute; top:-50%; right:-10%; width:300px; height:300px; background:radial-gradient(circle,rgba(212,175,55,0.18) 0%,transparent 70%); }
+    .page-hero h1 { color:var(--offwhite); font-size:28px; margin-bottom:4px; }
+    .page-hero p { color:rgba(250,250,247,0.7); font-size:14px; }
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:22px; }
+    .kpi-card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px; box-shadow:var(--shadow); border-left:4px solid var(--gold); }
+    .kpi-card .label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px; }
+    .kpi-card .value { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--navy); line-height:1; }
+    .kpi-card.rev .value { color:var(--green); } .kpi-card.exp .value { color:var(--red); } .kpi-card.net .value { color:var(--blue); }
+    .cols { display:grid; grid-template-columns:1.4fr 1fr; gap:20px; }
+    @media (max-width:960px){ .cols { grid-template-columns:1fr; } }
+    .panel { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+    .panel h3 { padding:16px 20px 0; font-size:15px; }
+    .sub { color:var(--muted); font-size:12px; padding:2px 20px 12px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); padding:11px 16px; border-bottom:2px solid var(--border); background:var(--beige); }
+    th.r, td.r { text-align:right; }
+    td { padding:11px 16px; border-bottom:1px solid var(--border); }
+    tr:last-child td { border-bottom:none; }
+    .mono { font-variant-numeric:tabular-nums; }
+    .pos { color:var(--green); font-weight:600; } .neg { color:var(--red); font-weight:600; }
+    tfoot td { font-weight:700; background:var(--beige); color:var(--navy); }
+    .empty { text-align:center; color:var(--muted); padding:40px; }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <div class="main-content">
+    <%- topbarHtml %>
+    <div class="page-body">
+      <% function inr(n){ var x=Number(n||0); return (x<0?'-₹':'₹') + Math.abs(x).toLocaleString('en-IN',{maximumFractionDigits:2}); } %>
+      <% function ymd(d){ return d ? new Date(d).toISOString().slice(0,10) : '—'; } %>
+
+      <div class="page-hero">
+        <h1>Profit &amp; Loss</h1>
+        <p>Revenue (commissions earned — company share) minus expenses. Monthly &amp; FY-to-date (from <%= ymd(fy.start) %>).</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card rev"><div class="label">FY Revenue</div><div class="value"><%= inr(fy.revenue) %></div></div>
+        <div class="kpi-card exp"><div class="label">FY Expenses</div><div class="value"><%= inr(fy.expenses) %></div></div>
+        <div class="kpi-card net"><div class="label">FY Net Profit</div><div class="value"><%= inr(fy.net) %></div></div>
+      </div>
+
+      <div class="cols">
+        <div class="panel">
+          <h3>Monthly P&amp;L</h3>
+          <div class="sub">Revenue = Σ commission_ledger.company_share · Expenses = Σ approved expenses</div>
+          <table>
+            <thead><tr><th>Month</th><th class="r">Revenue</th><th class="r">Expenses</th><th class="r">Net</th></tr></thead>
+            <tbody>
+              <% if (monthly && monthly.length) { %>
+                <% monthly.forEach(function(r){ var net=Number(r.revenue)-Number(r.expenses); %>
+                  <tr>
+                    <td class="mono"><%= r.ym %></td>
+                    <td class="r mono"><%= inr(r.revenue) %></td>
+                    <td class="r mono"><%= inr(r.expenses) %></td>
+                    <td class="r mono <%= net>=0?'pos':'neg' %>"><%= inr(net) %></td>
+                  </tr>
+                <% }); %>
+              <% } else { %>
+                <tr><td colspan="4" class="empty">No P&amp;L activity yet.</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h3>FY Expenses by Category</h3>
+          <div class="sub">From <%= ymd(fy.start) %> to today</div>
+          <table>
+            <thead><tr><th>Category</th><th class="r">Amount</th></tr></thead>
+            <tbody>
+              <% if (byCat && byCat.length) { %>
+                <% byCat.forEach(function(c){ %>
+                  <tr><td><%= c.name || '—' %></td><td class="r mono"><%= inr(c.v) %></td></tr>
+                <% }); %>
+              <% } else { %>
+                <tr><td colspan="2" class="empty">No expenses this FY.</td></tr>
+              <% } %>
+            </tbody>
+            <% if (byCat && byCat.length) { %>
+            <tfoot><tr><td>Total</td><td class="r mono"><%= inr(fy.expenses) %></td></tr></tfoot>
+            <% } %>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %> — Dhyaan Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+            --navy: #0A1628; --navy-2: #142238;
+            --offwhite: #FAFAF7; --beige: #F4EFE6;
+            --text: #1a1a1a; --muted: #6b6b6b;
+            --border: rgba(10, 22, 40, 0.08);
+            --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+            --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--offwhite); color: var(--text);
+            min-height: 100vh; display: flex;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600; color: var(--navy);
+        }
+        .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .page-body { padding: 28px 40px; flex: 1; }
+
+        /* ---------- HERO ---------- */
+        .page-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: var(--offwhite); padding: 26px 32px;
+            border-radius: 16px; margin-bottom: 22px;
+            position: relative; overflow: hidden; box-shadow: var(--shadow);
+        }
+        .page-hero::before {
+            content: ""; position: absolute; top: -50%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+        .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+        .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+        /* ---------- STATS ---------- */
+        .stat-pills {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px; margin-bottom: 22px;
+        }
+        .stat-pill {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px;
+            box-shadow: var(--shadow); display: flex;
+            align-items: center; gap: 12px;
+        }
+        .stat-pill .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .stat-pill.dot-total .dot  { background: var(--gold); }
+        .stat-pill.dot-hot .dot    { background: var(--red); }
+        .stat-pill.dot-warm .dot   { background: var(--amber); }
+        .stat-pill.dot-cold .dot   { background: var(--blue); }
+        .stat-pill.dot-closed .dot { background: var(--green); }
+        .stat-pill .label {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .stat-pill .num {
+            font-family: 'Playfair Display', serif; font-size: 22px;
+            font-weight: 700; color: var(--navy); line-height: 1;
+        }
+
+        /* ---------- FILTER BAR ---------- */
+        .filter-bar {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 18px;
+            box-shadow: var(--shadow); margin-bottom: 16px;
+        }
+        .filter-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+            gap: 10px; align-items: end;
+        }
+        @media (max-width: 1100px) {
+            .filter-form { grid-template-columns: 1fr 1fr 1fr; }
+        }
+        @media (max-width: 700px) {
+            .filter-form { grid-template-columns: 1fr; }
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .filter-group label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600;
+        }
+        .filter-group input, .filter-group select {
+            font-family: inherit; font-size: 13px;
+            padding: 9px 12px; border: 1px solid var(--border);
+            border-radius: 8px; background: var(--offwhite);
+            color: var(--text); outline: none;
+            transition: border-color 0.15s ease;
+        }
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: var(--gold); background: #fff;
+        }
+        .filter-actions { display: flex; gap: 8px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; padding: 9px 18px; border-radius: 8px;
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            text-decoration: none; cursor: pointer; border: none;
+            transition: all 0.15s ease;
+        }
+        .btn-primary { background: var(--navy); color: var(--offwhite); }
+        .btn-primary:hover { background: var(--navy-2); }
+        .btn-clear {
+            background: transparent; color: var(--muted);
+            border: 1px solid var(--border);
+        }
+        .btn-clear:hover { background: var(--beige); color: var(--navy); }
+
+        /* ---------- FILTER CHIPS ---------- */
+        .active-filters {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 10px;
+            background: rgba(212,175,55,0.16); color: var(--gold-dark);
+            border-radius: 5px; font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.8px;
+        }
+        .chip a { color: var(--gold-dark); text-decoration: none; font-size: 14px; line-height: 1; }
+        .chip a:hover { color: var(--red); }
+
+        /* ---------- TABLE ---------- */
+        .table-card {
+            background: #fff; border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow); overflow: hidden;
+        }
+        .table-head {
+            padding: 16px 22px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .table-head h2 { font-size: 17px; }
+        .table-head .count {
+            font-size: 12px; color: var(--gold-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .lead-table { width: 100%; border-collapse: collapse; }
+        .lead-table thead th {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--muted); font-weight: 600;
+            text-align: left; padding: 12px 18px;
+            background: var(--beige); border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .lead-table tbody td {
+            padding: 13px 18px; border-bottom: 1px solid var(--border);
+            font-size: 13px; vertical-align: middle;
+        }
+        .lead-table tbody tr {
+            cursor: pointer; transition: background 0.12s ease;
+        }
+        .lead-table tbody tr:hover { background: rgba(212,175,55,0.06); }
+        .lead-table tbody tr:last-child td { border-bottom: none; }
+
+        .name-cell { min-width: 160px; }
+        .name-main { font-weight: 600; color: var(--navy); }
+        .name-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+        .lead-status {
+            display: inline-block; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: 700;
+            padding: 4px 9px; border-radius: 4px; white-space: nowrap;
+        }
+        .lead-status-cold   { background: rgba(37,99,235,0.10);  color: var(--blue); }
+        .lead-status-warm   { background: rgba(217,119,6,0.12);  color: var(--amber); }
+        .lead-status-hot    { background: rgba(220,38,38,0.12);  color: var(--red); }
+        .lead-status-closed,
+        .lead-status-converted,
+        .lead-status-won,
+        .lead-status-booked { background: rgba(22,163,74,0.12);  color: var(--green); }
+
+        .assigned-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 999px;
+            background: var(--beige); font-size: 12px;
+            font-weight: 600; color: var(--navy);
+        }
+        .assigned-pill .dot-small {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--gold);
+        }
+        .unassigned-pill {
+            display: inline-block; padding: 4px 10px; border-radius: 999px;
+            background: rgba(220,38,38,0.08); color: var(--red);
+            font-size: 11px; font-weight: 600;
+        }
+        .muted-cell { color: var(--muted); font-size: 12px; }
+        .empty-state {
+            padding: 60px 24px; text-align: center; color: var(--muted); font-size: 14px;
+        }
+        .view-arrow {
+            color: var(--gold-dark); font-weight: 600; font-size: 13px;
+        }
+
+        @media (max-width: 1200px) {
+            .lead-table thead th.col-hide,
+            .lead-table tbody td.col-hide { display: none; }
+        }
+
+        /* ===== MOBILE CARD LAYER (<=768px, admin shell). Desktop untouched:
+           cards + filter chip default display:none; table shows. At <=768 we
+           hide .table-card (a selector responsive.css never sets, so no
+           source-order fight with its .lead-table{display:block}) and show cards. */
+        .lead-cards { display: none; }
+        .mobile-filter-row { display: none; }
+
+        @media (max-width: 768px) {
+            .stat-pills { display: flex; grid-template-columns: none;
+                overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 10px; padding-bottom: 4px; }
+            .stat-pill { flex: 0 0 auto; min-width: 128px; }
+
+            /* ---- filter row: navy chip (gold funnel + count) left, "N showing" right ---- */
+            .filter-bar { display: none; }
+            .mobile-filter-row { display: flex; align-items: center; justify-content: space-between;
+                gap: 10px; margin-bottom: 14px; }
+            .filter-chip { display: inline-flex; align-items: center; gap: 8px;
+                padding: 10px 16px; min-height: 44px;
+                background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+                border: none; border-radius: 999px; box-shadow: var(--shadow);
+                font-family: inherit; font-size: 13px; font-weight: 600; color: var(--offwhite); cursor: pointer; }
+            .filter-chip svg { width: 16px; height: 16px; stroke: var(--gold); fill: none; stroke-width: 2; }
+            .filter-chip .fc-count { background: var(--gold); color: var(--navy); font-size: 11px; font-weight: 700;
+                border-radius: 999px; min-width: 18px; height: 18px; padding: 0 5px;
+                display: inline-flex; align-items: center; justify-content: center; }
+            .mobile-filter-row .showing-count { font-size: 12px; color: var(--muted); font-weight: 600;
+                text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
+
+            /* ---- cards: match the desktop .kpi-card language (gold accent bar, Playfair name) ---- */
+            .table-card { display: none; }
+            .lead-cards { display: flex; flex-direction: column; gap: 12px; }
+            .lead-card { position: relative; overflow: hidden;
+                background: #fff; border: 1px solid var(--border); border-radius: 16px;
+                box-shadow: 0 2px 10px rgba(10,22,40,0.06); /* was 0 4px 24px — 24px blur x N cards was the paint cost */
+                padding: 18px 16px 14px; cursor: pointer;
+                display: flex; flex-direction: column; gap: 11px; }
+            .lead-card::before { content: ""; position: absolute; top: 0; left: 0; height: 3px; width: 100%;
+                background: linear-gradient(90deg, var(--gold) 0%, var(--gold-soft) 100%); }
+            .lead-card.sla-breach::before { background: #dc2626; }
+            .lead-card:active { background: rgba(212,175,55,0.04); }
+
+            .lc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+            .lc-name { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--navy);
+                font-size: 18px; line-height: 1.25; }
+            .lc-code { font-size: 10.5px; color: var(--muted); margin-top: 2px; letter-spacing: .3px; }
+
+            .lc-call { display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+                height: 40px; padding: 0 16px; border-radius: 9px;
+                background: linear-gradient(135deg, var(--gold) 0%, var(--gold-soft) 100%);
+                color: var(--navy); font-size: 14px; font-weight: 700; text-decoration: none;
+                align-self: flex-start; box-shadow: 0 3px 10px rgba(212,175,55,0.25); }
+            .lc-call svg { width: 16px; height: 16px; stroke: var(--navy); fill: none; stroke-width: 2.2; }
+            .lc-nophone { color: var(--muted); font-size: 12.5px; }
+
+            .lc-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+            .lc-meta svg { width: 14px; height: 14px; stroke: var(--gold-dark); fill: none; stroke-width: 2; flex: 0 0 14px; }
+            .lc-budget { font-weight: 700; color: var(--navy); }
+            .lc-dot { color: var(--border); }
+
+            .lc-owner { display: flex; align-items: center; gap: 8px; }
+            .lc-avatar { width: 24px; height: 24px; border-radius: 50%; flex: 0 0 24px;
+                background: var(--beige); color: var(--gold-dark);
+                font-family: 'Playfair Display', serif; font-weight: 700; font-size: 12px;
+                display: flex; align-items: center; justify-content: center; }
+            .lc-owner-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+
+            .lc-empty { padding: 48px 20px; text-align: center; color: var(--muted); font-size: 14px; }
+
+            .sheet-filter-form { display: flex; flex-direction: column; gap: 14px; }
+            .sheet-filter-form input, .sheet-filter-form select { font-size: 16px; } /* 16px kills iOS focus-zoom */
+            .sheet-filter-form .filter-group label { font-size: 12px; } /* 10px is under our sub-12 floor */
+            .sheet-filter-actions { display: flex; gap: 10px; margin-top: 4px; }
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('./layout/sidebar') %>
+
+    <div class="main-content">
+        <%- include('./layout/topbar') %>
+
+        <div class="page-body">
+
+            <!-- HERO -->
+            <div class="page-hero" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1>All Leads</h1>
+                    <p>Every lead in your pipeline — search, filter, drill down.</p>
+                    <div class="gold-line"></div>
+                </div>
+                <a href="/leads/new" class="ds-btn ds-btn-gold" style="position: relative; z-index: 2;"><span style="font-size:18px;line-height:1;">+</span> Add New Lead</a>
+            </div>
+
+            <!-- STATS -->
+            <div class="stat-pills">
+                <div class="stat-pill dot-total">
+                    <div class="dot"></div>
+                    <div><div class="label">Total</div><div class="num"><%= stats.total %></div></div>
+                </div>
+                <div class="stat-pill dot-hot">
+                    <div class="dot"></div>
+                    <div><div class="label">Hot</div><div class="num"><%= stats.hot %></div></div>
+                </div>
+                <div class="stat-pill dot-warm">
+                    <div class="dot"></div>
+                    <div><div class="label">Warm</div><div class="num"><%= stats.warm %></div></div>
+                </div>
+                <div class="stat-pill dot-cold">
+                    <div class="dot"></div>
+                    <div><div class="label">Cold</div><div class="num"><%= stats.cold %></div></div>
+                </div>
+                <div class="stat-pill dot-closed">
+                    <div class="dot"></div>
+                    <div><div class="label">Closed</div><div class="num"><%= stats.closed %></div></div>
+                </div>
+                <% if (typeof overdueCount !== 'undefined' && overdueCount > 0) { %>
+                <div class="stat-pill" style="border-color:rgba(220,38,38,0.4);">
+                    <div class="dot" style="background:#dc2626;"></div>
+                    <div><div class="label">SLA Overdue</div><div class="num" style="color:#dc2626;"><%= overdueCount %></div></div>
+                </div>
+                <% } %>
+            </div>
+
+            <!-- FILTER BAR -->
+            <div class="filter-bar">
+                <form method="GET" action="/admin/leads" class="filter-form">
+                    <%- include('./partials/lead-filter-fields') %>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">Apply</button>
+                        <a href="/admin/leads" class="btn btn-clear">Clear</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ACTIVE FILTER CHIPS -->
+            <%
+                const activeFilters = [];
+                if (filters.q)          activeFilters.push({ k: 'q',          v: 'Search: ' + filters.q });
+                if (filters.status)     activeFilters.push({ k: 'status',     v: 'Status: ' + filters.status });
+                if (filters.location)   activeFilters.push({ k: 'location',   v: 'Location: ' + filters.location });
+                if (filters.source)     activeFilters.push({ k: 'source',     v: 'Source: ' + filters.source });
+                if (filters.employee)   activeFilters.push({ k: 'employee',   v: 'Employee: ' + filters.employee });
+                if (filters.unassigned) activeFilters.push({ k: 'unassigned', v: 'Unassigned only' });
+
+                function buildQS(skip) {
+                    const parts = [];
+                    if (filters.q          && skip !== 'q')          parts.push('q=' + encodeURIComponent(filters.q));
+                    if (filters.status     && skip !== 'status')     parts.push('status=' + encodeURIComponent(filters.status));
+                    if (filters.location   && skip !== 'location')   parts.push('location=' + encodeURIComponent(filters.location));
+                    if (filters.source     && skip !== 'source')     parts.push('source=' + encodeURIComponent(filters.source));
+                    if (filters.employee   && skip !== 'employee')   parts.push('employee=' + encodeURIComponent(filters.employee));
+                    if (filters.unassigned && skip !== 'unassigned') parts.push('unassigned=1');
+                    return parts.length ? '/admin/leads?' + parts.join('&') : '/admin/leads';
+                }
+            %>
+
+            <!-- MOBILE FILTER CHIP (shell only; hidden >768px) -->
+            <div class="mobile-filter-row">
+                <button type="button" class="filter-chip" onclick="dsSheet('dsLeadFilterSheet')">
+                    <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    Filter
+                    <% if (activeFilters.length > 0) { %><span class="fc-count"><%= activeFilters.length %></span><% } %>
+                </button>
+                <span class="showing-count"><%= showing %> showing</span>
+            </div>
+
+            <% if (activeFilters.length > 0) { %>
+                <div class="active-filters">
+                    <% activeFilters.forEach(function(af) { %>
+                        <span class="chip"><%= af.v %> <a href="<%= buildQS(af.k) %>">✕</a></span>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <!-- TABLE -->
+            <div class="table-card">
+                <div class="table-head">
+                    <h2>Pipeline</h2>
+                    <span class="count"><%= showing %> showing</span>
+                </div>
+
+                <% if (leads && leads.length > 0) { %>
+                <div class="table-wrap">
+                <table class="lead-table">
+                    <thead>
+                        <tr>
+                            <th>Lead</th>
+                            <th>Status</th>
+                            <th class="col-hide">Phone</th>
+                            <th class="col-hide">Location</th>
+                            <th class="col-hide">Budget</th>
+                            <th class="col-hide">Source</th>
+                            <th>Assigned To</th>
+                            <th class="col-hide">Created</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% leads.forEach(function(l) { %>
+                            <% const rowHref = '/admin/leads/' + l.lead_id; %>
+                            <tr onclick="window.location.href='<%= rowHref %>'">
+                                <td class="name-cell">
+                                    <div class="name-main">
+                                        <%= l.name %>
+                                        <% if (l.sla_overdue) { %><span title="First-touch SLA breached (no follow-up within <%= slaHours %>h of assignment)" style="display:inline-block;margin-left:6px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:2px 6px;border-radius:999px;vertical-align:middle;">SLA</span><% } %>
+                                    </div>
+                                    <% if (l.external_id) { %>
+                                        <div class="name-sub"><%= l.external_id %></div>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="lead-status lead-status-<%= (l.status || 'cold').toLowerCase() %>">
+                                        <%= l.status || 'cold' %>
+                                    </span>
+                                </td>
+                                <td class="col-hide muted-cell"><%= l.phone || '—' %></td>
+                                <td class="col-hide muted-cell"><%= l.location || '—' %></td>
+                                <td class="col-hide muted-cell"><%= l.budget || '—' %></td>
+                                <td class="col-hide muted-cell"><%= l.source || '—' %></td>
+                                <td>
+                                    <% if (l.assigned_to_name) { %>
+                                        <span class="assigned-pill">
+                                            <span class="dot-small"></span>
+                                            <%= l.assigned_to_name %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="unassigned-pill">Unassigned</span>
+                                    <% } %>
+                                </td>
+                                <td class="col-hide muted-cell">
+                                    <% if (l.created_at) { %>
+                                        <%= new Date(l.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                    <% } else { %>—<% } %>
+                                </td>
+                                <td>
+                                    <span class="view-arrow">View →</span>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+                </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        No leads match your filters. Try clearing some.
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- MOBILE CARDS (shell only; hidden >768px) -->
+            <div class="lead-cards">
+                <% if (leads && leads.length > 0) { %>
+                    <% leads.forEach(function(l) { %>
+                        <% const cardHref = '/admin/leads/' + l.lead_id; %>
+                        <div class="lead-card <%= l.sla_overdue ? 'sla-breach' : '' %>" onclick="location.href='<%= cardHref %>'">
+                            <div class="lc-top">
+                                <div>
+                                    <div class="lc-name">
+                                        <%= l.name %>
+                                        <% if (l.sla_overdue) { %><span title="First-touch SLA breached" style="display:inline-block;margin-left:6px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:2px 6px;border-radius:999px;vertical-align:middle;">SLA</span><% } %>
+                                    </div>
+                                    <% if (l.external_id) { %><div class="lc-code"><%= l.external_id %></div><% } %>
+                                </div>
+                                <span class="lead-status lead-status-<%= (l.status || 'cold').toLowerCase() %>"><%= l.status || 'cold' %></span>
+                            </div>
+                            <%
+                               /* tel: must be dialable. Strip to digits (+ a leading +); if the field
+                                  holds two numbers ("98… / 98…") take the FIRST — a "/" or "," in a
+                                  tel: URI kills the link. DISPLAY text stays l.phone, untouched.
+                                  A glued double (no separator, >13 digits) is ambiguous, so we show
+                                  the number as plain text rather than dial a wrong-number splice. */
+                               const _raw   = (l.phone || '').trim();
+                               const _first = _raw.split(/\s*[\/,;]\s*|\s+or\s+/i)[0] || '';
+                               const _tel   = (/^\+/.test(_first) ? '+' : '') + _first.replace(/\D/g, '');
+                               const _len   = _tel.replace('+', '').length;
+                               const _dialable = _len >= 7 && _len <= 13;
+                            %>
+                            <% if (_dialable) { %>
+                                <a class="lc-call" href="tel:<%= _tel %>" onclick="event.stopPropagation()">
+                                    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                    <%= l.phone %>
+                                </a>
+                            <% } else if (l.phone) { %>
+                                <span class="lc-nophone"><%= l.phone %></span>
+                            <% } else { %>
+                                <span class="lc-nophone">No phone on file</span>
+                            <% } %>
+                            <div class="lc-meta">
+                                <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <span class="lc-loc"><%= l.location || 'Location n/a' %></span>
+                                <% if (l.budget) { %><span class="lc-dot">·</span><span class="lc-budget"><%= l.budget %></span><% } %>
+                            </div>
+                            <div class="lc-owner">
+                                <% if (l.assigned_to_name) { %>
+                                    <span class="lc-avatar"><%= l.assigned_to_name.trim().charAt(0).toUpperCase() %></span>
+                                    <span class="lc-owner-name"><%= l.assigned_to_name %></span>
+                                <% } else { %>
+                                    <span class="unassigned-pill">Unassigned</span>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="lc-empty">No leads match your filters. Try clearing some.</div>
+                <% } %>
+            </div>
+
+            <!-- MOBILE FILTER SHEET (shell only) -->
+            <div class="ds-sheet" id="dsLeadFilterSheet" role="dialog" aria-label="Filter leads" style="max-height:85vh;overflow-y:auto;">
+                <div class="ds-sheet-grip"></div>
+                <form method="GET" action="/admin/leads" class="sheet-filter-form">
+                    <%- include('./partials/lead-filter-fields') %>
+                    <% if (filters.unassigned) { %><input type="hidden" name="unassigned" value="1" /><% } %>
+                    <div class="sheet-filter-actions">
+                        <button type="submit" class="btn btn-primary" style="flex:1;">Apply</button>
+                        <a href="/admin/leads" class="btn btn-clear" style="flex:1;">Clear</a>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

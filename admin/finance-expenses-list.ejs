@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --gold:#D4AF37; --gold-dark:#B8941F; --navy:#0A1628; --navy-2:#142238; --offwhite:#FAFAF7; --beige:#F4EFE6; --text:#1a1a1a; --muted:#6b6b6b; --border:rgba(10,22,40,0.08); --shadow:0 4px 24px rgba(10,22,40,0.06); --green:#16a34a; --red:#dc2626; --amber:#d97706; --blue:#2563eb; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; background:var(--offwhite); color:var(--text); min-height:100vh; display:flex; }
+    h1,h2,h3 { font-family:'Playfair Display',serif; font-weight:600; color:var(--navy); }
+    .main-content { flex:1; margin-left:260px; min-height:100vh; display:flex; flex-direction:column; }
+    .page-body { padding:28px 40px; flex:1; }
+    .page-hero { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%); color:var(--offwhite); padding:26px 32px; border-radius:16px; margin-bottom:22px; position:relative; overflow:hidden; box-shadow:var(--shadow); }
+    .page-hero::before { content:""; position:absolute; top:-50%; right:-10%; width:300px; height:300px; background:radial-gradient(circle,rgba(212,175,55,0.18) 0%,transparent 70%); }
+    .page-hero h1 { color:var(--offwhite); font-size:28px; margin-bottom:4px; }
+    .page-hero p { color:rgba(250,250,247,0.7); font-size:14px; }
+    .hero-actions { position:absolute; top:28px; right:32px; z-index:2; display:flex; gap:10px; }
+    .btn { font-family:'Inter',sans-serif; font-size:13px; font-weight:600; padding:10px 18px; border-radius:9px; border:none; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+    .btn-gold { background:var(--gold); color:var(--navy); } .btn-gold:hover { background:var(--gold-dark); color:#fff; }
+    .btn-ghost { background:rgba(255,255,255,0.14); color:var(--offwhite); }
+    .btn-sm { padding:6px 10px; font-size:12px; border-radius:7px; }
+    .btn-edit { background:rgba(37,99,235,0.12); color:var(--blue); } .btn-edit:hover { background:var(--blue); color:#fff; }
+    .btn-del { background:rgba(220,38,38,0.1); color:var(--red); } .btn-del:hover { background:var(--red); color:#fff; }
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:22px; }
+    .kpi-card { background:#fff; border:1px solid var(--border); border-radius:14px; padding:20px; box-shadow:var(--shadow); border-left:4px solid var(--gold); }
+    .kpi-card .label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px; }
+    .kpi-card .value { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--navy); line-height:1; }
+    .flash { background:rgba(22,163,74,0.1); border:1px solid rgba(22,163,74,0.3); color:var(--green); padding:12px 18px; border-radius:10px; margin-bottom:18px; font-size:13px; font-weight:500; }
+    .filter-bar { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:16px 18px; margin-bottom:18px; }
+    .filter-form { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+    .filter-group { display:flex; flex-direction:column; gap:4px; }
+    .filter-group label { font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:700; }
+    .filter-group input, .filter-group select { font-family:'Inter',sans-serif; font-size:13px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--offwhite); min-width:180px; }
+    .panel { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); padding:11px 14px; border-bottom:2px solid var(--border); background:var(--beige); }
+    th.r, td.r { text-align:right; } th.ctr, td.ctr { text-align:center; }
+    td { padding:12px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    .mono { font-variant-numeric:tabular-nums; font-weight:600; color:var(--navy); }
+    .cmeta { font-size:11px; color:var(--muted); }
+    .tag { display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:2px 7px; border-radius:6px; background:rgba(22,163,74,0.12); color:var(--green); }
+    .actions { display:flex; gap:6px; justify-content:center; }
+    .empty { text-align:center; color:var(--muted); padding:40px; font-size:14px; }
+    .inline-form { display:inline; }
+  </style>
+</head>
+<body>
+  <%- sidebarHtml %>
+  <div class="main-content">
+    <%- topbarHtml %>
+    <div class="page-body">
+      <% function inr(n){ return '₹' + Number(n||0).toLocaleString('en-IN', {maximumFractionDigits:2}); } %>
+
+      <div class="page-hero">
+        <h1>Expenses</h1>
+        <p>Company expense ledger. Entries above <%= inr(threshold) %> route to the Boss for approval.</p>
+        <% if (canManage) { %>
+        <div class="hero-actions">
+          <a href="/admin/finance/categories" class="btn btn-ghost">Categories</a>
+          <a href="/admin/finance/expenses/new" class="ds-btn ds-btn-gold"><span style="font-size:18px;line-height:1;">+</span> Add Expense</a>
+        </div>
+        <% } %>
+      </div>
+
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="label">Expenses (filtered)</div><div class="value"><%= totals.n %></div></div>
+        <div class="kpi-card"><div class="label">Total Amount</div><div class="value"><%= inr(totals.total) %></div></div>
+      </div>
+
+      <div class="filter-bar">
+        <form class="filter-form" method="GET" action="/admin/finance/expenses">
+          <div class="filter-group"><label>Search</label><input type="text" name="q" value="<%= filters.q %>" placeholder="EXP#, paid to, notes…" /></div>
+          <div class="filter-group"><label>Category</label>
+            <select name="category"><option value="">All categories</option>
+              <% cats.forEach(function(c){ %><option value="<%= c.category_id %>" <%= filters.category===c.category_id?'selected':'' %>><%= c.name %></option><% }); %>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-gold">Apply</button>
+          <a href="/admin/finance/expenses" class="btn btn-sm" style="background:rgba(10,22,40,0.06);color:var(--muted);">Clear</a>
+        </form>
+      </div>
+
+      <div class="panel">
+        <table>
+          <thead><tr>
+            <th>EXP #</th><th>Date</th><th>Category</th><th>Paid To</th><th class="r">Amount</th>
+            <th>Mode</th><th>Attribution</th><th class="ctr">GST-in</th><% if (canManage) { %><th class="ctr">Actions</th><% } %>
+          </tr></thead>
+          <tbody>
+            <% if (expenses && expenses.length) { %>
+              <% expenses.forEach(function(e){ %>
+                <tr>
+                  <td class="mono"><%= e.external_id || '—' %></td>
+                  <td><%= e.expense_date ? new Date(e.expense_date).toISOString().slice(0,10) : '—' %></td>
+                  <td><%= e.category_name || '—' %></td>
+                  <td><%= e.paid_to || '—' %></td>
+                  <td class="r mono"><%= inr(e.amount) %></td>
+                  <td><%= e.payment_mode || '—' %></td>
+                  <td>
+                    <% if (e.project_name) { %><div><%= e.project_name %></div><% } %>
+                    <% if (e.campaign_name) { %><div class="cmeta">Campaign: <%= e.campaign_name %></div><% } %>
+                    <% if (!e.project_name && !e.campaign_name) { %><span class="cmeta">—</span><% } %>
+                  </td>
+                  <td class="ctr"><% if (e.is_input_gst_eligible) { %><span class="tag"><%= e.gst_input_amount ? inr(e.gst_input_amount) : 'yes' %></span><% } else { %><span class="cmeta">—</span><% } %></td>
+                  <% if (canManage) { %>
+                  <td class="ctr"><div class="actions">
+                    <a href="/admin/finance/expenses/edit/<%= e.expense_id %>" class="btn btn-sm btn-edit">Edit</a>
+                    <form class="inline-form" action="/admin/finance/expenses/delete/<%= e.expense_id %>" method="POST" onsubmit="return confirm('Remove expense <%= e.external_id %>? (soft-delete)');">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button type="submit" class="btn btn-sm btn-del">Delete</button>
+                    </form>
+                  </div></td>
+                  <% } %>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="<%= canManage ? 9 : 8 %>" class="empty">No expenses<%= (filters.q || filters.category) ? ' match your filters.' : ' recorded yet.' %></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

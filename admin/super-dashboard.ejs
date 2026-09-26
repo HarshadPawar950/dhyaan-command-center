@@ -1,0 +1,207 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+
+    /* HERO */
+    .page-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+      color: var(--offwhite); padding: 26px 32px; border-radius: 16px;
+      margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%;
+      width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 28px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+    .kpi-card .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .kpi-card.alert { border-left: 4px solid var(--amber); }
+    .kpi-card.alert .value { color: var(--amber); }
+    .kpi-card.trash { border-left: 4px solid var(--red); }
+    .kpi-card.ok { border-left: 4px solid var(--green); }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.green { background: rgba(22,163,74,0.12); color: var(--green); }
+    .badge.red { background: rgba(220,38,38,0.12); color: var(--red); }
+    .badge.amber { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .badge.blue { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .badge.navy { background: rgba(10,22,40,0.08); color: var(--navy); }
+
+    /* SECTION TITLE */
+    .section-title { font-size: 18px; margin-bottom: 14px; margin-top: 8px; display: flex; align-items: center; gap: 10px; }
+    .section-title .dot { width: 7px; height: 7px; background: var(--gold); border-radius: 50%; }
+
+    /* HUB LINKS */
+    .hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .hub-card { display: block; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-decoration: none; color: inherit; box-shadow: var(--shadow); transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+    .hub-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(10,22,40,0.12); border-color: var(--gold); }
+    .hub-card .icon { font-size: 26px; margin-bottom: 10px; }
+    .hub-card h3 { font-size: 16px; margin-bottom: 4px; }
+    .hub-card p { font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .hub-card .count-pill { float: right; }
+
+    /* TWO COLUMN */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 1100px) { .two-col { grid-template-columns: 1fr; } }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); }
+
+    /* TEAM BARS */
+    .team-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .team-row:last-child { border-bottom: none; }
+    .team-row .role { font-weight: 600; text-transform: capitalize; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 8px 10px; border-bottom: 2px solid var(--border); }
+    td { padding: 10px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    .empty { text-align: center; color: var(--muted); padding: 24px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+
+    <div class="page-body">
+      <div class="page-hero">
+        <h1>Super Admin Command Center</h1>
+        <p>Boss-only god-view &mdash; approvals, recovery, audit & team control.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <!-- ===== KPI ROW ===== -->
+      <div class="kpi-grid">
+        <div class="kpi-card alert">
+          <div class="label">Pending Approvals</div>
+          <div class="value"><%= stats.pendingApprovals %></div>
+          <div class="sub">awaiting your decision</div>
+        </div>
+        <div class="kpi-card trash">
+          <div class="label">In Trash</div>
+          <div class="value"><%= stats.trashTotal %></div>
+          <div class="sub">soft-deleted, recoverable</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Today's Activity</div>
+          <div class="value"><%= stats.todayActivity %></div>
+          <div class="sub">actions logged today</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Active Team</div>
+          <div class="value"><%= stats.teamTotal %></div>
+          <div class="sub">members across all roles</div>
+        </div>
+        <div class="kpi-card <%= stats.dbHealthy ? 'ok' : 'trash' %>">
+          <div class="label">System Health</div>
+          <div class="value" style="font-size:24px;">
+            <% if (stats.dbHealthy) { %><span class="badge green">DB ONLINE</span><% } else { %><span class="badge red">DB DOWN</span><% } %>
+          </div>
+          <div class="sub">PostgreSQL connection</div>
+        </div>
+      </div>
+
+      <!-- ===== HUB LINKS ===== -->
+      <h2 class="section-title"><span class="dot"></span> Control Pillars</h2>
+      <div class="hub-grid">
+        <a class="hub-card" href="/admin/approvals">
+          <% if (stats.pendingApprovals > 0) { %><span class="count-pill badge amber"><%= stats.pendingApprovals %> pending</span><% } %>
+          <div class="icon">&#9989;</div>
+          <h3>Approval Center</h3>
+          <p>Review & decide on frozen delete tickets.</p>
+        </a>
+        <a class="hub-card" href="/admin/super/trash">
+          <% if (stats.trashTotal > 0) { %><span class="count-pill badge red"><%= stats.trashTotal %> items</span><% } %>
+          <div class="icon">&#9851;</div>
+          <h3>Trash & Recovery</h3>
+          <p>Restore soft-deleted leads, properties, units & visits.</p>
+        </a>
+        <a class="hub-card" href="/admin/employees">
+          <span class="count-pill badge navy"><%= stats.teamTotal %></span>
+          <div class="icon">&#128101;</div>
+          <h3>User Management</h3>
+          <p>Add, edit, deactivate & set roles for the team.</p>
+        </a>
+        <a class="hub-card" href="/admin/super/audit">
+          <div class="icon">&#128220;</div>
+          <h3>Audit Log</h3>
+          <p>Full searchable history of who did what, when.</p>
+        </a>
+      </div>
+
+      <!-- ===== TWO COLUMN: TEAM + RECENT APPROVALS ===== -->
+      <div class="two-col">
+        <div class="panel">
+          <h2 class="section-title"><span class="dot"></span> Team by Role</h2>
+          <% if (teamBreakdown.length === 0) { %>
+            <div class="empty">No active team members found.</div>
+          <% } else { %>
+            <% teamBreakdown.forEach(function(row) { %>
+              <div class="team-row">
+                <span class="role"><%= row.role %></span>
+                <span class="badge <%= row.role === 'super_admin' ? 'amber' : (row.role === 'admin' ? 'blue' : 'navy') %>"><%= row.c %></span>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+
+        <div class="panel">
+          <h2 class="section-title"><span class="dot"></span> Recent Approval Activity</h2>
+          <% if (recentApprovals.length === 0) { %>
+            <div class="empty">No approval tickets yet.</div>
+          <% } else { %>
+            <table>
+              <thead>
+                <tr><th>Action</th><th>Target</th><th>By</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <% recentApprovals.forEach(function(a) { %>
+                  <tr>
+                    <td><%= a.action_type %></td>
+                    <td><%= a.target_label || ('#' + a.target_id) %></td>
+                    <td><%= a.requested_by_name || '—' %></td>
+                    <td>
+                      <% var s = (a.status || '').toLowerCase(); %>
+                      <span class="badge <%= s === 'approved' ? 'green' : (s === 'rejected' ? 'red' : 'amber') %>"><%= a.status %></span>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
+
+

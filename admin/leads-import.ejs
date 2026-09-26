@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 9px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-gold { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: var(--gold-dark); color: #fff; }
+    .btn-ghost { background: #fff; color: var(--navy); border: 1px solid var(--border); }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 20px; }
+    .panel h2 { font-size: 17px; margin-bottom: 6px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 13px; font-weight: 500; }
+    .flash-success { background: rgba(22,163,74,0.10); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
+    .flash-error { background: rgba(220,38,38,0.10); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
+    .cols { display: inline-block; background: var(--beige); border-radius: 6px; padding: 2px 8px; font-family: monospace; font-size: 12px; margin: 2px; }
+    .counts { display: flex; gap: 14px; flex-wrap: wrap; margin: 12px 0; }
+    .count-card { border-radius: 10px; padding: 12px 18px; font-weight: 700; }
+    .cc-valid { background: rgba(22,163,74,0.12); color: var(--green); }
+    .cc-dup { background: rgba(217,119,6,0.12); color: var(--amber); }
+    .cc-invalid { background: rgba(220,38,38,0.12); color: var(--red); }
+    .cc-total { background: rgba(10,22,40,0.06); color: var(--navy); }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 10px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 9px 10px; border-bottom: 2px solid var(--border); background: var(--beige); position: sticky; top: 0; }
+    td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .b-valid { background: rgba(22,163,74,0.14); color: var(--green); }
+    .b-dup { background: rgba(217,119,6,0.14); color: var(--amber); }
+    .b-invalid { background: rgba(220,38,38,0.14); color: var(--red); }
+    .tbl-wrap { max-height: 460px; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+    .file-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <%- include('../partials/breadcrumb', { crumbs:[{label:'Leads',href:'/admin/leads'},{label:'Import'}], backHref:'/admin/leads' }) %>
+
+      <div class="page-hero">
+        <h1>Import Leads</h1>
+        <p>Bulk-load leads from an Excel/CSV sheet — every row is dedup-checked and accounted for before anything is saved.</p>
+      </div>
+
+      <% if (summary) { %>
+        <div class="flash flash-<%= summary.type %>"><%= summary.text %></div>
+        <% if (summary.assignedTo && Object.keys(summary.assignedTo).length) { %>
+          <div class="panel">
+            <h2>Auto-assignment</h2>
+            <div class="muted">Round-robin distributed the imported leads:</div>
+            <div class="counts">
+              <% Object.keys(summary.assignedTo).forEach(function(n){ %>
+                <div class="count-card cc-total"><%= n %>: <%= summary.assignedTo[n] %></div>
+              <% }); %>
+            </div>
+          </div>
+        <% } %>
+      <% } %>
+
+      <!-- STEP 1: UPLOAD -->
+      <div class="panel">
+        <h2>1 &middot; Upload a sheet</h2>
+        <p class="muted">Expected columns (first row = header, case-insensitive):</p>
+        <div style="margin:8px 0 14px;">
+          <% templateColumns.forEach(function(c){ %><span class="cols"><%= c %></span><% }); %>
+        </div>
+        <p class="muted"><strong>name</strong> is required; <strong>phone</strong> must have 10 digits (used for dedup + auto-assign). Accepted <code>source</code> values: <%= allowedSources.join(', ') %> (anything else &rarr; <em>other</em>).</p>
+        <div class="file-row" style="margin-top:14px;">
+          <a href="/admin/leads/import/template.xlsx" class="btn btn-ghost">⬇ Download TEMPLATE.xlsx</a>
+        </div>
+        <form method="POST" action="/admin/leads/import?_csrf=<%= encodeURIComponent(csrfToken) %>" enctype="multipart/form-data" style="margin-top:16px;">
+          <div class="file-row">
+            <input type="file" name="sheet" accept=".xlsx,.xls,.csv" required>
+            <button type="submit" class="btn btn-gold">Preview import →</button>
+          </div>
+          <div class="muted" style="margin-top:8px;">.xlsx, .xls or .csv · up to 5 MB · nothing is saved at this step.</div>
+        </form>
+      </div>
+
+      <!-- STEP 2: PREVIEW -->
+      <% if (preview) { %>
+        <div class="panel">
+          <h2>2 &middot; Preview &mdash; <%= preview.fileName %></h2>
+          <div class="counts">
+            <div class="count-card cc-total">Total rows: <%= preview.counts.total %></div>
+            <div class="count-card cc-valid">Will import: <%= preview.counts.valid %></div>
+            <div class="count-card cc-dup">Duplicates skipped: <%= preview.counts.duplicate %></div>
+            <div class="count-card cc-invalid">Invalid: <%= preview.counts.invalid %></div>
+          </div>
+
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Status</th><th>Name</th><th>Phone</th><th>Email</th><th>Source</th><th>Budget</th><th>Location</th><th>Note</th></tr>
+              </thead>
+              <tbody>
+                <% preview.rows.forEach(function(r){ %>
+                  <tr>
+                    <td><%= r.rowNo %></td>
+                    <td>
+                      <% if (r.status === 'valid') { %><span class="badge b-valid">Valid</span>
+                      <% } else if (r.status === 'duplicate') { %><span class="badge b-dup">Duplicate</span>
+                      <% } else { %><span class="badge b-invalid">Invalid</span><% } %>
+                    </td>
+                    <td><%= r.name %></td>
+                    <td><%= r.phone %></td>
+                    <td><%= r.email %></td>
+                    <td><%= r.source %></td>
+                    <td><%= r.budget %></td>
+                    <td><%= r.location %></td>
+                    <td class="muted"><%= r.reason %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+
+          <% if (preview.counts.valid > 0) { %>
+            <form method="POST" action="/admin/leads/import/commit" style="margin-top:16px;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn-gold" onclick="return confirm('Import <%= preview.counts.valid %> valid leads and auto-assign them? Duplicates and invalid rows are skipped.');">
+                ✓ Confirm import of <%= preview.counts.valid %> lead<%= preview.counts.valid === 1 ? '' : 's' %>
+              </button>
+              <span class="muted" style="margin-left:10px;">Duplicates &amp; invalid rows will NOT be imported.</span>
+            </form>
+          <% } else { %>
+            <p class="muted" style="margin-top:14px;">No valid rows to import from this sheet.</p>
+          <% } %>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> &mdash; Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626; --amber: #d97706; --blue: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 26px; }
+    .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); }
+    .kpi-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+    .kpi-card .value { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--navy); line-height: 1; }
+    .kpi-card .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .kpi-card.roas { border-left: 4px solid var(--green); }
+    .kpi-card.roas .value { color: var(--green); }
+    .kpi-card.spend { border-left: 4px solid var(--gold); }
+    .kpi-card.revenue { border-left: 4px solid var(--green); }
+    .kpi-card.outstanding { border-left: 4px solid var(--amber); }
+    .kpi-card.commission { border-left: 4px solid var(--blue); }
+    .section-title { font-size: 18px; margin: 8px 0 14px; display: flex; align-items: center; gap: 10px; }
+    .section-title .dot { width: 7px; height: 7px; background: var(--gold); border-radius: 50%; }
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 11px 14px; border-bottom: 2px solid var(--border); background: var(--beige); }
+    th.num, td.num { text-align: right; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    .cname { font-weight: 600; color: var(--navy); }
+    .cmeta { font-size: 11px; color: var(--muted); }
+    .rank { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--beige); color: var(--navy); font-size: 11px; font-weight: 700; }
+    .rank.gold { background: var(--gold); color: var(--navy); }
+    .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 26px; }
+    .split-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); }
+    .split-card .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 10px; }
+    .split-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--beige); margin: 14px 0 10px; }
+    .split-bar .company { background: var(--navy); }
+    .split-bar .employee { background: var(--gold); }
+    .split-legend { display: flex; gap: 18px; font-size: 12px; color: var(--muted); }
+    .split-legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
+    .swatch.navy { background: var(--navy); }
+    .swatch.gold { background: var(--gold); }
+    .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+    .note { font-size: 12px; color: var(--muted); margin-top: 10px; font-style: italic; }
+    /* ---- v2 hero tiles ---- */
+    .v2-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-bottom: 26px; }
+    a.tile { text-decoration: none; color: inherit; display: block; background: #fff; border: 1px solid var(--border);
+             border-radius: 14px; padding: 20px; box-shadow: var(--shadow); border-top: 4px solid var(--gold);
+             transition: transform .12s ease, box-shadow .12s ease; }
+    a.tile:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(10,22,40,0.12); }
+    a.tile.cash { border-top-color: var(--green); }
+    a.tile.owe { border-top-color: var(--amber); }
+    a.tile.pipe { border-top-color: var(--blue); }
+    a.tile.age { border-top-color: var(--red); }
+    a.tile .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    a.tile .value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1.05; }
+    a.tile .value.green { color: var(--green); }
+    a.tile .value.red { color: var(--red); }
+    a.tile .sub { font-size: 12px; color: var(--muted); margin-top: 7px; }
+    a.tile .drill { font-size: 10px; color: var(--gold-dark); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; }
+    a.tile .drill::after { content: " \\2192"; }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+
+      <div class="page-hero">
+        <h1>Owner &amp; Promoter Dashboard</h1>
+        <p>Read-only executive overview &mdash; cash, pipeline, commissions, marketing return.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <%
+        // Indian-format helpers. inrShort keeps the demo headline compact
+        // (Cr / L); the full rupee figure rides along in the tile title.
+        function inr(n){ n = Number(n) || 0; return n.toLocaleString('en-IN', { maximumFractionDigits: 0 }); }
+        function inrShort(n){
+          n = Number(n) || 0;
+          if (n >= 10000000) return (n / 10000000).toFixed(2).replace(/\.00$/, '') + ' Cr';
+          if (n >= 100000)   return (n / 100000).toFixed(2).replace(/\.00$/, '') + ' L';
+          return n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        }
+        const fyLabel = 'FY ' + (fyStart || '').slice(0, 4);
+      %>
+
+      <!-- ============ v2 HERO TILES ============ -->
+      <div class="v2-grid">
+
+        <a class="tile cash" href="/admin/receipts" title="&#8377;<%= inr(cashPosition) %> collected this FY">
+          <div class="label">Total Cash Position <span class="drill">Receipts</span></div>
+          <div class="value green">&#8377;<%= inrShort(cashPosition) %></div>
+          <div class="sub"><%= fyLabel %> &middot; token &#8377;<%= inrShort(cashToken) %> + commission &#8377;<%= inrShort(cashCommission) %></div>
+        </a>
+
+        <a class="tile owe" href="/admin/commissions" title="&#8377;<%= inr(outstandingCommissions) %> outstanding">
+          <div class="label">Outstanding Commissions <span class="drill">Commissions</span></div>
+          <div class="value">&#8377;<%= inrShort(outstandingCommissions) %></div>
+          <div class="sub">Expected &minus; received, active receivables</div>
+        </a>
+
+        <a class="tile pipe" href="/admin/leads" title="&#8377;<%= inr(pipelineValue) %> probability-weighted pipeline">
+          <div class="label">Pipeline Value <span class="drill">Leads</span></div>
+          <div class="value">&#8377;<%= inrShort(pipelineValue) %></div>
+          <div class="sub"><%= pipelineLeads %> active lead<%= pipelineLeads === 1 ? '' : 's' %> &middot; budget &times; stage weight</div>
+        </a>
+
+        <a class="tile" href="/admin/marketing" title="ROAS = collected &divide; spend">
+          <div class="label">Spend &middot; Bookings &middot; ROAS <span class="drill">Marketing</span></div>
+          <div class="value"><%= roas > 0 ? roas.toFixed(2) + 'x' : '&mdash;' %></div>
+          <div class="sub">Spend &#8377;<%= inrShort(totalSpend) %> &middot; <%= bookingsCount %> booking<%= bookingsCount === 1 ? '' : 's' %> &#8377;<%= inrShort(bookingsValue) %></div>
+        </a>
+
+        <a class="tile age" href="/admin/commissions" title="Oldest unpaid receivable">
+          <div class="label">Worst Ageing Receivable <span class="drill">Commissions</span></div>
+          <% if (worstAgeing) { %>
+            <div class="value red">&#8377;<%= inrShort(worstAgeing.outstanding) %></div>
+            <div class="sub"><%= worstAgeing.builder_name %> &middot; <%= worstAgeing.days_aged %> day<%= Number(worstAgeing.days_aged) === 1 ? '' : 's' %> aged</div>
+          <% } else { %>
+            <div class="value green">&#8377;0</div>
+            <div class="sub">Nothing outstanding &mdash; all clear</div>
+          <% } %>
+        </a>
+
+        <a class="tile" href="/admin/bookings" title="Bookings booked this month">
+          <div class="label">Bookings This Month <span class="drill">Bookings</span></div>
+          <div class="value"><%= bookingsMonthCount %></div>
+          <div class="sub">&#8377;<%= inrShort(bookingsMonthValue) %> booked this month</div>
+        </a>
+
+      </div>
+
+      <!-- ============ HEADLINE KPIs ============ -->
+      <div class="kpi-grid">
+        <div class="kpi-card revenue">
+          <div class="label">Revenue Collected</div>
+          <div class="value">&#8377;<%= Number(revenueCollected).toLocaleString('en-IN') %></div>
+          <div class="sub"><%= paidDeals %> paid payment<%= paidDeals === 1 ? '' : 's' %></div>
+        </div>
+        <div class="kpi-card outstanding">
+          <div class="label">Outstanding</div>
+          <div class="value">&#8377;<%= Number(revenueOutstanding).toLocaleString('en-IN') %></div>
+          <div class="sub">Pending + partial</div>
+        </div>
+        <div class="kpi-card commission">
+          <div class="label">Commission Booked</div>
+          <div class="value">&#8377;<%= Number(commissionTotal).toLocaleString('en-IN') %></div>
+          <div class="sub">Across all deals</div>
+        </div>
+        <div class="kpi-card roas">
+          <div class="label">ROAS</div>
+          <div class="value"><%= roas > 0 ? roas.toFixed(2) + 'x' : '&mdash;' %></div>
+          <div class="sub">Revenue &divide; spend</div>
+        </div>
+      </div>
+
+      <!-- ============ SECONDARY KPIs ============ -->
+      <div class="kpi-grid">
+        <div class="kpi-card spend">
+          <div class="label">Marketing Spend</div>
+          <div class="value">&#8377;<%= Number(totalSpend).toLocaleString('en-IN') %></div>
+          <div class="sub">All recorded spend</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Active Campaigns</div>
+          <div class="value"><%= activeCampaigns %></div>
+          <div class="sub">Currently running</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Overdue</div>
+          <div class="value">&#8377;<%= Number(revenueOverdue).toLocaleString('en-IN') %></div>
+          <div class="sub">Past due payments</div>
+        </div>
+        <div class="kpi-card">
+          <div class="label">Net Company Revenue</div>
+          <div class="value">&#8377;<%= Number(revenueCollected - employeeShare).toLocaleString('en-IN') %></div>
+          <div class="sub">Collected &minus; payouts</div>
+        </div>
+      </div>
+
+      <!-- ============ COMMISSION SPLIT ============ -->
+      <h2 class="section-title"><span class="dot"></span> Commission Split</h2>
+      <div class="split-grid">
+        <div class="split-card">
+          <div class="label">Company vs Employee Share</div>
+          <%
+            const splitTotal = Number(companyShare) + Number(employeeShare);
+            const companyPct = splitTotal > 0 ? (Number(companyShare) / splitTotal * 100) : 0;
+            const employeePct = splitTotal > 0 ? (Number(employeeShare) / splitTotal * 100) : 0;
+          %>
+          <div class="split-bar">
+            <div class="company" style="width: <%= companyPct.toFixed(1) %>%"></div>
+            <div class="employee" style="width: <%= employeePct.toFixed(1) %>%"></div>
+          </div>
+          <div class="split-legend">
+            <span><span class="swatch navy"></span>Company &#8377;<%= Number(companyShare).toLocaleString('en-IN') %> (<%= companyPct.toFixed(0) %>%)</span>
+            <span><span class="swatch gold"></span>Employee &#8377;<%= Number(employeeShare).toLocaleString('en-IN') %> (<%= employeePct.toFixed(0) %>%)</span>
+          </div>
+        </div>
+        <div class="split-card">
+          <div class="label">Totals</div>
+          <div class="value" style="font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--navy);">&#8377;<%= Number(commissionTotal).toLocaleString('en-IN') %></div>
+          <div class="sub" style="font-size: 12px; color: var(--muted); margin-top: 6px;">Total commission booked across all deals</div>
+        </div>
+      </div>
+
+      <!-- ============ TOP EARNERS ============ -->
+      <h2 class="section-title"><span class="dot"></span> Top Earners</h2>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Employee</th>
+              <th class="num">Deals</th>
+              <th class="num">Earned</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (topEarners && topEarners.length) { %>
+              <% topEarners.forEach(function(emp, i) { %>
+                <tr>
+                  <td><span class="rank <%= i === 0 ? 'gold' : '' %>"><%= i + 1 %></span></td>
+                  <td class="cname"><%= emp.name %></td>
+                  <td class="num"><%= emp.deals %></td>
+                  <td class="num">&#8377;<%= Number(emp.earned).toLocaleString('en-IN') %></td>
+                </tr>
+              <% }); %>
+            <% } else { %>
+              <tr><td colspan="4" class="empty">No commission records yet.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="note">Read-only view. Figures aggregate live data from payments, commissions, and marketing spend.</p>
+
+    </div>
+  </div>
+</body>
+</html>

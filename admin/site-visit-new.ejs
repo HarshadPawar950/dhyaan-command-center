@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> — Dhyaan Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-soft: #E8C766; --gold-dark: #B8941F;
+      --navy: #0A1628; --navy-2: #142238;
+      --offwhite: #FAFAF7; --beige: #F4EFE6;
+      --text: #1a1a1a; --muted: #6b6b6b;
+      --border: rgba(10, 22, 40, 0.08);
+      --shadow: 0 4px 24px rgba(10, 22, 40, 0.06);
+      --green: #16a34a; --red: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--offwhite); color: var(--text); min-height: 100vh; display: flex; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--navy); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+    .page-body { padding: 28px 40px; flex: 1; }
+    .page-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%); color: var(--offwhite); padding: 26px 32px; border-radius: 16px; margin-bottom: 22px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .page-hero::before { content: ""; position: absolute; top: -50%; right: -10%; width: 350px; height: 350px; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%); pointer-events: none; }
+    .page-hero h1 { color: var(--offwhite); font-size: 28px; margin-bottom: 4px; }
+    .page-hero p { color: rgba(250,250,247,0.7); font-size: 14px; }
+    .page-hero .gold-line { display: inline-block; width: 36px; height: 3px; background: var(--gold); margin-top: 12px; border-radius: 2px; }
+
+    .flash { padding: 12px 18px; border-radius: 10px; margin-bottom: 18px; font-size: 14px; font-weight: 500; }
+    .flash.error { background: rgba(220,38,38,0.1); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
+    .flash.success { background: rgba(22,163,74,0.1); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
+
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 28px 30px; max-width: 720px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 13px; font-weight: 600; color: var(--navy); }
+    label .req { color: var(--red); }
+    select, input[type="text"], input[type="datetime-local"] {
+      font-family: 'Inter', sans-serif; font-size: 14px; padding: 11px 13px;
+      border: 1px solid var(--border); border-radius: 10px; background: var(--offwhite); color: var(--text); width: 100%;
+    }
+    select:focus, input:focus { outline: none; border-color: var(--gold); background: #fff; }
+
+    .actions { display: flex; gap: 12px; margin-top: 26px; }
+    .btn-gold { background: var(--gold); color: var(--navy); font-weight: 700; font-size: 14px; padding: 12px 26px; border: none; border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+    .btn-gold:hover { background: var(--gold-dark); }
+    .btn-ghost { background: #fff; color: var(--muted); font-weight: 600; font-size: 14px; padding: 12px 26px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-ghost:hover { background: var(--beige); }
+  </style>
+</head>
+<body>
+  <%- include('./layout/sidebar') %>
+  <div class="main-content">
+    <%- include('./layout/topbar') %>
+    <div class="page-body">
+      <%- include('../partials/breadcrumb', { crumbs:[{label:'Site Visits',href:'/admin/site-visits'},{label:'New Visit'}], backHref:'/admin/site-visits' }) %>
+
+      <div class="page-hero">
+        <h1>Schedule Site Visit</h1>
+        <p>Book a property visit for a lead and assign an executive.</p>
+        <span class="gold-line"></span>
+      </div>
+
+      <% if (flash) { %>
+        <div class="flash <%= flash.type %>"><%= flash.text %></div>
+      <% } %>
+
+      <div class="card">
+        <form method="POST" action="/admin/site-visits/new">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="form-grid">
+
+            <div class="field">
+              <label>Lead <span class="req">*</span></label>
+              <select name="lead_id" required>
+                <option value="">— Select lead —</option>
+                <% leads.forEach(function(l) { %>
+                  <option value="<%= l.lead_id %>"><%= l.name %><%= l.phone ? ' · ' + l.phone : '' %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Property <span class="req">*</span></label>
+              <select name="project_id" required>
+                <option value="">— Select property —</option>
+                <% properties.forEach(function(p) { %>
+                  <option value="<%= p.project_id %>"><%= p.title %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Executive</label>
+              <select name="employee_id">
+                <option value="">— Unassigned —</option>
+                <% employees.forEach(function(e) { %>
+                  <option value="<%= e.employee_id %>"><%= e.name %></option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Date &amp; Time <span class="req">*</span></label>
+              <input type="datetime-local" name="scheduled_at" required />
+            </div>
+
+            <div class="field full">
+              <label>Pickup Point</label>
+              <input type="text" name="pickup_point" placeholder="e.g. Vashi station, customer's office..." />
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn-gold">Schedule Visit</button>
+            <a href="/admin/site-visits" class="btn-ghost">Cancel</a>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
